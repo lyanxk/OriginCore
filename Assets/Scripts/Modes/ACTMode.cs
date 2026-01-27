@@ -2,7 +2,7 @@
 
 public class ACTMode : IControlMode
 {
-    public string Name => "TPS";
+    public string Name => "ACT";
 
     readonly PlayerMotor _player;
     readonly Transform _tpsPivot;

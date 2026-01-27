@@ -271,6 +271,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   input: {fileID: 0}
+  switchRTSAction: {fileID: 437684622041599635, guid: 4e0c811b83694ae488f5e283d5b49243,
+    type: 3}
+  switchACTAction: {fileID: 1953845101869190164, guid: 4e0c811b83694ae488f5e283d5b49243,
+    type: 3}
+  switchFPSAction: {fileID: -7120965213227796069, guid: 4e0c811b83694ae488f5e283d5b49243,
+    type: 3}
   player: {fileID: 883050542}
   cameraRig: {fileID: 687583676}
   fpsPivot: {fileID: 637539842}
@@ -293,6 +299,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lookSensitivity: 1
+  moveAction: {fileID: 4079457421533578184, guid: 4e0c811b83694ae488f5e283d5b49243,
+    type: 3}
+  lookAction: {fileID: 5506708142423263554, guid: 4e0c811b83694ae488f5e283d5b49243,
+    type: 3}
+  rightClickAction: {fileID: -2262816891701175016, guid: 4e0c811b83694ae488f5e283d5b49243,
+    type: 3}
+  leftClickAction: {fileID: -581101031484920910, guid: 4e0c811b83694ae488f5e283d5b49243,
+    type: 3}
+  pointAction: {fileID: -3239444147240858698, guid: 4e0c811b83694ae488f5e283d5b49243,
+    type: 3}
+  zoomAction: {fileID: -4608087506163258009, guid: 4e0c811b83694ae488f5e283d5b49243,
+    type: 3}
+  shiftAction: {fileID: 1835497332551957006, guid: 4e0c811b83694ae488f5e283d5b49243,
+    type: 3}
+  cancelAction: {fileID: 4440616591485505995, guid: 4e0c811b83694ae488f5e283d5b49243,
+    type: 3}
 --- !u!4 &427324541
 Transform:
   m_ObjectHideFlags: 0
@@ -302,7 +324,7 @@ Transform:
   m_GameObject: {fileID: 427324538}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: 0, y: -10, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

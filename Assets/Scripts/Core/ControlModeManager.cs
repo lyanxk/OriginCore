@@ -1,8 +1,14 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class ControlModeManager : MonoBehaviour
 {
     public InputIntentSource input;
+
+    [Header("Mode Switch Actions 模式切换按键")]
+    public InputActionReference switchRTSAction; // 1
+    public InputActionReference switchACTAction; // 2
+    public InputActionReference switchFPSAction; // 3
 
     [Header("References")]
     public PlayerMotor player;
@@ -11,15 +17,28 @@ public class ControlModeManager : MonoBehaviour
     public Transform actPivot;
 
     [Header("RTS")]
-    public LayerMask groundMask = ~0; // 默认全选；建议只勾Ground
+    public LayerMask groundMask = ~0; // 默认全选；建议只勾Ground（地面）
     public float rtsCamHeight = 18f;
     public float rtsCamDistance = 18f;
 
     IControlMode _rts;
     IControlMode _act;
     IControlMode _fps;
-
     IControlMode _current;
+
+    void OnEnable()
+    {
+        switchRTSAction?.action?.Enable();
+        switchACTAction?.action?.Enable();
+        switchFPSAction?.action?.Enable();
+    }
+
+    void OnDisable()
+    {
+        switchRTSAction?.action?.Disable();
+        switchACTAction?.action?.Disable();
+        switchFPSAction?.action?.Disable();
+    }
 
     void Awake()
     {
@@ -34,14 +53,14 @@ public class ControlModeManager : MonoBehaviour
 
     void Start()
     {
-        SwitchTo(_rts); // 默认RTS
+        SwitchTo(_rts); // 默认操作模式
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1)) SwitchTo(_rts);
-        if (Input.GetKeyDown(KeyCode.Alpha2)) SwitchTo(_act);
-        if (Input.GetKeyDown(KeyCode.Alpha3)) SwitchTo(_fps);
+        if (switchRTSAction != null && switchRTSAction.action.WasPressedThisFrame()) SwitchTo(_rts);
+        if (switchACTAction != null && switchACTAction.action.WasPressedThisFrame()) SwitchTo(_act);
+        if (switchFPSAction != null && switchFPSAction.action.WasPressedThisFrame()) SwitchTo(_fps);
 
         if (_current == null || input == null) return;
 

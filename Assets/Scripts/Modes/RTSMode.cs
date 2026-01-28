@@ -8,12 +8,11 @@ public class RTSMode : IControlMode
     readonly PlayerMotor _player;                  // 玩家运动（playerMotor）
     readonly Camera _cam;                          // 主相机（mainCamera）
     readonly LayerMask _groundMask;                // 地面层（groundMask）
-
-    // 相机焦点（camFocus）：地面上的关注点
-    Vector3 _camFocus;
+    
+    Vector3 _camFocus; // 相机焦点
 
     // 相机角（yaw/pitch）
-    float _yaw;
+    float _yaw; 
     float _pitch;
 
     // 相机缩放：当前值（height/distance）与目标值（heightTarget/distanceTarget）
@@ -23,36 +22,30 @@ public class RTSMode : IControlMode
     float _distanceTarget;
     float _heightVel;
     float _distanceVel;
-
-    // 平移速度（panSpeed），边缘滚动（edgeScroll）
-    public float panSpeed = 12f;
-    public float edgePanSpeed = 10f;
-    public float edgeSizePx = 18f;
-
-    // 旋转速度（rotateSpeed），缩放速度（zoomSpeed）
-    public float rotateSpeed = 1.0f;
-    public float zoomSpeed = 6f;
-
-    // pitch 限制
-    public float pitchMin = 25f;
-    public float pitchMax = 80f;
-
+    
+    public float EdgePanSpeed = 10f;    //平移速度
+    public float EdgeSizeX = 360f;
+    public float EdgeSizeY = 180f;
+    
+    public float RotateSpeed = 1.0f; //旋转速度
+    public float ZoomSpeed = 6f;    //缩放速度
+    
     // zoom 限制
-    public float heightMin = 6f;
-    public float heightMax = 40f;
-    public float distanceMin = 6f;
-    public float distanceMax = 45f;
+    public float HeightMin = 6f;
+    public float HeightMax = 40f;
+    public float DistanceMin = 6f;
+    public float DistanceMax = 45f;
 
-    // 相机焦点边界（focusBounds）：用 XZ 平面
-    public bool useBounds = false;
-    public Vector2 boundsMinXZ = new Vector2(-50, -50);
-    public Vector2 boundsMaxXZ = new Vector2(50, 50);
+    // 相机焦点边界
+    public bool UseBounds = false;
+    public Vector2 BoundsMinXZ = new Vector2(-50, -50);
+    public Vector2 BoundsMaxXZ = new Vector2(50, 50);
 
-    // 选择系统（selection）
+    // 选择系统
     readonly List<Selectable> _allSelectables = new List<Selectable>();
     readonly List<Selectable> _selected = new List<Selectable>();
 
-    // 框选（boxSelect）
+    // 框选
     bool _isDragging;
     Vector2 _dragStart;
     const float DragThreshold = 8f;
@@ -86,6 +79,9 @@ public class RTSMode : IControlMode
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
+        EdgeSizeX = Screen.width * 0.2f;
+        EdgeSizeY = Screen.height * 0.2f;
+
         _camFocus = _player.transform.position;
         _player.ClearDestination();
 
@@ -96,43 +92,35 @@ public class RTSMode : IControlMode
 
     public void Tick(float dt, InputIntent intent)
     {
-        // 1) 相机平移（Move + EdgeScroll）
-        Vector2 move = intent.Move + GetEdgePan(intent.PointerScreenPos);
+        // 相机平移
+        Vector2 move = GetEdgePan(intent.PointerScreenPos);
 
         Quaternion yawRot = Quaternion.Euler(0f, _yaw, 0f);
         Vector3 pan = yawRot * new Vector3(move.x, 0f, move.y);
-        _camFocus += pan * panSpeed * dt;
+        _camFocus += pan * dt;
 
-        // 2) 相机旋转（右键按住）
-        if (intent.RightHeld)
-        {
-            _yaw += intent.Look.x * rotateSpeed;
-            _pitch -= intent.Look.y * rotateSpeed;
-            _pitch = Mathf.Clamp(_pitch, pitchMin, pitchMax);
-        }
-
-        // 3) 相机缩放（滚轮）
+        // 相机缩放（滚轮）
         if (Mathf.Abs(intent.Zoom) > 0.0001f)
         {
-            float z = intent.Zoom * zoomSpeed;
-            _heightTarget = Mathf.Clamp(_heightTarget - z, heightMin, heightMax);
-            _distanceTarget = Mathf.Clamp(_distanceTarget - z, distanceMin, distanceMax);
+            float z = intent.Zoom * ZoomSpeed;
+            _heightTarget = Mathf.Clamp(_heightTarget - z, HeightMin, HeightMax);
+            _distanceTarget = Mathf.Clamp(_distanceTarget - z, DistanceMin, DistanceMax);
         }
 
         _height = Mathf.SmoothDamp(_height, _heightTarget, ref _heightVel, 0.12f);
         _distance = Mathf.SmoothDamp(_distance, _distanceTarget, ref _distanceVel, 0.12f);
 
-        // 4) 边界限制（Bounds）
-        if (useBounds)
+        // 边界限制
+        if (UseBounds)
         {
-            _camFocus.x = Mathf.Clamp(_camFocus.x, boundsMinXZ.x, boundsMaxXZ.x);
-            _camFocus.z = Mathf.Clamp(_camFocus.z, boundsMinXZ.y, boundsMaxXZ.y);
+            _camFocus.x = Mathf.Clamp(_camFocus.x, BoundsMinXZ.x, BoundsMaxXZ.x);
+            _camFocus.z = Mathf.Clamp(_camFocus.z, BoundsMinXZ.y, BoundsMaxXZ.y);
         }
 
-        // 5) 选择：单选/框选（Select）
+        // 选择：单选/框选
         HandleSelection(intent);
 
-        // 6) 命令：右键点击地面移动（ActionDown）
+        // 命令：右键点击地面移动（ActionDown）
         if (intent.RightClick && _selected.Count > 0)
         {
             Ray ray = _cam.ScreenPointToRay(intent.PointerScreenPos);
@@ -151,21 +139,41 @@ public class RTSMode : IControlMode
         if (intent.Cancel)
             ClearSelection();
     }
-
+    //相机移动逻辑
     Vector2 GetEdgePan(Vector2 pointerScreenPos)
     {
         float x = 0f;
         float y = 0f;
 
-        if (pointerScreenPos.x <= edgeSizePx) x = -1f;
-        else if (pointerScreenPos.x >= Screen.width - edgeSizePx) x = 1f;
+        // 左
+        if (pointerScreenPos.x <= EdgeSizeX)
+        {
+            float t = 1f - (pointerScreenPos.x / EdgeSizeX); // 贴边=1，离边缘=0
+            x = -t;
+        }
+        // 右
+        else if (pointerScreenPos.x >= Screen.width - EdgeSizeX)
+        {
+            float t = (pointerScreenPos.x - (Screen.width - EdgeSizeX)) / EdgeSizeX; // 0..1
+            x = t;
+        }
 
-        if (pointerScreenPos.y <= edgeSizePx) y = -1f;
-        else if (pointerScreenPos.y >= Screen.height - edgeSizePx) y = 1f;
+        // 下
+        if (pointerScreenPos.y <= EdgeSizeY)
+        {
+            float t = 1f - (pointerScreenPos.y / EdgeSizeY);
+            y = -t;
+        }
+        // 上
+        else if (pointerScreenPos.y >= Screen.height - EdgeSizeY)
+        {
+            float t = (pointerScreenPos.y - (Screen.height - EdgeSizeY)) / EdgeSizeY;
+            y = t;
+        }
 
-        Vector2 v = new Vector2(x, y);
-        if (v.sqrMagnitude > 1f) v.Normalize();
-        return v * (edgePanSpeed / Mathf.Max(0.0001f, panSpeed)); // 归一到与Move叠加的尺度
+        Vector2 dir = new Vector2(x, y);
+        
+        return dir * EdgePanSpeed;
     }
 
     void HandleSelection(InputIntent intent)

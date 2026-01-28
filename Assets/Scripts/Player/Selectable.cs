@@ -4,10 +4,28 @@ public class Selectable : MonoBehaviour
 {
     public bool IsSelected { get; private set; }
 
+    Outline _outline;
+
+    void Awake()
+    {
+        // ⚠️ Outline 在子物体上，所以用 GetComponentInChildren
+        _outline = GetComponentInChildren<Outline>();
+
+        if (_outline != null)
+        {
+            _outline.enabled = false;
+            _outline.OutlineColor = Color.green;
+            _outline.OutlineWidth = 4f;
+        }
+    }
+
     public void SetSelected(bool selected)
     {
         IsSelected = selected;
-        // 选中逻辑 此处用缩小暂时替代
-        transform.localScale = selected ? Vector3.one * 1.15f : Vector3.one;
+
+        if (_outline != null)
+        {
+            _outline.enabled = selected;
+        }
     }
 }

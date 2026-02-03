@@ -5,14 +5,14 @@ public class RTSMode : IControlMode
 {
     public string Name => "RTS";
 
-    readonly PlayerMotor _player;                  // 玩家运动（playerMotor）
-    readonly Camera _cam;                          // 主相机（mainCamera）
-    readonly LayerMask _groundMask;                // 地面层（groundMask）
-    
+    readonly UnitBaseMotor _unit; // 玩家运动（playerMotor）
+    readonly Camera _cam; // 主相机（mainCamera）
+    readonly LayerMask _groundMask; // 地面层（groundMask）
+
     Vector3 _camFocus; // 相机焦点
 
     // 相机角（yaw/pitch）
-    float _yaw; 
+    float _yaw;
     float _pitch;
 
     // 相机缩放：当前值（height/distance）与目标值（heightTarget/distanceTarget）
@@ -22,14 +22,14 @@ public class RTSMode : IControlMode
     float _distanceTarget;
     float _heightVel;
     float _distanceVel;
-    
-    public float EdgePanSpeed = 10f;    //平移速度
-    public float EdgeSizeX = 360f;
-    public float EdgeSizeY = 180f;
-    
+
+    public float EdgePanSpeed = 10f; //平移速度
+    public float EdgeSizeX = 180f;
+    public float EdgeSizeY = 100;
+
     public float RotateSpeed = 1.0f; //旋转速度
-    public float ZoomSpeed = 6f;    //缩放速度
-    
+    public float ZoomSpeed = 6f; //缩放速度
+
     // zoom 限制
     public float HeightMin = 6f;
     public float HeightMax = 40f;
@@ -49,21 +49,27 @@ public class RTSMode : IControlMode
     bool _isDragging;
     Vector2 _dragStart;
     const float DragThreshold = 8f;
+    readonly RectTransform _selectionBox; 
 
-    public RTSMode(PlayerMotor player, Camera mainCamera, LayerMask groundMask, float camHeight = 18f, float camDistance = 18f)
+    public RTSMode(UnitBaseMotor unit, Camera mainCamera, LayerMask groundMask,RectTransform selectionBox, float camHeight = 18f,
+        float camDistance = 18f)
     {
-        _player = player;
+        _unit = unit;
         _cam = mainCamera;
         _groundMask = groundMask;
 
-        _camFocus = player.transform.position;
-        _yaw = player.GetYaw();
+        _camFocus = unit.transform.position;
+        _yaw = unit.GetYaw();
         _pitch = 50f;
 
         _height = camHeight;
         _distance = camDistance;
         _heightTarget = camHeight;
         _distanceTarget = camDistance;
+        _selectionBox = selectionBox;
+        
+        if (_selectionBox != null)
+            _selectionBox.gameObject.SetActive(false);
 
         RefreshSelectables();
     }
@@ -82,13 +88,15 @@ public class RTSMode : IControlMode
         EdgeSizeX = Screen.width * 0.2f;
         EdgeSizeY = Screen.height * 0.2f;
 
-        _camFocus = _player.transform.position;
-        _player.ClearDestination();
+        _camFocus = _unit.transform.position;
+        _unit.ClearDestination();
 
         RefreshSelectables();
     }
 
-    public void Exit() { }
+    public void Exit()
+    {
+    }
 
     public void Tick(float dt, InputIntent intent)
     {
@@ -129,7 +137,7 @@ public class RTSMode : IControlMode
                 // 目前先支持：所有选中单位走到同一点（后面再做编队散开）
                 foreach (var s in _selected)
                 {
-                    var motor = s.GetComponent<PlayerMotor>();
+                    var motor = s.GetComponent<UnitBaseMotor>();
                     if (motor != null) motor.SetDestination(hit.point);
                 }
             }
@@ -139,6 +147,7 @@ public class RTSMode : IControlMode
         if (intent.Cancel)
             ClearSelection();
     }
+
     //相机移动逻辑
     Vector2 GetEdgePan(Vector2 pointerScreenPos)
     {
@@ -172,7 +181,7 @@ public class RTSMode : IControlMode
         }
 
         Vector2 dir = new Vector2(x, y);
-        
+
         return dir * EdgePanSpeed;
     }
 
@@ -183,29 +192,50 @@ public class RTSMode : IControlMode
         {
             _isDragging = true;
             _dragStart = intent.PointerScreenPos;
+
+            ShowSelectionBox(_dragStart, _dragStart);
+        }
+
+        // 拖拽中：更新选择框
+        if (_isDragging && intent.LeftHeld)
+        {
+            Vector2 cur = intent.PointerScreenPos;
+
+            // 可选：小于阈值先不画（避免轻微抖动也出框）
+            float dragDist = (cur - _dragStart).magnitude;
+            if (dragDist >= DragThreshold)
+                ShowSelectionBox(_dragStart, cur);
+            else
+                ShowSelectionBox(_dragStart, _dragStart);
         }
 
         // 松开左键：判断是点击还是框选
         if (_isDragging && !intent.LeftHeld)
         {
             _isDragging = false;
+            HideSelectionBox();
 
             Vector2 dragEnd = intent.PointerScreenPos;
             float dragDist = (dragEnd - _dragStart).magnitude;
 
-            bool additive = intent.Shift;
-            
+            bool additive = intent.Shift; // 只追加
+
             if (dragDist < DragThreshold)
             {
-                // 视为点击单选
+                // 点击单选
                 Ray ray = _cam.ScreenPointToRay(dragEnd);
                 if (Physics.Raycast(ray, out RaycastHit hit, 500f))
                 {
                     var sel = hit.collider.GetComponentInParent<Selectable>();
+
                     if (!additive) ClearSelection();
 
                     if (sel != null) AddSelection(sel);
                     else if (!additive) ClearSelection(); // 点空地清空
+                }
+                else
+                {
+                    if (!additive) ClearSelection();
                 }
             }
             else
@@ -218,13 +248,35 @@ public class RTSMode : IControlMode
                 {
                     if (s == null) continue;
                     Vector3 sp = _cam.WorldToScreenPoint(s.transform.position);
-                    if (sp.z < 0f) continue; // 在相机背后
+                    if (sp.z < 0f) continue;
                     if (r.Contains(new Vector2(sp.x, sp.y)))
                         AddSelection(s);
                 }
             }
         }
     }
+    
+    void ShowSelectionBox(Vector2 startScreen, Vector2 endScreen)
+    {
+        if (_selectionBox == null) return;
+
+        if (!_selectionBox.gameObject.activeSelf)
+            _selectionBox.gameObject.SetActive(true);
+
+        Vector2 min = Vector2.Min(startScreen, endScreen);
+        Vector2 max = Vector2.Max(startScreen, endScreen);
+
+        _selectionBox.anchoredPosition = min;
+        _selectionBox.sizeDelta = max - min;
+    }
+
+    void HideSelectionBox()
+    {
+        if (_selectionBox != null && _selectionBox.gameObject.activeSelf)
+            _selectionBox.gameObject.SetActive(false);
+    }
+
+
 
     Rect ScreenRect(Vector2 a, Vector2 b)
     {
@@ -235,6 +287,7 @@ public class RTSMode : IControlMode
 
     void AddSelection(Selectable s)
     {
+        if (s == null) return;
         if (_selected.Contains(s)) return;
         _selected.Add(s);
         s.SetSelected(true);
@@ -242,10 +295,14 @@ public class RTSMode : IControlMode
 
     void ClearSelection()
     {
-        foreach (var s in _selected)
-            if (s != null) s.SetSelected(false);
+        for (int i = 0; i < _selected.Count; i++)
+        {
+            if (_selected[i] != null)
+                _selected[i].SetSelected(false);
+        }
         _selected.Clear();
     }
+
 
     public CameraState GetCameraTarget()
     {

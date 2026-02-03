@@ -4,7 +4,7 @@ public class ACTMode : IControlMode
 {
     public string Name => "ACT";
 
-    readonly PlayerMotor _player;
+    readonly UnitBaseMotor _unit;
     readonly Transform _tpsPivot;
 
     float _yaw;
@@ -17,11 +17,11 @@ public class ACTMode : IControlMode
     readonly float _distance = 3.2f;
     readonly float _height = 0.2f;
 
-    public ACTMode(PlayerMotor player, Transform tpsPivot)
+    public ACTMode(UnitBaseMotor unit, Transform tpsPivot)
     {
-        _player = player;
+        _unit = unit;
         _tpsPivot = tpsPivot;
-        _yaw = _player.GetYaw();
+        _yaw = _unit.GetYaw();
         _pitch = 15f;
     }
 
@@ -30,9 +30,9 @@ public class ACTMode : IControlMode
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        _yaw = _player.GetYaw();
+        _yaw = _unit.GetYaw();
         _pitch = Mathf.Clamp(_pitch, _pitchMin, _pitchMax);
-        _player.ClearDestination();
+        _unit.ClearDestination();
     }
 
     public void Exit() { }
@@ -46,14 +46,14 @@ public class ACTMode : IControlMode
         // 移动按相机yaw方向
         Quaternion yawRot = Quaternion.Euler(0f, _yaw, 0f);
         Vector3 moveWorld = yawRot * new Vector3(intent.Move.x, 0f, intent.Move.y);
-        _player.MoveImmediate(moveWorld, _player.walkSpeed);
+        _unit.MoveImmediate(moveWorld, _unit.walkSpeed);
 
         // 角色朝向：跟随移动方向（可改成跟随相机yaw）
         Vector3 planar = new Vector3(moveWorld.x, 0f, moveWorld.z);
         if (planar.sqrMagnitude > 0.0001f)
         {
             float facingYaw = Quaternion.LookRotation(planar, Vector3.up).eulerAngles.y;
-            _player.SetYaw(facingYaw);
+            _unit.SetYaw(facingYaw);
         }
     }
 

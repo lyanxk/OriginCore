@@ -8,7 +8,6 @@ public class Selectable : MonoBehaviour
 
     void Awake()
     {
-        // ⚠️ Outline 在子物体上，所以用 GetComponentInChildren
         _outline = GetComponentInChildren<Outline>();
 
         if (_outline != null)
@@ -28,4 +27,16 @@ public class Selectable : MonoBehaviour
             _outline.enabled = selected;
         }
     }
+    void OnEnable()
+    {
+        if (SelectionManager.Instance != null)
+            SelectionManager.Instance.Register(this);
+    }
+
+    void OnDisable()
+    {
+        if (SelectionManager.Instance != null)
+            SelectionManager.Instance.Unregister(this);
+    }
+
 }

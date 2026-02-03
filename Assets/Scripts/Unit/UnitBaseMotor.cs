@@ -1,7 +1,6 @@
 using UnityEngine;
 
-[RequireComponent(typeof(CharacterController))]
-public class PlayerMotor : MonoBehaviour
+public class UnitBaseMotor : MonoBehaviour
 {
     public float walkSpeed = 5.0f;
     public float clickMoveSpeed = 4.5f;
@@ -29,7 +28,7 @@ public class PlayerMotor : MonoBehaviour
 
     public void MoveImmediate(Vector3 worldDir, float speed)
     {
-        // 玩家WASD时清除RTS模式下的寻路目标
+        // 玩家通过WASD移动时清除RTS模式下的寻路目标
         _hasDestination = false;
 
         var dir = worldDir;

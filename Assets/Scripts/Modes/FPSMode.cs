@@ -4,7 +4,7 @@ public class FPSMode : IControlMode
 {
     public string Name => "FPS";
 
-    readonly PlayerMotor _player;
+    readonly UnitBaseMotor _unit;
     readonly Transform _fpsPivot;
     float _yaw;
     float _pitch;
@@ -12,11 +12,11 @@ public class FPSMode : IControlMode
     readonly float _pitchMin = -85f;
     readonly float _pitchMax = 85f;
 
-    public FPSMode(PlayerMotor player, Transform fpsPivot)
+    public FPSMode(UnitBaseMotor unit, Transform fpsPivot)
     {
-        _player = player;
+        _unit = unit;
         _fpsPivot = fpsPivot;
-        _yaw = _player.GetYaw();
+        _yaw = _unit.GetYaw();
         _pitch = 0f;
     }
 
@@ -25,9 +25,9 @@ public class FPSMode : IControlMode
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        _yaw = _player.GetYaw();
+        _yaw = _unit.GetYaw();
         _pitch = 0f;
-        _player.ClearDestination();
+        _unit.ClearDestination();
     }
 
     public void Exit() { }
@@ -38,12 +38,12 @@ public class FPSMode : IControlMode
         _pitch -= intent.Look.y;
         _pitch = Mathf.Clamp(_pitch, _pitchMin, _pitchMax);
 
-        _player.SetYaw(_yaw);
+        _unit.SetYaw(_yaw);
 
         // 移动：按相机yaw方向（忽略pitch）
         Quaternion yawRot = Quaternion.Euler(0f, _yaw, 0f);
         Vector3 moveWorld = yawRot * new Vector3(intent.Move.x, 0f, intent.Move.y);
-        _player.MoveImmediate(moveWorld, _player.walkSpeed);
+        _unit.MoveImmediate(moveWorld, _unit.walkSpeed);
     }
 
     public CameraState GetCameraTarget()

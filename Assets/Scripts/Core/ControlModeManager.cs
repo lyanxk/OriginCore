@@ -1,23 +1,25 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 public class ControlModeManager : MonoBehaviour
 {
     public InputIntentSource input;
 
-    [Header("Mode Switch Actions 模式切换按键")]
-    public InputActionReference switchRTSAction; // 1
+    [SerializeField] RectTransform selectionBox; // 选择框
+
+    [Header("Mode Switch Actions 模式切换按键")] public InputActionReference switchRTSAction; // 1
     public InputActionReference switchACTAction; // 2
     public InputActionReference switchFPSAction; // 3
 
-    [Header("References")]
-    public PlayerMotor player;
+    [FormerlySerializedAs("player")] [Header("References")]
+    public UnitBaseMotor unit;
+
     public CameraRig cameraRig;
     public Transform fpsPivot;
     public Transform actPivot;
 
-    [Header("RTS")]
-    public LayerMask groundMask = ~0; // 默认全选；建议只勾Ground（地面）
+    [Header("RTS")] public LayerMask groundMask = ~0; // 默认全选；建议只勾Ground（地面）
     public float rtsCamHeight = 18f;
     public float rtsCamDistance = 18f;
 
@@ -46,9 +48,9 @@ public class ControlModeManager : MonoBehaviour
 
         var mainCam = cameraRig.GetComponent<Camera>();
 
-        _rts = new RTSMode(player, mainCam, groundMask, rtsCamHeight, rtsCamDistance);
-        _act = new ACTMode(player, actPivot);
-        _fps = new FPSMode(player, fpsPivot);
+        _rts = new RTSMode(unit, mainCam, groundMask, selectionBox, rtsCamHeight, rtsCamDistance);
+        _act = new ACTMode(unit, actPivot);
+        _fps = new FPSMode(unit, fpsPivot);
     }
 
     void Start()

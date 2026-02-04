@@ -66,4 +66,9 @@ public class SelectionManager : MonoBehaviour
 
     // --- 给框选用：遍历所有可选对象 ---
     public IEnumerable<Selectable> AllSelectables => _allSelectables;
+
+    // --- 给命令系统用：遍历当前选中 ---
+    public IEnumerable<Selectable> Selected => _selected;
+
+    public int SelectedCount => _selected.Count;
 }

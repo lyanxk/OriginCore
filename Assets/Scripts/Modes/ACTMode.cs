@@ -14,8 +14,20 @@ public class ACTMode : IControlMode
     readonly float _pitchMax = 65f;
 
     // 第三人称相机参数
-    readonly float _distance = 3.2f;
-    readonly float _height = 0.2f;
+    readonly float _distance = 6f;
+    readonly float _height = 1f;
+    
+    // Look 手感参数（建议调这里）
+    public float lookSensitivity = 45f;   // 基础灵敏度
+    public float lookSmoothTime = 0.06f;   // 越小越跟手，越大越稳
+    public float maxLookSpeed = 720f;      // 度/秒 上限，防止甩飞
+
+    // 内部平滑用
+    float _yawVel;
+    float _pitchVel;
+    float _yawTarget;
+    float _pitchTarget;
+
 
     public ACTMode(UnitBaseMotor unit, Transform tpsPivot)
     {
@@ -23,6 +35,9 @@ public class ACTMode : IControlMode
         _tpsPivot = tpsPivot;
         _yaw = _unit.GetYaw();
         _pitch = 15f;
+
+        _yawTarget = _yaw;
+        _pitchTarget = _pitch;
     }
 
     public void Enter()
@@ -32,23 +47,38 @@ public class ACTMode : IControlMode
 
         _yaw = _unit.GetYaw();
         _pitch = Mathf.Clamp(_pitch, _pitchMin, _pitchMax);
+
+        _yawTarget = _yaw;
+        _pitchTarget = _pitch;
+        _yawVel = 0f;
+        _pitchVel = 0f;
+
         _unit.ClearDestination();
     }
+
 
     public void Exit() { }
 
     public void Tick(float dt, InputIntent intent)
     {
-        _yaw += intent.Look.x;
-        _pitch -= intent.Look.y;
-        _pitch = Mathf.Clamp(_pitch, _pitchMin, _pitchMax);
+        //把输入转换成“目标角度”
+        float lookX = intent.Look.x;
+        float lookY = intent.Look.y;
 
-        // 移动按相机yaw方向
+        _yawTarget   += lookX * lookSensitivity * dt;
+        _pitchTarget -= lookY * lookSensitivity * dt;
+        _pitchTarget = Mathf.Clamp(_pitchTarget, _pitchMin, _pitchMax);
+
+        //平滑追随目标角度（角度用 DeltaAngle 避免 359->0 抽搐）
+        _yaw = SmoothDampAngle(_yaw, _yawTarget, ref _yawVel, lookSmoothTime, maxLookSpeed, dt);
+        _pitch = SmoothDampAngle(_pitch, _pitchTarget, ref _pitchVel, lookSmoothTime, maxLookSpeed, dt);
+
+        //移动按相机yaw方向
         Quaternion yawRot = Quaternion.Euler(0f, _yaw, 0f);
         Vector3 moveWorld = yawRot * new Vector3(intent.Move.x, 0f, intent.Move.y);
         _unit.MoveImmediate(moveWorld, _unit.walkSpeed);
 
-        // 角色朝向：跟随移动方向（可改成跟随相机yaw）
+        //角色朝向：跟随移动方向
         Vector3 planar = new Vector3(moveWorld.x, 0f, moveWorld.z);
         if (planar.sqrMagnitude > 0.0001f)
         {
@@ -56,6 +86,15 @@ public class ACTMode : IControlMode
             _unit.SetYaw(facingYaw);
         }
     }
+    static float SmoothDampAngle(float current, float target, ref float currentVelocity,
+        float smoothTime, float maxSpeed, float deltaTime)
+    {
+        // 把 target 映射到 current 附近的等效角度，避免绕圈
+        float delta = Mathf.DeltaAngle(current, target);
+        float fixedTarget = current + delta;
+        return Mathf.SmoothDamp(current, fixedTarget, ref currentVelocity, smoothTime, maxSpeed, deltaTime);
+    }
+
 
     public CameraState GetCameraTarget()
     {
@@ -67,7 +106,7 @@ public class ACTMode : IControlMode
         {
             Position = pos,
             Rotation = rot,
-            Fov = 65f
+            Fov = 85f
         };
     }
 }

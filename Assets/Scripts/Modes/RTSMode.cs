@@ -26,8 +26,7 @@ public class RTSMode : IControlMode
     public float EdgePanSpeed = 10f; //平移速度
     public float EdgeSizeX = 180f;
     public float EdgeSizeY = 100;
-
-    public float RotateSpeed = 1.0f; //旋转速度
+    
     public float ZoomSpeed = 6f; //缩放速度
 
     // zoom 限制
@@ -36,7 +35,7 @@ public class RTSMode : IControlMode
     public float DistanceMin = 6f;
     public float DistanceMax = 45f;
 
-    // 相机焦点边界
+    // 相机焦点边界 暂不启用
     public bool UseBounds = false;
     public Vector2 BoundsMinXZ = new Vector2(-50, -50);
     public Vector2 BoundsMaxXZ = new Vector2(50, 50);
@@ -107,7 +106,7 @@ public class RTSMode : IControlMode
         _height = Mathf.SmoothDamp(_height, _heightTarget, ref _heightVel, 0.12f);
         _distance = Mathf.SmoothDamp(_distance, _distanceTarget, ref _distanceVel, 0.12f);
 
-        // 边界限制
+        // 边界限制 防止视角离开合法范围
         if (UseBounds)
         {
             _camFocus.x = Mathf.Clamp(_camFocus.x, BoundsMinXZ.x, BoundsMaxXZ.x);

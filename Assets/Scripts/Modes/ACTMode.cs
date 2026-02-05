@@ -27,6 +27,15 @@ public class ACTMode : IControlMode
     float _pitchVel;
     float _yawTarget;
     float _pitchTarget;
+    
+    //dash
+    [Header("Dash")]
+    public float dashSpeed = 10f;     // 冲刺速度（m/s）
+    public float dashDuration = 0.2f; // 冲刺持续时间（秒）
+
+    bool _isDashing;
+    float _dashTimer;
+    Vector3 _dashDir;
 
 
     public ACTMode(UnitBaseMotor unit, Transform tpsPivot)
@@ -77,6 +86,15 @@ public class ACTMode : IControlMode
         Quaternion yawRot = Quaternion.Euler(0f, _yaw, 0f);
         Vector3 moveWorld = yawRot * new Vector3(intent.Move.x, 0f, intent.Move.y);
         _unit.MoveImmediate(moveWorld, _unit.walkSpeed);
+        
+        //跳跃
+        if (intent.Space)
+        {
+            _unit.Jump();
+        }
+        //dash
+        if (intent.Dash)
+            _unit.GetComponent<DashAbility>()?.DashForward();
 
         //角色朝向：跟随移动方向
         Vector3 planar = new Vector3(moveWorld.x, 0f, moveWorld.z);

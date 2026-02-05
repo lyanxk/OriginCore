@@ -12,4 +12,12 @@ public struct InputIntent
     public float Zoom;    //滚轮
     public bool Shift;    // Shift
     public bool Cancel;      // ESC
+    public bool Space;  //空格/跳跃
+    public bool Dash;   //上侧键
+    
+    public void ClearOneFrameActions()
+    {
+        Space = false;
+        Dash = false;
+    }
 }

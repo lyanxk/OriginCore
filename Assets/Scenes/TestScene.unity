@@ -420,6 +420,10 @@ MonoBehaviour:
     type: 3}
   cancelAction: {fileID: 4440616591485505995, guid: 4e0c811b83694ae488f5e283d5b49243,
     type: 3}
+  spaceAction: {fileID: -5329845342110527033, guid: 4e0c811b83694ae488f5e283d5b49243,
+    type: 3}
+  dashAction: {fileID: 5022745650423137914, guid: 4e0c811b83694ae488f5e283d5b49243,
+    type: 3}
 --- !u!4 &427324541
 Transform:
   m_ObjectHideFlags: 0
@@ -781,6 +785,7 @@ GameObject:
   - component: {fileID: 883050542}
   - component: {fileID: 883050543}
   - component: {fileID: 883050548}
+  - component: {fileID: 883050549}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -819,8 +824,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   walkSpeed: 5
   clickMoveSpeed: 4.5
-  gravity: -18
+  gravity: -12
   arriveDistance: 0.15
+  jumpHeight: 2
+  groundedStick: -2
+  terminalVel: -30
 --- !u!114 &883050543
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -950,6 +958,20 @@ MonoBehaviour:
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
+--- !u!114 &883050549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 883050540}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4efead381d1f6b14fb9cbe36c57bbe5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dashSpeed: 10
+  dashDuration: 0.2
 --- !u!1 &1097829660
 GameObject:
   m_ObjectHideFlags: 0
@@ -1150,10 +1172,10 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 427324541}
+  - {fileID: 338779207}
   - {fileID: 687583680}
   - {fileID: 250416764}
   - {fileID: 1856188778}
   - {fileID: 883050541}
-  - {fileID: 427324541}
-  - {fileID: 338779207}
   - {fileID: 1097829663}

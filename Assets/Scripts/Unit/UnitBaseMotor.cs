@@ -4,14 +4,32 @@ public class UnitBaseMotor : MonoBehaviour
 {
     public float walkSpeed = 5.0f;
     public float clickMoveSpeed = 4.5f;
-    public float gravity = -18f;
+    public float gravity = -12f;
     public float arriveDistance = 0.15f;
+    public float jumpHeight = 1.4f;      // 跳跃高度
+    public float groundedStick = -2f;    // 贴地“吸附”，避免小坡抖动
+    public float terminalVel = -30f;     // 最大下落速度
+
 
     CharacterController _cc;
     Vector3 _verticalVel;
 
     bool _hasDestination;
     Vector3 _destination;
+    
+// 平面速度覆盖（planar velocity override）：用于 dash / knockback 等“能力注入”
+    bool _hasPlanarOverride;
+    Vector3 _planarOverrideVel;
+    float _planarOverrideTimer;
+
+    public void OverridePlanarVelocity(Vector3 planarVel, float duration)
+    {
+        if (duration <= 0f) return;
+
+        _hasPlanarOverride = true;
+        _planarOverrideVel = planarVel;
+        _planarOverrideTimer = Mathf.Max(_planarOverrideTimer, duration);
+    }
 
     void Awake()
     {
@@ -60,19 +78,51 @@ public class UnitBaseMotor : MonoBehaviour
             StepMovement(Vector3.zero);
         }
     }
+    //跳跃
+    public void Jump()
+    {
+        if (!_cc.isGrounded) return;
 
+        // v = sqrt(2 * h * -g)
+        _verticalVel.y = Mathf.Sqrt(2f * jumpHeight * -gravity);
+    }
+    
     void StepMovement(Vector3 planarVelocity)
     {
-        if (_cc.isGrounded && _verticalVel.y < 0f)
-            _verticalVel.y = -1f;
+        float dt = Time.deltaTime;
+        
+        // 处理平面速度覆盖
+        if (_hasPlanarOverride)
+        {
+            _planarOverrideTimer -= dt;
+            planarVelocity = _planarOverrideVel;
 
-        _verticalVel.y += gravity * Time.deltaTime;
+            if (_planarOverrideTimer <= 0f)
+            {
+                _hasPlanarOverride = false;
+                _planarOverrideVel = Vector3.zero;
+            }
+        }
+        
+        if (_cc.isGrounded)
+        {
+            // 接地时：只给一个小的向下速度保持贴地，但不要继续加重力
+            if (_verticalVel.y < 0f)
+                _verticalVel.y = groundedStick;
+        }
+        else
+        {
+            // 离地时：才受重力影响
+            _verticalVel.y += gravity * dt;
+            if (_verticalVel.y < terminalVel)
+                _verticalVel.y = terminalVel;
+        }
 
-        Vector3 move = planarVelocity * Time.deltaTime;
-        move += _verticalVel * Time.deltaTime;
-
+        Vector3 move = (planarVelocity + _verticalVel) * dt;
         _cc.Move(move);
     }
+
+
 
     public void SetYaw(float yawDegrees)
     {

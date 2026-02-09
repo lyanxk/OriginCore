@@ -27,11 +27,6 @@ public class ACTMode : IControlMode
     float _pitchVel;
     float _yawTarget;
     float _pitchTarget;
-    
-    //dash
-    [Header("Dash")]
-    public float dashSpeed = 10f;     // 冲刺速度（m/s）
-    public float dashDuration = 0.2f; // 冲刺持续时间（秒）
 
     bool _isDashing;
     float _dashTimer;
@@ -47,6 +42,7 @@ public class ACTMode : IControlMode
 
         _yawTarget = _yaw;
         _pitchTarget = _pitch;
+        
     }
 
     public void Enter()
@@ -92,10 +88,10 @@ public class ACTMode : IControlMode
         {
             _unit.Jump();
         }
-        //dash
-        if (intent.Dash)
-            _unit.GetComponent<DashAbility>()?.DashForward();
-
+        
+        //技能执行
+        _unit.AbilityRouter?.Process(intent);
+        
         //角色朝向：跟随移动方向
         Vector3 planar = new Vector3(moveWorld.x, 0f, moveWorld.z);
         if (planar.sqrMagnitude > 0.0001f)

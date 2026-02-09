@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unit.Ability;
 using UnityEngine;
 
-public class DashAbility : MonoBehaviour
+public class DashAbility : MonoBehaviour, IAbilityInput
 {
     public float dashSpeed = 10f;     
     public float dashDuration = 0.2f; 
@@ -16,6 +17,12 @@ public class DashAbility : MonoBehaviour
         _tf = transform;
     }
 
+    public void ProcessInput(InputIntent intent)
+    {
+        if (intent.Dash)
+            DashForward();
+    }
+    
     public void DashForward()
     {
         if (_motor == null) return;

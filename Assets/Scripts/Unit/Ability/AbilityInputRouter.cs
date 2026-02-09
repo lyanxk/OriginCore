@@ -7,8 +7,17 @@ public class AbilityInputRouter : MonoBehaviour
 {
     readonly List<IAbilityInput> _abilities = new List<IAbilityInput>(16);
 
-    //动态调整，暂时不需要
-    /*public void Refresh()
+    void Awake()
+    {
+        Refresh();
+    }
+
+    void OnEnable()
+    {
+        Refresh();
+    }
+
+    public void Refresh()
     {
         _abilities.Clear();
 
@@ -19,7 +28,7 @@ public class AbilityInputRouter : MonoBehaviour
             if (mbs[i] is IAbilityInput a)
                 _abilities.Add(a);
         }
-    }*/
+    }
 
     public void Process(InputIntent intent)
     {

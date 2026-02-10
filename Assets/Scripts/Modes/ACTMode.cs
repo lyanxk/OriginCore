@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+﻿﻿using UnityEngine;
 
 public class ACTMode : IControlMode
 {
@@ -70,7 +70,7 @@ public class ACTMode : IControlMode
         _yaw = _yawTarget;
         _pitch = _pitchTarget;
 
-        //移动按相机yaw方向
+        //移动按视角yaw方向
         Quaternion yawRot = Quaternion.Euler(0f, _yaw, 0f);
         Vector3 moveWorld = yawRot * new Vector3(intent.Move.x, 0f, intent.Move.y);
         _unit.MoveImmediate(moveWorld, _unit.walkSpeed);

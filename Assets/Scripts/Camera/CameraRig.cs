@@ -40,12 +40,11 @@ public class CameraRig : MonoBehaviour
     {
         if (!_hasTarget) return;
 
-        transform.position = Vector3.SmoothDamp(transform.position, _target.Position, ref _posVel, smoothTimePosition);
+        transform.position = _target.Position;
+        _posVel = Vector3.zero;
+        
+        transform.rotation = _target.Rotation;
 
-        // 旋转用指数插值（稳定）
-        float t = 1f - Mathf.Exp(-Time.deltaTime / smoothTimeRotation);
-        transform.rotation = Quaternion.Slerp(transform.rotation, _target.Rotation, t);
-
-        _cam.fieldOfView = Mathf.SmoothDamp(_cam.fieldOfView, _target.Fov, ref _fovVel, smoothTimeFov);
+        _cam.fieldOfView = _target.Fov;
     }
 }

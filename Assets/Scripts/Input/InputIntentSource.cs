@@ -5,7 +5,8 @@ public class InputIntentSource : MonoBehaviour
 {
     public float lookSensitivity = 1.0f;
 
-    [Header("Actions")] public InputIntent intent = new InputIntent();
+    [Header("Actions")]
+    public InputIntent intent = new InputIntent();
     public InputActionReference moveAction;
     public InputActionReference lookAction;
     public InputActionReference rightClickAction;
@@ -19,75 +20,97 @@ public class InputIntentSource : MonoBehaviour
     public InputActionReference dashAction;
 
     public InputIntent Current { get; private set; }
+    
+    InputAction _move, _look, _rightClick, _leftClick, _point, _zoom, _shift, _cancel, _space, _dash;
+
+    void Awake()
+    {
+        _move       = moveAction?.action;
+        _look       = lookAction?.action;
+        _rightClick = rightClickAction?.action;
+        _leftClick  = leftClickAction?.action;
+        _point      = pointAction?.action;
+        _zoom       = zoomAction?.action;
+
+        _shift      = shiftAction?.action;
+        _cancel     = cancelAction?.action;
+        _space      = spaceAction?.action;
+        _dash       = dashAction?.action;
+    }
 
     void OnEnable()
     {
-        moveAction?.action?.Enable();
-        lookAction?.action?.Enable();
-        rightClickAction?.action?.Enable();
-        leftClickAction?.action?.Enable();
-        pointAction?.action?.Enable();
-        zoomAction?.action?.Enable();
-        shiftAction?.action?.Enable();
-        cancelAction?.action?.Enable();
-        spaceAction?.action?.Enable();
-        dashAction?.action?.Enable();
+        _move?.Enable();
+        _look?.Enable();
+        _rightClick?.Enable();
+        _leftClick?.Enable();
+        _point?.Enable();
+        _zoom?.Enable();
+        _shift?.Enable();
+        _cancel?.Enable();
+        _space?.Enable();
+        _dash?.Enable();
 
-        // 绑定回调（Jump/Dash 用 started 做“一次触发”）
-        if (spaceAction != null) spaceAction.action.started += OnJumpStarted;
-        if (dashAction != null) dashAction.action.started += OnDashStarted;
+        // started：一次触发
+        if (_space != null) _space.started += OnJumpStarted;
+        if (_dash  != null) _dash.started  += OnDashStarted;
     }
 
     void OnDisable()
     {
-        if (spaceAction != null) spaceAction.action.started -= OnJumpStarted;
-        if (dashAction != null) dashAction.action.started -= OnDashStarted;
+        if (_space != null) _space.started -= OnJumpStarted;
+        if (_dash  != null) _dash.started  -= OnDashStarted;
 
-        moveAction?.action?.Disable();
-        lookAction?.action?.Disable();
-        rightClickAction?.action?.Disable();
-        leftClickAction?.action?.Disable();
-        pointAction?.action?.Disable();
-        zoomAction?.action?.Disable();
-        shiftAction?.action?.Disable();
-        cancelAction?.action?.Disable();
-        spaceAction?.action?.Disable();
-        dashAction?.action?.Disable();
+        _move?.Disable();
+        _look?.Disable();
+        _rightClick?.Disable();
+        _leftClick?.Disable();
+        _point?.Disable();
+        _zoom?.Disable();
+        _shift?.Disable();
+        _cancel?.Disable();
+        _space?.Disable();
+        _dash?.Disable();
     }
 
     void Update()
     {
-        intent.Move = moveAction != null ? moveAction.action.ReadValue<Vector2>() : Vector2.zero;
+        // Move / Look：如果 action 没配，就给 zero（ReadValue 不会被调用）
+        intent.Move = (_move != null) ? _move.ReadValue<Vector2>() : Vector2.zero;
 
-        var rawLook = lookAction != null ? lookAction.action.ReadValue<Vector2>() : Vector2.zero;
+        var rawLook = (_look != null) ? _look.ReadValue<Vector2>() : Vector2.zero;
         intent.Look = rawLook * lookSensitivity;
 
-        if (rightClickAction != null)
+        // Buttons：把 WasPressedThisFrame / IsPressed 都基于缓存 action
+        if (_rightClick != null)
         {
-            var a = rightClickAction.action;
-            intent.RightClick = a.WasPressedThisFrame();
-            intent.RightHeld = a.IsPressed();
+            intent.RightClick = _rightClick.WasPressedThisFrame();
+            intent.RightHeld  = _rightClick.IsPressed();
+        }
+        else
+        {
+            intent.RightClick = false;
+            intent.RightHeld  = false;
         }
 
-        if (leftClickAction != null)
+        if (_leftClick != null)
         {
-            var a = leftClickAction.action;
-            intent.LeftClick = a.WasPressedThisFrame();
-            intent.LeftHeld = a.IsPressed();
+            intent.LeftClick = _leftClick.WasPressedThisFrame();
+            intent.LeftHeld  = _leftClick.IsPressed();
+        }
+        else
+        {
+            intent.LeftClick = false;
+            intent.LeftHeld  = false;
         }
 
-        intent.PointerScreenPos = pointAction != null
-            ? pointAction.action.ReadValue<Vector2>()
-            : Vector2.zero;
+        intent.PointerScreenPos = (_point != null) ? _point.ReadValue<Vector2>() : Vector2.zero;
 
-        if (zoomAction != null)
-        {
-            var scroll = zoomAction.action.ReadValue<Vector2>();
-            intent.Zoom = scroll.y;
-        }
+        // Zoom：只需要 y，避免多余逻辑
+        intent.Zoom = (_zoom != null) ? _zoom.ReadValue<Vector2>().y : 0f;
 
-        intent.Shift = shiftAction != null && shiftAction.action.IsPressed();
-        intent.Cancel = cancelAction != null && cancelAction.action.WasPressedThisFrame();
+        intent.Shift  = (_shift != null)  && _shift.IsPressed();
+        intent.Cancel = (_cancel != null) && _cancel.WasPressedThisFrame();
 
         Current = intent;
     }
@@ -97,13 +120,7 @@ public class InputIntentSource : MonoBehaviour
         // 清空一帧事件：确保 jump/dash 只活一帧
         intent.ClearOneFrameActions();
     }
-    void OnJumpStarted(InputAction.CallbackContext ctx)
-    {
-        intent.Space = true;
-    }
 
-    void OnDashStarted(InputAction.CallbackContext ctx)
-    {
-        intent.Dash = true;
-    }
+    void OnJumpStarted(InputAction.CallbackContext ctx) => intent.Space = true;
+    void OnDashStarted(InputAction.CallbackContext ctx) => intent.Dash = true;
 }

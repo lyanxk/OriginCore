@@ -56,6 +56,15 @@ public class FPSMode : IControlMode
         _pitch -= lookY;
         _pitch = Mathf.Clamp(_pitch, _pitchMin, _pitchMax);
         
+        //跳跃
+        if (intent.Space)
+        {
+            _unit.Jump();
+        }
+        
+        //技能执行
+        _unit.AbilityRouter?.Process(intent);
+        
         _unit.SetYaw(_yaw);
         
         Quaternion yawRot = Quaternion.Euler(0f, _yaw, 0f);

@@ -27,6 +27,10 @@ public class ControlModeManager : MonoBehaviour
     IControlMode _act;
     IControlMode _fps;
     IControlMode _current;
+    
+    InputAction _switchRTS;
+    InputAction _switchACT;
+    InputAction _switchFPS;
 
     void OnEnable()
     {
@@ -51,6 +55,10 @@ public class ControlModeManager : MonoBehaviour
         _rts = new RTSMode(unit, mainCam, groundMask, selectionBox, rtsCamHeight, rtsCamDistance);
         _act = new ACTMode(unit, actPivot);
         _fps = new FPSMode(unit, fpsPivot);
+        
+        _switchRTS = switchRTSAction?.action;
+        _switchACT = switchACTAction?.action;
+        _switchFPS = switchFPSAction?.action;
     }
 
     void Start()
@@ -60,9 +68,9 @@ public class ControlModeManager : MonoBehaviour
 
     void Update()
     {
-        if (switchRTSAction != null && switchRTSAction.action.WasPressedThisFrame()) SwitchTo(_rts);
-        if (switchACTAction != null && switchACTAction.action.WasPressedThisFrame()) SwitchTo(_act);
-        if (switchFPSAction != null && switchFPSAction.action.WasPressedThisFrame()) SwitchTo(_fps);
+        if (_switchRTS != null && switchRTSAction.action.WasPressedThisFrame()) SwitchTo(_rts);
+        if (_switchACT != null && switchACTAction.action.WasPressedThisFrame()) SwitchTo(_act);
+        if (_switchFPS != null && switchFPSAction.action.WasPressedThisFrame()) SwitchTo(_fps);
 
         if (_current == null || input == null) return;
 

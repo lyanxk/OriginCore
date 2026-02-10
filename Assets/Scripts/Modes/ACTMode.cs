@@ -19,12 +19,7 @@ public class ACTMode : IControlMode
     
     // Look 手感参数（建议调这里）
     public float lookSensitivity = 45f;   // 基础灵敏度
-    public float lookSmoothTime = 0.06f;   // 越小越跟手，越大越稳
-    public float maxLookSpeed = 720f;      // 度/秒 上限，防止甩飞
 
-    // 内部平滑用
-    float _yawVel;
-    float _pitchVel;
     float _yawTarget;
     float _pitchTarget;
 
@@ -55,8 +50,6 @@ public class ACTMode : IControlMode
 
         _yawTarget = _yaw;
         _pitchTarget = _pitch;
-        _yawVel = 0f;
-        _pitchVel = 0f;
 
         _unit.ClearDestination();
     }
@@ -74,9 +67,8 @@ public class ACTMode : IControlMode
         _pitchTarget -= lookY * lookSensitivity * dt;
         _pitchTarget = Mathf.Clamp(_pitchTarget, _pitchMin, _pitchMax);
 
-        //平滑追随目标角度（角度用 DeltaAngle 避免 359->0 抽搐）
-        _yaw = SmoothDampAngle(_yaw, _yawTarget, ref _yawVel, lookSmoothTime, maxLookSpeed, dt);
-        _pitch = SmoothDampAngle(_pitch, _pitchTarget, ref _pitchVel, lookSmoothTime, maxLookSpeed, dt);
+        _yaw = _yawTarget;
+        _pitch = _pitchTarget;
 
         //移动按相机yaw方向
         Quaternion yawRot = Quaternion.Euler(0f, _yaw, 0f);
@@ -100,16 +92,6 @@ public class ACTMode : IControlMode
             _unit.SetYaw(facingYaw);
         }
     }
-    static float SmoothDampAngle(float current, float target, ref float currentVelocity,
-        float smoothTime, float maxSpeed, float deltaTime)
-    {
-        // 把 target 映射到 current 附近的等效角度，避免绕圈
-        float delta = Mathf.DeltaAngle(current, target);
-        float fixedTarget = current + delta;
-        return Mathf.SmoothDamp(current, fixedTarget, ref currentVelocity, smoothTime, maxSpeed, deltaTime);
-    }
-
-
     public CameraState GetCameraTarget()
     {
         Quaternion rot = Quaternion.Euler(_pitch, _yaw, 0f);

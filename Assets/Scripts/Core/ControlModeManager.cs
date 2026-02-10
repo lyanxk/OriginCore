@@ -83,9 +83,23 @@ public class ControlModeManager : MonoBehaviour
 
         // 根据模式调整过渡手感（你可以随便调）
         if (_current.Name == "RTS")
+        {
             cameraRig.SetSmooth(0.22f, 0.14f, 0.18f);
+        }
+        else if (_current.Name == "ACT")
+        {
+            cameraRig.SetSmooth(0.14f, 0f, 0.14f);
+        }
+        else if (_current.Name == "FPS")
+        {
+            cameraRig.SetSmooth(0f, 0f, 0f);
+        }
         else
-            cameraRig.SetSmooth(0.14f, 0.10f, 0.14f);
+        {
+            cameraRig.SetSmooth(0f, 0f, 0f);
+        }
+
+        cameraRig.SetContinuousPositionSmooth(_current.Name == "ACT");
 
         // 立刻给一次目标，避免切换瞬间抖一下
         cameraRig.SetTarget(_current.GetCameraTarget());

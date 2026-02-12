@@ -122,11 +122,14 @@ public class RTSMode : IControlMode
             Ray ray = _cam.ScreenPointToRay(intent.PointerScreenPos);
             if (Physics.Raycast(ray, out RaycastHit hit, 500f, _groundMask))
             {
+                bool append = intent.Shift;
+
                 foreach (var s in Sel.Selected)
                 {
                     if (s == null) continue;
-                    var motor = s.GetComponent<UnitBaseMotor>();
-                    if (motor != null) motor.SetDestination(hit.point);
+                    var exec = s.GetComponent<CommandExecutor>();
+                    if (exec == null) continue;
+                    exec.Enqueue(new MoveCommand(hit.point), append);
                 }
             }
         }

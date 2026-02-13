@@ -109,7 +109,11 @@ public class InputIntentSource : MonoBehaviour
         // Zoom：只需要 y，避免多余逻辑
         intent.Zoom = (_zoom != null) ? _zoom.ReadValue<Vector2>().y : 0f;
 
-        intent.Shift  = (_shift != null)  && _shift.IsPressed();
+        bool shiftFromAction = (_shift != null) && _shift.IsPressed();
+        bool shiftFromKeyboard = Keyboard.current != null &&
+                                 (Keyboard.current.leftShiftKey.isPressed ||
+                                  Keyboard.current.rightShiftKey.isPressed);
+        intent.Shift = shiftFromAction || shiftFromKeyboard;
         intent.Cancel = (_cancel != null) && _cancel.WasPressedThisFrame();
 
         Current = intent;

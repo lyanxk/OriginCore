@@ -53,7 +53,7 @@ public class UnitBaseMotor : MonoBehaviour
         _path = new NavMeshPath();
     }
     
-    public void ClearDestination()
+    public void CancelPathing()
     {
         _hasDestination = false;
 
@@ -94,7 +94,7 @@ public class UnitBaseMotor : MonoBehaviour
             // 到达最终目标判定（水平距离）
             if (IsArrivedToDestination())
             {
-                ClearDestination();
+                CancelPathing();
                 StepMovement(Vector3.zero);
                 return;
             }
@@ -207,7 +207,13 @@ public class UnitBaseMotor : MonoBehaviour
             Vector3 c = _corners[_cornerIndex];
             c.y = transform.position.y;
 
-            if (Vector3.Distance(transform.position, c) <= cornerReachDist)
+            // Last corner should use arriveDistance to avoid a dead zone where the
+            // unit stops pathing before command completion.
+            float reachDist = (_cornerIndex == _corners.Length - 1)
+                ? arriveDistance
+                : cornerReachDist;
+
+            if (Vector3.Distance(transform.position, c) <= reachDist)
                 _cornerIndex++;
             else
                 break;

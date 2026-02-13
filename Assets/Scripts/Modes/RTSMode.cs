@@ -80,7 +80,7 @@ public class RTSMode : IControlMode
         EdgeSizeY = Screen.height * 0.2f;
 
         _camFocus = _unit.transform.position;
-        _unit.ClearDestination();
+        _unit.CancelPathing();
     }
 
     public void Exit()

@@ -51,7 +51,7 @@ public class ACTMode : IControlMode
         _yawTarget = _yaw;
         _pitchTarget = _pitch;
 
-        _unit.ClearDestination();
+        _unit.CancelPathing();
     }
 
 

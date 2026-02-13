@@ -5,7 +5,9 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class CommandExecutor : MonoBehaviour
 {
-    readonly Queue<IUnitCommand> _queue = new Queue<IUnitCommand>(8);
+    const int MaxCommandCount = 6;
+
+    readonly Queue<IUnitCommand> _queue = new Queue<IUnitCommand>(MaxCommandCount);
     IUnitCommand _current;
 
     UnitContext _ctx;
@@ -43,6 +45,12 @@ public class CommandExecutor : MonoBehaviour
         {
             Clear();
         }
+        else
+        {
+            int totalCount = _queue.Count + (_current != null ? 1 : 0);
+            if (totalCount >= MaxCommandCount)
+                return;
+        }
 
         _queue.Enqueue(cmd);
 
@@ -67,6 +75,6 @@ public class CommandExecutor : MonoBehaviour
         _queue.Clear();
 
         // 清运动（你的需求：切模式/取消寻路）
-        _ctx.Motor.ClearDestination(); 
+        _ctx.Motor.CancelPathing(); 
     }
 }

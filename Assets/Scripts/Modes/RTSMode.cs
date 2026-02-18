@@ -27,13 +27,15 @@ public class RTSMode : IControlMode
     public float EdgeSizeX = 180f;
     public float EdgeSizeY = 100;
     
-    public float ZoomSpeed = 6f; //缩放速度
+    public float ZoomStep = 5f; //每次滚轮触发的固定变化值
 
     // zoom 限制
     public float HeightMin = 6f;
     public float HeightMax = 40f;
     public float DistanceMin = 6f;
     public float DistanceMax = 45f;
+    public float PitchMin = 0f;  // 最小视野：与地面平行
+    public float PitchMax = 90f; // 最大视野：与地面垂直
 
     // 相机焦点边界 暂不启用
     public bool UseBounds = false;
@@ -50,8 +52,8 @@ public class RTSMode : IControlMode
     SelectionManager Sel => SelectionManager.Instance;
 
     public RTSMode(UnitBaseMotor unit, Camera mainCamera, LayerMask groundMask, RectTransform selectionBox,
-        float camHeight = 18f,
-        float camDistance = 18f)
+        float camHeight = 24f,
+        float camDistance = 24f)
     {
         _unit = unit;
         _cam = mainCamera;
@@ -59,12 +61,13 @@ public class RTSMode : IControlMode
 
         _camFocus = unit.transform.position;
         _yaw = unit.GetYaw();
-        _pitch = 50f;
+        _pitch = PitchMin;
 
         _height = camHeight;
         _distance = camDistance;
         _heightTarget = camHeight;
         _distanceTarget = camDistance;
+        UpdatePitchFromZoom();
 
         _selectionBox = selectionBox;
         if (_selectionBox != null)
@@ -98,13 +101,14 @@ public class RTSMode : IControlMode
         // 相机缩放（滚轮）
         if (Mathf.Abs(intent.Zoom) > 0.0001f)
         {
-            float z = intent.Zoom * ZoomSpeed;
+            float z = Mathf.Sign(intent.Zoom) * ZoomStep;
             _heightTarget = Mathf.Clamp(_heightTarget - z, HeightMin, HeightMax);
             _distanceTarget = Mathf.Clamp(_distanceTarget - z, DistanceMin, DistanceMax);
         }
 
         _height = Mathf.SmoothDamp(_height, _heightTarget, ref _heightVel, 0.12f);
         _distance = Mathf.SmoothDamp(_distance, _distanceTarget, ref _distanceVel, 0.12f);
+        UpdatePitchFromZoom();
 
         // 边界限制 防止视角离开合法范围
         if (UseBounds)
@@ -268,15 +272,20 @@ public class RTSMode : IControlMode
         Vector2 max = Vector2.Max(a, b);
         return new Rect(min, max - min);
     }
+
+    void UpdatePitchFromZoom()
+    {
+        float t = Mathf.InverseLerp(HeightMin, HeightMax, _height);
+        _pitch = Mathf.Lerp(PitchMin, PitchMax, t);
+    }
     
     public CameraState GetCameraTarget()
     {
-        // 根据 focus/yaw/pitch + zoom（height/distance）计算相机位置
-        Quaternion rot = Quaternion.Euler(_pitch, _yaw, 0f);
-        Vector3 dir = rot * Vector3.forward;
-        Vector3 pos = _camFocus - dir * _distance + Vector3.up * _height;
-
-        Quaternion lookRot = Quaternion.LookRotation((_camFocus - pos).normalized, Vector3.up);
+        // 根据缩放映射 pitch，并在 pitch 增大时缩短平面距离，让最大视野趋向俯视
+        Quaternion yawRot = Quaternion.Euler(0f, _yaw, 0f);
+        float planarDistance = _distance * Mathf.Cos(_pitch * Mathf.Deg2Rad);
+        Vector3 pos = _camFocus - (yawRot * Vector3.forward) * planarDistance + Vector3.up * _height;
+        Quaternion lookRot = Quaternion.Euler(_pitch, _yaw, 0f);
 
         return new CameraState
         {

@@ -20,8 +20,8 @@ public class ControlModeManager : MonoBehaviour
     public Transform actPivot;
 
     [Header("RTS")] public LayerMask groundMask = ~0; // 默认全选；建议只勾Ground（地面）
-    public float rtsCamHeight = 18f;
-    public float rtsCamDistance = 18f;
+    public float rtsCamHeight = 24f;
+    public float rtsCamDistance = 24f;
 
     IControlMode _rts;
     IControlMode _act;

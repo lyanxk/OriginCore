@@ -35,6 +35,7 @@ public class UnitBaseMotor : MonoBehaviour
     float _planarOverrideTimer;
     
     public AbilityInputRouter AbilityRouter { get; private set; }
+    public UnitCombat Combat { get; private set; }
 
     public void OverridePlanarVelocity(Vector3 planarVel, float duration)
     {
@@ -49,6 +50,7 @@ public class UnitBaseMotor : MonoBehaviour
     {
         _cc = GetComponent<CharacterController>();
         AbilityRouter = GetComponent<AbilityInputRouter>();
+        Combat = GetComponent<UnitCombat>();
         
         _path = new NavMeshPath();
     }

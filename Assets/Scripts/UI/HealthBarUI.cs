@@ -10,8 +10,14 @@ public class HealthBarUI : MonoBehaviour
 
     void Awake()
     {
-        var cam = Camera.main;
-        _camTr = cam != null ? cam.transform : null;
+        var canvas = GetComponent<Canvas>();
+
+        if (canvas != null && canvas.renderMode == RenderMode.WorldSpace)
+        {
+            canvas.worldCamera = Camera.main;
+        }
+
+        _camTr = Camera.main != null ? Camera.main.transform : null;
     }
 
     public void Bind(Health health)

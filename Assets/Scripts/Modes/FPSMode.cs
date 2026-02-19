@@ -66,6 +66,11 @@ public class FPSMode : IControlMode
         _unit.AbilityRouter?.Process(intent);
         
         _unit.SetYaw(_yaw);
+
+        // 按住左键：沿屏幕中心（相机 forward）攻击
+        Vector3 fireDir = Quaternion.Euler(_pitch, _yaw, 0f) * Vector3.forward;
+        if (intent.LeftHeld)
+            _unit.Combat?.TryUsePrimaryInDirection(fireDir);
         
         Quaternion yawRot = Quaternion.Euler(0f, _yaw, 0f);
         Vector3 moveWorld = yawRot * new Vector3(intent.Move.x, 0f, intent.Move.y);

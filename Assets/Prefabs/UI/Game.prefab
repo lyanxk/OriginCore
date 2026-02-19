@@ -68,6 +68,8 @@ MonoBehaviour:
     type: 3}
   dashAction: {fileID: 5022745650423137914, guid: 4e0c811b83694ae488f5e283d5b49243,
     type: 3}
+  attackAction: {fileID: -7427517693658962825, guid: 4e0c811b83694ae488f5e283d5b49243,
+    type: 3}
 --- !u!114 &7452768427196981385
 MonoBehaviour:
   m_ObjectHideFlags: 0

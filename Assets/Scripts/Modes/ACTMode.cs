@@ -83,7 +83,7 @@ public class ACTMode : IControlMode
         
         //技能执行
         _unit.AbilityRouter?.Process(intent);
-        
+
         //角色朝向：跟随移动方向
         Vector3 planar = new Vector3(moveWorld.x, 0f, moveWorld.z);
         if (planar.sqrMagnitude > 0.0001f)
@@ -91,6 +91,10 @@ public class ACTMode : IControlMode
             float facingYaw = Quaternion.LookRotation(planar, Vector3.up).eulerAngles.y;
             _unit.SetYaw(facingYaw);
         }
+
+        // 按住左键：沿单位面朝方向攻击
+        if (intent.LeftHeld)
+            _unit.Combat?.TryUsePrimaryInDirection(_unit.transform.forward);
     }
     public CameraState GetCameraTarget()
     {

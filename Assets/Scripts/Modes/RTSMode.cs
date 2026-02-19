@@ -77,8 +77,8 @@ public class RTSMode : IControlMode
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        EdgeSizeX = Screen.width * 0.2f;
-        EdgeSizeY = Screen.height * 0.2f;
+        EdgeSizeX = Screen.width * 0.12f;
+        EdgeSizeY = Screen.height * 0.12f;
 
         _camFocus = _unit.transform.position;
         _unit.CancelPathing();

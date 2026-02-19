@@ -31,6 +31,8 @@ public class ControlModeManager : MonoBehaviour
     InputAction _switchRTS;
     InputAction _switchACT;
     InputAction _switchFPS;
+    CommandExecutor _unitCommandExecutor;
+    bool _pendingActFpsTakeoverClear;
 
     void OnEnable()
     {
@@ -59,6 +61,7 @@ public class ControlModeManager : MonoBehaviour
         _switchRTS = switchRTSAction?.action;
         _switchACT = switchACTAction?.action;
         _switchFPS = switchFPSAction?.action;
+        _unitCommandExecutor = unit != null ? unit.GetComponent<CommandExecutor>() : null;
     }
 
     void Start()
@@ -74,6 +77,12 @@ public class ControlModeManager : MonoBehaviour
 
         if (_current == null || input == null) return;
 
+        if (_pendingActFpsTakeoverClear && HasActFpsTakeoverInput(input.Current))
+        {
+            _unitCommandExecutor?.InterruptAndClear();
+            _pendingActFpsTakeoverClear = false;
+        }
+
         _current.Tick(Time.deltaTime, input.Current);
 
         // 相机目标交给Rig平滑处理
@@ -88,6 +97,7 @@ public class ControlModeManager : MonoBehaviour
         _current?.Exit();
         _current = mode;
         _current.Enter();
+        _pendingActFpsTakeoverClear = (_current == _act || _current == _fps);
 
         // 根据模式调整过渡手感（你可以随便调）
         if (_current.Name == "RTS")
@@ -111,5 +121,21 @@ public class ControlModeManager : MonoBehaviour
 
         // 立刻给一次目标，避免切换瞬间抖一下
         cameraRig.SetTarget(_current.GetCameraTarget());
+    }
+
+    static bool HasActFpsTakeoverInput(InputIntent intent)
+    {
+        const float deadZone = 0.0001f;
+
+        return intent.Move.sqrMagnitude > deadZone ||
+               intent.Look.sqrMagnitude > deadZone ||
+               intent.LeftClick ||
+               intent.LeftHeld ||
+               intent.RightClick ||
+               intent.RightHeld ||
+               intent.Space ||
+               intent.Dash ||
+               intent.AttackPressed ||
+               intent.Cancel;
     }
 }

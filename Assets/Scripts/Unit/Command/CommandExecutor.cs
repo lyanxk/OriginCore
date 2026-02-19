@@ -43,7 +43,7 @@ public class CommandExecutor : MonoBehaviour
     {
         if (!append)
         {
-            Clear();
+            InterruptAndClear();
         }
         else
         {
@@ -62,7 +62,7 @@ public class CommandExecutor : MonoBehaviour
         }
     }
 
-    public void Clear()
+    public void InterruptAndClear()
     {
         // 取消当前
         if (_current != null)
@@ -76,5 +76,10 @@ public class CommandExecutor : MonoBehaviour
 
         // 清运动（你的需求：切模式/取消寻路）
         _ctx.Motor.CancelPathing(); 
+    }
+
+    public void Clear()
+    {
+        InterruptAndClear();
     }
 }

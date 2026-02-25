@@ -59,7 +59,7 @@ public class CommandCardController : MonoBehaviour
             return;
         }
 
-        if (_selection != null && _selection.SelectedCount > 0 && _visibleEntries.Count > 0)
+        if (_selection != null && _selection.SelectedCount > 0)
             RefreshFromManager();
     }
 
@@ -144,6 +144,7 @@ public class CommandCardController : MonoBehaviour
         if (selected.Count > 1)
             ApplyGroupAvailability(selected);
 
+        ApplyEntryVisibilityRules(effectivePrimary, primaryData);
         BindSlots();
     }
 
@@ -198,6 +199,54 @@ public class CommandCardController : MonoBehaviour
         }
     }
 
+    void ApplyEntryVisibilityRules(Selectable primary, UnitUIDataSource primaryData)
+    {
+        bool showBaseCommands = ShouldShowBaseCommands(primary, primaryData);
+
+        for (int i = _visibleEntries.Count - 1; i >= 0; i--)
+        {
+            CommandEntry entry = _visibleEntries[i];
+
+            if (entry.Type == CommandEntryType.Ability)
+            {
+                if (!entry.Enabled)
+                    _visibleEntries.RemoveAt(i);
+                continue;
+            }
+
+            if (IsBaseCommand(entry.Id))
+            {
+                if (!showBaseCommands)
+                    _visibleEntries.RemoveAt(i);
+                continue;
+            }
+
+            if (!entry.Enabled)
+                _visibleEntries.RemoveAt(i);
+        }
+    }
+
+    static bool IsBaseCommand(string commandId)
+    {
+        return commandId == CommandEntryIds.Move
+            || commandId == CommandEntryIds.Attack
+            || commandId == CommandEntryIds.Stop;
+    }
+
+    static bool ShouldShowBaseCommands(Selectable primary, UnitUIDataSource primaryData)
+    {
+        if (primaryData != null && (primaryData.CanMove || primaryData.CanAttack || primaryData.CanStop))
+            return true;
+
+        if (primary == null)
+            return false;
+
+        bool hasMotor = primary.GetComponent<UnitBaseMotor>() != null;
+        bool hasExecutor = primary.GetComponent<CommandExecutor>() != null;
+        bool hasCombat = primary.GetComponent<UnitCombat>() != null;
+        return hasMotor || hasExecutor || hasCombat;
+    }
+
     Selectable ResolvePrimary(IReadOnlyList<Selectable> selected, Selectable primary)
     {
         if (primary != null)
@@ -237,12 +286,18 @@ public class CommandCardController : MonoBehaviour
     void BindSlots()
     {
         EnsureSlots();
+        if (tooltipController != null)
+            tooltipController.Hide();
 
         for (int i = 0; i < _slotViews.Count; i++)
         {
             CommandSlotView slot = _slotViews[i];
             bool hasEntry = i < _visibleEntries.Count;
-            CommandEntry entry = hasEntry ? _visibleEntries[i] : default;
+            slot.gameObject.SetActive(hasEntry);
+            if (!hasEntry)
+                continue;
+
+            CommandEntry entry = _visibleEntries[i];
             if (hasEntry)
                 entry.HotkeyText = GetSlotHotkeyText(i, entry.HotkeyText);
 

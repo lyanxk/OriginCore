@@ -16,7 +16,7 @@ public class HotkeyDispatcher : MonoBehaviour
 
     void Update()
     {
-        if (inputSource == null || commandCard == null)
+        if (inputSource == null || commandCard == null || !commandCard.isActiveAndEnabled)
             return;
 
         InputIntent intent = inputSource.Current;

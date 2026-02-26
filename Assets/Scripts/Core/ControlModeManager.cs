@@ -20,6 +20,7 @@ public class ControlModeManager : MonoBehaviour
     public CameraRig cameraRig;
     public Transform fpsPivot;
     public Transform actPivot;
+    [SerializeField] GameObject rtsCommandPanel;
 
     [Header("RTS")] public LayerMask groundMask = ~0; // 默认全选；建议只勾Ground（地面）
     public float rtsCamHeight = 24f;
@@ -62,6 +63,7 @@ public class ControlModeManager : MonoBehaviour
 
         _mainCam = cameraRig != null ? cameraRig.GetComponent<Camera>() : null;
         RebuildModes(unit, actPivot, fpsPivot);
+        TryCacheRtsCommandPanel();
         
         _switchRTS = switchRTSAction?.action;
         _switchACT = switchACTAction?.action;
@@ -140,6 +142,26 @@ public class ControlModeManager : MonoBehaviour
         cameraRig.SetContinuousPositionSmooth(_current.Name == "ACT");
 
         cameraRig.SetTarget(_current.GetCameraTarget());
+        SetRtsCommandPanelActive(_current.Name == "RTS");
+    }
+
+    void SetRtsCommandPanelActive(bool isRtsMode)
+    {
+        if (rtsCommandPanel == null)
+            TryCacheRtsCommandPanel();
+
+        if (rtsCommandPanel != null && rtsCommandPanel.activeSelf != isRtsMode)
+            rtsCommandPanel.SetActive(isRtsMode);
+    }
+
+    void TryCacheRtsCommandPanel()
+    {
+        if (rtsCommandPanel != null)
+            return;
+
+        CommandCardController commandCard = FindObjectOfType<CommandCardController>();
+        if (commandCard != null)
+            rtsCommandPanel = commandCard.gameObject;
     }
 
     static bool HasActFpsTakeoverInput(InputIntent intent)

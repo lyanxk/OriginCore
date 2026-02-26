@@ -200,6 +200,8 @@ public class InputIntentSource : MonoBehaviour
                                   Keyboard.current.rightShiftKey.isPressed);
         intent.Shift = shiftFromAction || shiftFromKeyboard;
         intent.Cancel = _cancel != null && _cancel.WasPressedThisFrame();
+        if (_space != null && _space.WasPressedThisFrame()) intent.Space = true;
+        if (_dash != null && _dash.WasPressedThisFrame()) intent.Dash = true;
 
         bool qFromAction = _commandQ != null && _commandQ.WasPressedThisFrame();
         bool wFromAction = _commandW != null && _commandW.WasPressedThisFrame();

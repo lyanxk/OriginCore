@@ -5,6 +5,7 @@ public class Selectable : MonoBehaviour
     public bool IsSelected { get; private set; }
 
     Outline _outline;
+    bool _registered;
 
     void Awake()
     {
@@ -29,14 +30,42 @@ public class Selectable : MonoBehaviour
     }
     void OnEnable()
     {
-        if (SelectionManager.Instance != null)
-            SelectionManager.Instance.Register(this);
+        TryRegister();
+    }
+
+    void Start()
+    {
+        // SelectionManager may initialize after this component's OnEnable.
+        TryRegister();
+    }
+
+    void Update()
+    {
+        if (_registered)
+            return;
+
+        TryRegister();
     }
 
     void OnDisable()
     {
         if (SelectionManager.Instance != null)
             SelectionManager.Instance.Unregister(this);
+
+        _registered = false;
+    }
+
+    void TryRegister()
+    {
+        if (_registered)
+            return;
+
+        SelectionManager manager = SelectionManager.Instance;
+        if (manager == null)
+            return;
+
+        manager.Register(this);
+        _registered = true;
     }
 
 }

@@ -4,7 +4,10 @@ using UnityEngine.Serialization;
 
 public class ControlModeManager : MonoBehaviour
 {
+    public static ControlModeManager Instance { get; private set; }
+
     public InputIntentSource input;
+    public string CurrentModeName => _current != null ? _current.Name : string.Empty;
 
     [SerializeField] RectTransform selectionBox; // 选择框
     [Header("Mode Switch Actions 模式切换按键")] public InputActionReference switchRTSAction; // 1
@@ -50,6 +53,11 @@ public class ControlModeManager : MonoBehaviour
 
     void Awake()
     {
+        if (Instance != null && Instance != this)
+            Debug.LogWarning("Multiple ControlModeManager instances detected. Using the latest one.", this);
+
+        Instance = this;
+
         if (input == null) input = FindObjectOfType<InputIntentSource>();
 
         _mainCam = cameraRig != null ? cameraRig.GetComponent<Camera>() : null;
@@ -58,6 +66,12 @@ public class ControlModeManager : MonoBehaviour
         _switchRTS = switchRTSAction?.action;
         _switchACT = switchACTAction?.action;
         _switchFPS = switchFPSAction?.action;
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
     }
 
     void Start()

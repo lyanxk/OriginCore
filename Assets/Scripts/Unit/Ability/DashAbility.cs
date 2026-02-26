@@ -7,12 +7,13 @@ public class DashAbility : MonoBehaviour, IAbilityInput, IActivatableAbility
     [Header("Ability")]
     [SerializeField] string abilityId = "ability.dash";
     [SerializeField] string displayName = "Dash";
+    [SerializeField] AbilityAvailableMode availableMode = AbilityAvailableMode.ACTAndFPS;
     [SerializeField] Sprite icon;
-    [SerializeField] string hotkeyText = "Q";
+    [SerializeField] string hotkeyText = "Mouse5";
     [TextArea]
     [SerializeField] string tooltip = "Dash forward quickly.";
     [Min(0f)]
-    [SerializeField] float cooldown = 1.5f;
+    [SerializeField] float cooldown = 0f;
 
     [Header("Movement")]
     public float dashSpeed = 10f;
@@ -24,6 +25,7 @@ public class DashAbility : MonoBehaviour, IAbilityInput, IActivatableAbility
 
     public string AbilityId => abilityId;
     public string DisplayName => string.IsNullOrWhiteSpace(displayName) ? "Dash" : displayName;
+    public AbilityAvailableMode AvailableMode => availableMode;
     public Sprite Icon => icon;
     public string HotkeyText => hotkeyText;
     public string Tooltip => tooltip;
@@ -55,6 +57,10 @@ public class DashAbility : MonoBehaviour, IAbilityInput, IActivatableAbility
     public bool TryActivate()
     {
         if (_motor == null)
+            return false;
+
+        string currentMode = ControlModeManager.Instance != null ? ControlModeManager.Instance.CurrentModeName : string.Empty;
+        if (!availableMode.IsAvailableInMode(currentMode))
             return false;
 
         if (!IsEnabled)

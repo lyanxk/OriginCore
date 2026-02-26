@@ -156,6 +156,7 @@ public class UnitUIDataSource : MonoBehaviour
     {
         if (abilityRouter == null) return;
 
+        string currentMode = ControlModeManager.Instance != null ? ControlModeManager.Instance.CurrentModeName : string.Empty;
         IReadOnlyList<IActivatableAbility> abilities = abilityRouter.ActivatableAbilities;
         for (int i = 0; i < abilities.Count; i++)
         {
@@ -163,17 +164,27 @@ public class UnitUIDataSource : MonoBehaviour
             if (ability == null || string.IsNullOrWhiteSpace(ability.AbilityId))
                 continue;
 
+            bool modeAvailable = ability.AvailableMode.IsAvailableInMode(currentMode);
             _entries.Add(new CommandEntry
             {
                 Id = ability.AbilityId,
                 Icon = ability.Icon,
                 Name = string.IsNullOrWhiteSpace(ability.DisplayName) ? ability.AbilityId : ability.DisplayName,
                 HotkeyText = ability.HotkeyText,
-                Enabled = ability.IsEnabled,
+                Enabled = ability.IsEnabled && modeAvailable,
                 Cooldown01 = ability.Cooldown01,
-                Tooltip = ability.Tooltip,
+                Tooltip = BuildAbilityTooltip(ability),
                 Type = CommandEntryType.Ability
             });
         }
+    }
+
+    static string BuildAbilityTooltip(IActivatableAbility ability)
+    {
+        string modeLabel = ability.AvailableMode.ToDisplayLabel();
+        if (string.IsNullOrWhiteSpace(ability.Tooltip))
+            return $"Available mode: {modeLabel}";
+
+        return $"{ability.Tooltip}\nAvailable mode: {modeLabel}";
     }
 }

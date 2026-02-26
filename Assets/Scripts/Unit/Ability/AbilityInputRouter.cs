@@ -59,8 +59,17 @@ public class AbilityInputRouter : MonoBehaviour
 
     public void Process(InputIntent intent)
     {
+        string currentMode = ControlModeManager.Instance != null ? ControlModeManager.Instance.CurrentModeName : string.Empty;
+
         for (int i = 0; i < _abilities.Count; i++)
-            _abilities[i].ProcessInput(intent);
+        {
+            IAbilityInput ability = _abilities[i];
+            if (ability is IActivatableAbility activatable &&
+                !activatable.AvailableMode.IsAvailableInMode(currentMode))
+                continue;
+
+            ability.ProcessInput(intent);
+        }
     }
 
     public bool TryActivate(string abilityId)
@@ -69,6 +78,10 @@ public class AbilityInputRouter : MonoBehaviour
             return false;
 
         if (!_abilityMap.TryGetValue(abilityId, out IActivatableAbility ability))
+            return false;
+
+        string currentMode = ControlModeManager.Instance != null ? ControlModeManager.Instance.CurrentModeName : string.Empty;
+        if (!ability.AvailableMode.IsAvailableInMode(currentMode))
             return false;
 
         return ability.TryActivate();

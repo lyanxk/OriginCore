@@ -597,7 +597,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 562574536}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: ActPivot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -719,7 +719,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 637539842}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: FpsPivot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -986,7 +986,7 @@ GameObject:
   - component: {fileID: 883050552}
   - component: {fileID: 883050554}
   - component: {fileID: 883050555}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: TestHeroUnit
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -1108,8 +1108,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   abilityId: ability.dash
   displayName: Dash
+  availableMode: 3
   icon: {fileID: 0}
-  hotkeyText: Q
+  hotkeyText: Mouse5
   tooltip: Dash forward quickly.
   cooldown: 1.5
   dashSpeed: 10
@@ -1215,7 +1216,7 @@ MonoBehaviour:
   moveIcon: {fileID: 0}
   attackIcon: {fileID: 0}
   stopIcon: {fileID: 0}
-  moveHotkey: Q
+  moveHotkey: M
   attackHotkey: A
   stopHotkey: S
   moveTooltip: Move to target position.
@@ -1571,9 +1572,9 @@ MonoBehaviour:
   moveIcon: {fileID: 0}
   attackIcon: {fileID: 0}
   stopIcon: {fileID: 0}
-  moveHotkey: Q
-  attackHotkey: W
-  stopHotkey: E
+  moveHotkey: M
+  attackHotkey: A
+  stopHotkey: S
   moveTooltip: Move to target position.
   attackTooltip: Attack-move to target position.
   stopTooltip: Stop current command queue immediately.
@@ -1666,7 +1667,7 @@ GameObject:
   - component: {fileID: 1642147264}
   - component: {fileID: 1642147263}
   - component: {fileID: 1642147262}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1930,7 +1931,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1747464457}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: HealthBarRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2256,10 +2257,20 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1747464457}
     m_Modifications:
+    - target: {fileID: 2037044400678353815, guid: cf53be8a57e20ec4fba9fe3ba6299406,
+        type: 3}
+      propertyPath: m_Layer
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 2265090062940546574, guid: cf53be8a57e20ec4fba9fe3ba6299406,
         type: 3}
       propertyPath: m_Name
       value: Canvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 2265090062940546574, guid: cf53be8a57e20ec4fba9fe3ba6299406,
+        type: 3}
+      propertyPath: m_Layer
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 2518697219337088717, guid: cf53be8a57e20ec4fba9fe3ba6299406,
         type: 3}
@@ -2360,6 +2371,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3378868990728289340, guid: cf53be8a57e20ec4fba9fe3ba6299406,
+        type: 3}
+      propertyPath: m_Layer
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 6479362855651080661, guid: cf53be8a57e20ec4fba9fe3ba6299406,
         type: 3}

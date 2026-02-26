@@ -1,21 +1,18 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class RTSMode : IControlMode
 {
     public string Name => "RTS";
 
-    readonly UnitBaseMotor _unit; // 玩家运动（playerMotor）
-    readonly Camera _cam; // 主相机（mainCamera）
-    readonly LayerMask _groundMask; // 地面层（groundMask）
+    readonly UnitBase _unit;
+    readonly Camera _cam;
+    readonly LayerMask _groundMask;
 
-    Vector3 _camFocus; // 相机焦点
+    Vector3 _camFocus;
 
-    // 相机角（yaw/pitch）
     float _yaw;
     float _pitch;
 
-    // 相机缩放：当前值（height/distance）与目标值（heightTarget/distanceTarget）
     float _height;
     float _distance;
     float _heightTarget;
@@ -23,35 +20,39 @@ public class RTSMode : IControlMode
     float _heightVel;
     float _distanceVel;
 
-    public float EdgePanSpeed = 10f; //平移速度
+    public float EdgePanSpeed = 10f;
     public float EdgeSizeX = 180f;
-    public float EdgeSizeY = 100;
-    
-    public float ZoomSpeed = 6f; //缩放速度
+    public float EdgeSizeY = 100f;
 
-    // zoom 限制
+    public float ZoomStep = 5f;
+
     public float HeightMin = 6f;
     public float HeightMax = 40f;
     public float DistanceMin = 6f;
     public float DistanceMax = 45f;
+    public float PitchMin = 0f;
+    public float PitchMax = 90f;
 
-    // 相机焦点边界 暂不启用
     public bool UseBounds = false;
     public Vector2 BoundsMinXZ = new Vector2(-50, -50);
     public Vector2 BoundsMaxXZ = new Vector2(50, 50);
 
-    // 框选
     bool _isDragging;
+    bool _isAttackOrderMode;
+    bool _isMoveOrderMode;
     Vector2 _dragStart;
     const float DragThreshold = 8f;
     readonly RectTransform _selectionBox;
-    
-    //选择系统
+
     SelectionManager Sel => SelectionManager.Instance;
 
-    public RTSMode(UnitBaseMotor unit, Camera mainCamera, LayerMask groundMask, RectTransform selectionBox,
-        float camHeight = 18f,
-        float camDistance = 18f)
+    public RTSMode(
+        UnitBase unit,
+        Camera mainCamera,
+        LayerMask groundMask,
+        RectTransform selectionBox,
+        float camHeight = 24f,
+        float camDistance = 24f)
     {
         _unit = unit;
         _cam = mainCamera;
@@ -59,12 +60,13 @@ public class RTSMode : IControlMode
 
         _camFocus = unit.transform.position;
         _yaw = unit.GetYaw();
-        _pitch = 50f;
+        _pitch = PitchMin;
 
         _height = camHeight;
         _distance = camDistance;
         _heightTarget = camHeight;
         _distanceTarget = camDistance;
+        UpdatePitchFromZoom();
 
         _selectionBox = selectionBox;
         if (_selectionBox != null)
@@ -76,11 +78,11 @@ public class RTSMode : IControlMode
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        EdgeSizeX = Screen.width * 0.2f;
-        EdgeSizeY = Screen.height * 0.2f;
+        EdgeSizeX = Screen.width * 0.12f;
+        EdgeSizeY = Screen.height * 0.12f;
 
         _camFocus = _unit.transform.position;
-        _unit.ClearDestination();
+        _unit.CancelPathing();
     }
 
     public void Exit()
@@ -90,52 +92,184 @@ public class RTSMode : IControlMode
 
     public void Tick(float dt, InputIntent intent)
     {
-        // 相机平移
+        bool hasSelection = Sel != null && Sel.SelectedCount > 0;
+        if (!hasSelection)
+        {
+            _isAttackOrderMode = false;
+            _isMoveOrderMode = false;
+        }
+
+        if (intent.CommandS && hasSelection)
+        {
+            IssueStopCommand();
+            _isAttackOrderMode = false;
+            _isMoveOrderMode = false;
+            CancelSelectionDrag();
+        }
+
+        if ((intent.AttackPressed || intent.CommandA) && hasSelection)
+        {
+            _isAttackOrderMode = !_isAttackOrderMode;
+            if (_isAttackOrderMode)
+            {
+                _isMoveOrderMode = false;
+                CancelSelectionDrag();
+            }
+        }
+
+        if (intent.CommandM && hasSelection)
+        {
+            _isMoveOrderMode = !_isMoveOrderMode;
+            if (_isMoveOrderMode)
+            {
+                _isAttackOrderMode = false;
+                CancelSelectionDrag();
+            }
+        }
+
         Vector2 move = GetEdgePan(intent.PointerScreenPos);
         Quaternion yawRot = Quaternion.Euler(0f, _yaw, 0f);
         Vector3 pan = yawRot * new Vector3(move.x, 0f, move.y);
         _camFocus += pan * dt;
-        // 相机缩放（滚轮）
+
         if (Mathf.Abs(intent.Zoom) > 0.0001f)
         {
-            float z = intent.Zoom * ZoomSpeed;
+            float z = Mathf.Sign(intent.Zoom) * ZoomStep;
             _heightTarget = Mathf.Clamp(_heightTarget - z, HeightMin, HeightMax);
             _distanceTarget = Mathf.Clamp(_distanceTarget - z, DistanceMin, DistanceMax);
         }
 
         _height = Mathf.SmoothDamp(_height, _heightTarget, ref _heightVel, 0.12f);
         _distance = Mathf.SmoothDamp(_distance, _distanceTarget, ref _distanceVel, 0.12f);
+        UpdatePitchFromZoom();
 
-        // 边界限制 防止视角离开合法范围
         if (UseBounds)
         {
             _camFocus.x = Mathf.Clamp(_camFocus.x, BoundsMinXZ.x, BoundsMaxXZ.x);
             _camFocus.z = Mathf.Clamp(_camFocus.z, BoundsMinXZ.y, BoundsMaxXZ.y);
         }
 
-        // 选择：单选/框选
-        HandleSelection(intent);
+        if (_isAttackOrderMode)
+        {
+            CancelSelectionDrag();
+            if (HandleAttackCommand(intent))
+                _isAttackOrderMode = false;
+        }
+        else if (_isMoveOrderMode)
+        {
+            CancelSelectionDrag();
+            if (HandleMoveCommand(intent))
+                _isMoveOrderMode = false;
+        }
+        else
+        {
+            HandleSelection(intent);
+        }
 
-        // 命令：右键点击地面移动（ActionDown）
-        if (intent.RightClick && Sel != null && Sel.SelectedCount > 0)
+        if (!_isAttackOrderMode && !_isMoveOrderMode && intent.RightClick && Sel != null && Sel.SelectedCount > 0)
         {
             Ray ray = _cam.ScreenPointToRay(intent.PointerScreenPos);
             if (Physics.Raycast(ray, out RaycastHit hit, 500f, _groundMask))
-            {
-                foreach (var s in Sel.Selected)
-                {
-                    if (s == null) continue;
-                    var motor = s.GetComponent<UnitBaseMotor>();
-                    if (motor != null) motor.SetDestination(hit.point);
-                }
-            }
+                IssueMoveCommand(hit.point, intent.Shift);
         }
-        // ESC 取消选择
+
         if (intent.Cancel)
+        {
+            _isAttackOrderMode = false;
+            _isMoveOrderMode = false;
             Sel?.ClearSelection();
+        }
     }
 
-    //相机移动逻辑
+    bool HandleMoveCommand(InputIntent intent)
+    {
+        if (!intent.LeftClick) return false;
+        if (Sel == null || Sel.SelectedCount <= 0) return false;
+
+        Ray ray = _cam.ScreenPointToRay(intent.PointerScreenPos);
+        if (!Physics.Raycast(ray, out RaycastHit hit, 500f, _groundMask))
+            return false;
+
+        return IssueMoveCommand(hit.point, intent.Shift);
+    }
+
+    bool HandleAttackCommand(InputIntent intent)
+    {
+        if (!intent.LeftClick) return false;
+        if (Sel == null || Sel.SelectedCount <= 0) return false;
+
+        Ray ray = _cam.ScreenPointToRay(intent.PointerScreenPos);
+        Vector3 orderPoint;
+        if (Physics.Raycast(ray, out RaycastHit groundHit, 500f, _groundMask))
+        {
+            orderPoint = groundHit.point;
+        }
+        else if (Physics.Raycast(ray, out RaycastHit anyHit, 500f))
+        {
+            orderPoint = anyHit.point;
+        }
+        else
+        {
+            return false;
+        }
+
+        return IssueAttackCommand(orderPoint, intent.Shift);
+    }
+
+    bool IssueMoveCommand(Vector3 destination, bool append)
+    {
+        bool issued = false;
+        foreach (var s in Sel.Selected)
+        {
+            if (s == null) continue;
+
+            CommandExecutor exec = s.GetComponent<CommandExecutor>();
+            if (exec == null) continue;
+
+            exec.Enqueue(new MoveCommand(destination), append);
+            issued = true;
+        }
+
+        return issued;
+    }
+
+    bool IssueAttackCommand(Vector3 orderPoint, bool append)
+    {
+        bool issued = false;
+        foreach (var s in Sel.Selected)
+        {
+            if (s == null) continue;
+
+            UnitCombat combat = s.GetComponent<UnitCombat>();
+            if (combat == null) continue;
+
+            CommandExecutor exec = s.GetComponent<CommandExecutor>();
+            if (exec == null) continue;
+
+            exec.Enqueue(new AttackCommand(orderPoint), append);
+            issued = true;
+        }
+
+        return issued;
+    }
+
+    bool IssueStopCommand()
+    {
+        bool issued = false;
+        foreach (var s in Sel.Selected)
+        {
+            if (s == null) continue;
+
+            CommandExecutor exec = s.GetComponent<CommandExecutor>();
+            if (exec == null) continue;
+
+            exec.Enqueue(new StopCommand(), append: false);
+            issued = true;
+        }
+
+        return issued;
+    }
+
     Vector2 GetEdgePan(Vector2 pointerScreenPos)
     {
         float x = 0f;
@@ -170,16 +304,13 @@ public class RTSMode : IControlMode
     {
         if (Sel == null) return;
 
-        // 鼠标按下开始拖拽
         if (intent.LeftClick)
         {
             _isDragging = true;
             _dragStart = intent.PointerScreenPos;
-
             ShowSelectionBox(_dragStart, _dragStart);
         }
 
-        // 拖拽中：更新选择框
         if (_isDragging && intent.LeftHeld)
         {
             Vector2 cur = intent.PointerScreenPos;
@@ -191,7 +322,6 @@ public class RTSMode : IControlMode
                 ShowSelectionBox(_dragStart, _dragStart);
         }
 
-        // 松开左键：判断点击/框选
         if (_isDragging && !intent.LeftHeld)
         {
             _isDragging = false;
@@ -199,21 +329,19 @@ public class RTSMode : IControlMode
 
             Vector2 dragEnd = intent.PointerScreenPos;
             float dragDist = (dragEnd - _dragStart).magnitude;
-
-            bool additive = intent.Shift; // Shift 追加
+            bool additive = intent.Shift;
 
             if (dragDist < DragThreshold)
             {
-                // 点击单选
                 Ray ray = _cam.ScreenPointToRay(dragEnd);
                 if (Physics.Raycast(ray, out RaycastHit hit, 500f))
                 {
-                    var sel = hit.collider.GetComponentInParent<Selectable>();
+                    Selectable sel = hit.collider.GetComponentInParent<Selectable>();
 
                     if (!additive) Sel.ClearSelection();
 
                     if (sel != null) Sel.AddSelection(sel);
-                    else if (!additive) Sel.ClearSelection(); // 点空地清空
+                    else if (!additive) Sel.ClearSelection();
                 }
                 else
                 {
@@ -222,7 +350,6 @@ public class RTSMode : IControlMode
             }
             else
             {
-                // 框选
                 if (!additive) Sel.ClearSelection();
 
                 Rect r = ScreenRect(_dragStart, dragEnd);
@@ -259,21 +386,33 @@ public class RTSMode : IControlMode
             _selectionBox.gameObject.SetActive(false);
     }
 
+    void CancelSelectionDrag()
+    {
+        if (!_isDragging) return;
+
+        _isDragging = false;
+        HideSelectionBox();
+    }
+
     Rect ScreenRect(Vector2 a, Vector2 b)
     {
         Vector2 min = Vector2.Min(a, b);
         Vector2 max = Vector2.Max(a, b);
         return new Rect(min, max - min);
     }
-    
+
+    void UpdatePitchFromZoom()
+    {
+        float t = Mathf.InverseLerp(HeightMin, HeightMax, _height);
+        _pitch = Mathf.Lerp(PitchMin, PitchMax, t);
+    }
+
     public CameraState GetCameraTarget()
     {
-        // 根据 focus/yaw/pitch + zoom（height/distance）计算相机位置
-        Quaternion rot = Quaternion.Euler(_pitch, _yaw, 0f);
-        Vector3 dir = rot * Vector3.forward;
-        Vector3 pos = _camFocus - dir * _distance + Vector3.up * _height;
-
-        Quaternion lookRot = Quaternion.LookRotation((_camFocus - pos).normalized, Vector3.up);
+        Quaternion yawRot = Quaternion.Euler(0f, _yaw, 0f);
+        float planarDistance = _distance * Mathf.Cos(_pitch * Mathf.Deg2Rad);
+        Vector3 pos = _camFocus - (yawRot * Vector3.forward) * planarDistance + Vector3.up * _height;
+        Quaternion lookRot = Quaternion.Euler(_pitch, _yaw, 0f);
 
         return new CameraState
         {

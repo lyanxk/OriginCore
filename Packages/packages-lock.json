@@ -25,7 +25,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.ai.navigation": {
-      "version": "1.1.6",
+      "version": "1.1.7",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -68,7 +68,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.ide.rider": {
-      "version": "3.0.36",
+      "version": "3.0.39",
       "depth": 0,
       "source": "registry",
       "dependencies": {

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -5,11 +6,16 @@ public class SelectionManager : MonoBehaviour
 {
     public static SelectionManager Instance { get; private set; }
 
-    // 当前选中集合
-    readonly HashSet<Selectable> _selected = new();
+    readonly HashSet<Selectable> _selectedSet = new HashSet<Selectable>();
+    readonly List<Selectable> _selected = new List<Selectable>(32);
+    readonly HashSet<Selectable> _allSelectables = new HashSet<Selectable>();
 
-    // 可被选择的单位集合（用于框选遍历）
-    readonly HashSet<Selectable> _allSelectables = new();
+    public IReadOnlyList<Selectable> Selected => _selected;
+    public IEnumerable<Selectable> AllSelectables => _allSelectables;
+    public int SelectedCount => _selected.Count;
+    public Selectable Primary { get; private set; }
+
+    public event Action<IReadOnlyList<Selectable>, Selectable> OnSelectionChanged;
 
     void Awake()
     {
@@ -18,57 +24,138 @@ public class SelectionManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
         Instance = this;
     }
 
-    // --- 供 Selectable 自动注册 ---
-    public void Register(Selectable s)
+    public void Register(Selectable selectable)
     {
-        if (s != null) _allSelectables.Add(s);
+        if (selectable == null) return;
+        _allSelectables.Add(selectable);
     }
 
-    public void Unregister(Selectable s)
+    public void Unregister(Selectable selectable)
     {
-        if (s == null) return;
+        if (selectable == null) return;
 
-        _allSelectables.Remove(s);
+        _allSelectables.Remove(selectable);
 
-        // 如果正在选中，取消
-        if (_selected.Remove(s))
-            s.SetSelected(false);
+        bool changed = false;
+        if (_selectedSet.Remove(selectable))
+        {
+            _selected.Remove(selectable);
+            selectable.SetSelected(false);
+            changed = true;
+        }
+
+        if (Primary == selectable)
+        {
+            Primary = _selected.Count > 0 ? _selected[_selected.Count - 1] : null;
+            changed = true;
+        }
+
+        if (changed)
+            NotifySelectionChanged();
     }
 
-    // --- 对外 API：选中控制 ---
     public void ClearSelection()
     {
-        foreach (var s in _selected)
+        if (_selected.Count == 0 && Primary == null)
+            return;
+
+        for (int i = 0; i < _selected.Count; i++)
         {
-            if (s != null) s.SetSelected(false);
+            Selectable selectable = _selected[i];
+            if (selectable != null)
+                selectable.SetSelected(false);
         }
+
+        _selectedSet.Clear();
         _selected.Clear();
+        Primary = null;
+
+        NotifySelectionChanged();
     }
 
-    public void AddSelection(Selectable s)
+    public void AddSelection(Selectable selectable)
     {
-        if (s == null) return;
-        if (_selected.Add(s))
-            s.SetSelected(true);
+        if (selectable == null) return;
+
+        bool changed = false;
+        if (_selectedSet.Add(selectable))
+        {
+            _selected.Add(selectable);
+            selectable.SetSelected(true);
+            changed = true;
+        }
+
+        if (Primary != selectable)
+        {
+            Primary = selectable;
+            changed = true;
+        }
+
+        if (changed)
+            NotifySelectionChanged();
     }
 
-    public void RemoveSelection(Selectable s)
+    public void RemoveSelection(Selectable selectable)
     {
-        if (s == null) return;
-        if (_selected.Remove(s))
-            s.SetSelected(false);
+        if (selectable == null) return;
+
+        bool changed = false;
+        if (_selectedSet.Remove(selectable))
+        {
+            _selected.Remove(selectable);
+            selectable.SetSelected(false);
+            changed = true;
+        }
+
+        if (Primary == selectable)
+        {
+            Primary = _selected.Count > 0 ? _selected[_selected.Count - 1] : null;
+            changed = true;
+        }
+
+        if (changed)
+            NotifySelectionChanged();
     }
 
-    public bool IsSelected(Selectable s) => s != null && _selected.Contains(s);
+    public void SetPrimary(Selectable selectable)
+    {
+        if (selectable == null)
+        {
+            if (Primary == null) return;
+            Primary = null;
+            NotifySelectionChanged();
+            return;
+        }
 
-    // --- 给框选用：遍历所有可选对象 ---
-    public IEnumerable<Selectable> AllSelectables => _allSelectables;
+        bool changed = false;
+        if (_selectedSet.Add(selectable))
+        {
+            _selected.Add(selectable);
+            selectable.SetSelected(true);
+            changed = true;
+        }
 
-    // --- 给命令系统用：遍历当前选中 ---
-    public IEnumerable<Selectable> Selected => _selected;
+        if (Primary != selectable)
+        {
+            Primary = selectable;
+            changed = true;
+        }
 
-    public int SelectedCount => _selected.Count;
+        if (changed)
+            NotifySelectionChanged();
+    }
+
+    public bool IsSelected(Selectable selectable)
+    {
+        return selectable != null && _selectedSet.Contains(selectable);
+    }
+
+    void NotifySelectionChanged()
+    {
+        OnSelectionChanged?.Invoke(Selected, Primary);
+    }
 }

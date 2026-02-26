@@ -1112,7 +1112,7 @@ MonoBehaviour:
   icon: {fileID: 0}
   hotkeyText: Mouse5
   tooltip: Dash forward quickly.
-  cooldown: 1.5
+  cooldown: 0
   dashSpeed: 10
   dashDuration: 0.2
 --- !u!114 &883050550

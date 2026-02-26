@@ -19,6 +19,8 @@ public sealed class AttackCommand : IUnitCommand
     float _repathTimer;
     bool _hasChasePos;
     Vector3 _lastChasePos;
+    Vector3 _resolvedMoveDestination;
+    bool _hasResolvedMoveDestination;
     bool _done;
 
     // Direct attack target (kept for compatibility).
@@ -69,9 +71,15 @@ public sealed class AttackCommand : IUnitCommand
         _scanTimer = 0f;
         _repathTimer = 0f;
         _hasChasePos = false;
+        _hasResolvedMoveDestination = false;
+        _resolvedMoveDestination = Vector3.zero;
 
         if (_isAttackMove)
+        {
             ctx.Motor.SetDestination(_moveDestination);
+            _resolvedMoveDestination = ctx.Motor.CurrentDestination;
+            _hasResolvedMoveDestination = ctx.Motor.HasDestination;
+        }
 
         if (ctx.Combat == null)
         {
@@ -122,7 +130,11 @@ public sealed class AttackCommand : IUnitCommand
             _hasChasePos = false;
 
             if (_isAttackMove)
+            {
                 ctx.Motor.SetDestination(_moveDestination);
+                _resolvedMoveDestination = ctx.Motor.CurrentDestination;
+                _hasResolvedMoveDestination = ctx.Motor.HasDestination;
+            }
             else
                 _done = true;
 
@@ -195,7 +207,7 @@ public sealed class AttackCommand : IUnitCommand
         float arriveDist = _arriveDist > 0f ? _arriveDist : ctx.Motor.arriveDistance;
 
         Vector3 a = ctx.Transform.position;
-        Vector3 b = _moveDestination;
+        Vector3 b = _hasResolvedMoveDestination ? _resolvedMoveDestination : _moveDestination;
         a.y = 0f;
         b.y = 0f;
         return Vector3.Distance(a, b) <= arriveDist;

@@ -60,6 +60,8 @@ public class UnitBase : MonoBehaviour
         perspectiveOption == PerspectiveOption.FirstAndThirdPerson;
     public Transform ThirdPersonPivot => thirdPersonPivot;
     public Transform FirstPersonPivot => firstPersonPivot;
+    public bool HasDestination => _hasDestination;
+    public Vector3 CurrentDestination => _destination;
 
     public void OverridePlanarVelocity(Vector3 planarVel, float duration)
     {
@@ -199,10 +201,6 @@ public class UnitBase : MonoBehaviour
     void RecalculatePath(bool force)
     {
         if (!_hasDestination) return;
-
-        // 没有路径 / 拐点走完 / 强制重算
-        if (!force && _corners.Length > 0 && _cornerIndex < _corners.Length)
-            return;
 
         // 起点也投到 NavMesh（角色可能在边缘/小台阶上）
         if (!NavMesh.SamplePosition(transform.position, out var startHit, 1.0f, NavMesh.AllAreas))

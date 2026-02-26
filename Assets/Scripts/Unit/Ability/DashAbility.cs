@@ -18,7 +18,7 @@ public class DashAbility : MonoBehaviour, IAbilityInput, IActivatableAbility
     public float dashSpeed = 10f;
     public float dashDuration = 0.2f;
 
-    UnitBaseMotor _motor;
+    UnitBase _motor;
     Transform _tf;
     float _nextReadyTime;
 
@@ -42,7 +42,7 @@ public class DashAbility : MonoBehaviour, IAbilityInput, IActivatableAbility
 
     void Awake()
     {
-        _motor = GetComponent<UnitBaseMotor>();
+        _motor = GetComponent<UnitBase>();
         _tf = transform;
     }
 

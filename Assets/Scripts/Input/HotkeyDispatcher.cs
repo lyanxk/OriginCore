@@ -24,10 +24,19 @@ public class HotkeyDispatcher : MonoBehaviour
 
         for (int slot = 1; slot <= maxSlots; slot++)
         {
+            if (IsReservedBaseCommandSlot(slot))
+                continue;
+
             if (!intent.GetCommandPressed(slot))
                 continue;
 
             commandCard.TryExecuteBySlot(slot - 1);
         }
+    }
+
+    static bool IsReservedBaseCommandSlot(int slot)
+    {
+        // A/S are reserved for RTS attack/stop command flow.
+        return slot == 5 || slot == 6;
     }
 }

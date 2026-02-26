@@ -12,7 +12,7 @@ public class UnitUIDataSource : MonoBehaviour
 
     [Header("Core Components")]
     [SerializeField] Health health;
-    [SerializeField] UnitBaseMotor motor;
+    [SerializeField] UnitBase motor;
     [SerializeField] CommandExecutor commandExecutor;
     [SerializeField] UnitCombat combat;
     [SerializeField] AbilityInputRouter abilityRouter;
@@ -27,9 +27,9 @@ public class UnitUIDataSource : MonoBehaviour
     [SerializeField] Sprite attackIcon;
     [SerializeField] Sprite stopIcon;
 
-    [SerializeField] string moveHotkey = "Q";
-    [SerializeField] string attackHotkey = "W";
-    [SerializeField] string stopHotkey = "E";
+    [SerializeField] string moveHotkey = "M";
+    [SerializeField] string attackHotkey = "A";
+    [SerializeField] string stopHotkey = "S";
 
     [TextArea]
     [SerializeField] string moveTooltip = "Move to target position.";
@@ -107,7 +107,7 @@ public class UnitUIDataSource : MonoBehaviour
     void CacheComponents()
     {
         if (health == null) health = GetComponent<Health>();
-        if (motor == null) motor = GetComponent<UnitBaseMotor>();
+        if (motor == null) motor = GetComponent<UnitBase>();
         if (commandExecutor == null) commandExecutor = GetComponent<CommandExecutor>();
         if (combat == null) combat = GetComponent<UnitCombat>();
         if (abilityRouter == null) abilityRouter = GetComponent<AbilityInputRouter>();

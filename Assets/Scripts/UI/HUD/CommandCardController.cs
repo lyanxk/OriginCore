@@ -175,7 +175,7 @@ public class CommandCardController : MonoBehaviour
             else
             {
                 bool hasExecutor = selectable.GetComponent<CommandExecutor>() != null;
-                bool hasMotor = selectable.GetComponent<UnitBaseMotor>() != null;
+                bool hasMotor = selectable.GetComponent<UnitBase>() != null;
                 bool hasCombat = selectable.GetComponent<UnitCombat>() != null;
 
                 allCanMove &= hasExecutor && hasMotor;
@@ -241,7 +241,7 @@ public class CommandCardController : MonoBehaviour
         if (primary == null)
             return false;
 
-        bool hasMotor = primary.GetComponent<UnitBaseMotor>() != null;
+        bool hasMotor = primary.GetComponent<UnitBase>() != null;
         bool hasExecutor = primary.GetComponent<CommandExecutor>() != null;
         bool hasCombat = primary.GetComponent<UnitCombat>() != null;
         return hasMotor || hasExecutor || hasCombat;
@@ -486,6 +486,9 @@ public class CommandCardController : MonoBehaviour
 
     static string GetSlotHotkeyText(int slotIndex, string fallback)
     {
+        if (!string.IsNullOrWhiteSpace(fallback))
+            return fallback;
+
         switch (slotIndex)
         {
             case 0: return "Q";

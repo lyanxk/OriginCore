@@ -4,7 +4,7 @@ public class RTSMode : IControlMode
 {
     public string Name => "RTS";
 
-    readonly UnitBaseMotor _unit;
+    readonly UnitBase _unit;
     readonly Camera _cam;
     readonly LayerMask _groundMask;
 
@@ -39,6 +39,7 @@ public class RTSMode : IControlMode
 
     bool _isDragging;
     bool _isAttackOrderMode;
+    bool _isMoveOrderMode;
     Vector2 _dragStart;
     const float DragThreshold = 8f;
     readonly RectTransform _selectionBox;
@@ -46,7 +47,7 @@ public class RTSMode : IControlMode
     SelectionManager Sel => SelectionManager.Instance;
 
     public RTSMode(
-        UnitBaseMotor unit,
+        UnitBase unit,
         Camera mainCamera,
         LayerMask groundMask,
         RectTransform selectionBox,
@@ -93,13 +94,37 @@ public class RTSMode : IControlMode
     {
         bool hasSelection = Sel != null && Sel.SelectedCount > 0;
         if (!hasSelection)
+        {
             _isAttackOrderMode = false;
+            _isMoveOrderMode = false;
+        }
 
-        if (intent.AttackPressed && hasSelection)
+        if (intent.CommandS && hasSelection)
+        {
+            IssueStopCommand();
+            _isAttackOrderMode = false;
+            _isMoveOrderMode = false;
+            CancelSelectionDrag();
+        }
+
+        if ((intent.AttackPressed || intent.CommandA) && hasSelection)
         {
             _isAttackOrderMode = !_isAttackOrderMode;
             if (_isAttackOrderMode)
+            {
+                _isMoveOrderMode = false;
                 CancelSelectionDrag();
+            }
+        }
+
+        if (intent.CommandM && hasSelection)
+        {
+            _isMoveOrderMode = !_isMoveOrderMode;
+            if (_isMoveOrderMode)
+            {
+                _isAttackOrderMode = false;
+                CancelSelectionDrag();
+            }
         }
 
         Vector2 move = GetEdgePan(intent.PointerScreenPos);
@@ -130,35 +155,42 @@ public class RTSMode : IControlMode
             if (HandleAttackCommand(intent))
                 _isAttackOrderMode = false;
         }
+        else if (_isMoveOrderMode)
+        {
+            CancelSelectionDrag();
+            if (HandleMoveCommand(intent))
+                _isMoveOrderMode = false;
+        }
         else
         {
             HandleSelection(intent);
         }
 
-        if (!_isAttackOrderMode && intent.RightClick && Sel != null && Sel.SelectedCount > 0)
+        if (!_isAttackOrderMode && !_isMoveOrderMode && intent.RightClick && Sel != null && Sel.SelectedCount > 0)
         {
             Ray ray = _cam.ScreenPointToRay(intent.PointerScreenPos);
             if (Physics.Raycast(ray, out RaycastHit hit, 500f, _groundMask))
-            {
-                bool append = intent.Shift;
-
-                foreach (var s in Sel.Selected)
-                {
-                    if (s == null) continue;
-
-                    CommandExecutor exec = s.GetComponent<CommandExecutor>();
-                    if (exec == null) continue;
-
-                    exec.Enqueue(new MoveCommand(hit.point), append);
-                }
-            }
+                IssueMoveCommand(hit.point, intent.Shift);
         }
 
         if (intent.Cancel)
         {
             _isAttackOrderMode = false;
+            _isMoveOrderMode = false;
             Sel?.ClearSelection();
         }
+    }
+
+    bool HandleMoveCommand(InputIntent intent)
+    {
+        if (!intent.LeftClick) return false;
+        if (Sel == null || Sel.SelectedCount <= 0) return false;
+
+        Ray ray = _cam.ScreenPointToRay(intent.PointerScreenPos);
+        if (!Physics.Raycast(ray, out RaycastHit hit, 500f, _groundMask))
+            return false;
+
+        return IssueMoveCommand(hit.point, intent.Shift);
     }
 
     bool HandleAttackCommand(InputIntent intent)
@@ -181,9 +213,29 @@ public class RTSMode : IControlMode
             return false;
         }
 
-        bool append = intent.Shift;
-        bool issued = false;
+        return IssueAttackCommand(orderPoint, intent.Shift);
+    }
 
+    bool IssueMoveCommand(Vector3 destination, bool append)
+    {
+        bool issued = false;
+        foreach (var s in Sel.Selected)
+        {
+            if (s == null) continue;
+
+            CommandExecutor exec = s.GetComponent<CommandExecutor>();
+            if (exec == null) continue;
+
+            exec.Enqueue(new MoveCommand(destination), append);
+            issued = true;
+        }
+
+        return issued;
+    }
+
+    bool IssueAttackCommand(Vector3 orderPoint, bool append)
+    {
+        bool issued = false;
         foreach (var s in Sel.Selected)
         {
             if (s == null) continue;
@@ -195,6 +247,23 @@ public class RTSMode : IControlMode
             if (exec == null) continue;
 
             exec.Enqueue(new AttackCommand(orderPoint), append);
+            issued = true;
+        }
+
+        return issued;
+    }
+
+    bool IssueStopCommand()
+    {
+        bool issued = false;
+        foreach (var s in Sel.Selected)
+        {
+            if (s == null) continue;
+
+            CommandExecutor exec = s.GetComponent<CommandExecutor>();
+            if (exec == null) continue;
+
+            exec.Enqueue(new StopCommand(), append: false);
             issued = true;
         }
 

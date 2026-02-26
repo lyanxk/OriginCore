@@ -4,7 +4,7 @@ public class FPSMode : IControlMode
 {
     public string Name => "FPS";
 
-    readonly UnitBaseMotor _unit;
+    readonly UnitBase _unit;
     readonly Transform _fpsPivot;
 
     float _yaw;
@@ -20,7 +20,7 @@ public class FPSMode : IControlMode
 
     public float fov = 110f;
 
-    public FPSMode(UnitBaseMotor unit, Transform fpsPivot)
+    public FPSMode(UnitBase unit, Transform fpsPivot)
     {
         _unit = unit;
         _fpsPivot = fpsPivot;
@@ -80,10 +80,11 @@ public class FPSMode : IControlMode
     public CameraState GetCameraTarget()
     {
         Quaternion camRot = Quaternion.Euler(_pitch, _yaw, 0f);
+        Transform pivot = _fpsPivot != null ? _fpsPivot : _unit.transform;
 
         return new CameraState
         {
-            Position = _fpsPivot.position, 
+            Position = pivot.position, 
             Rotation = camRot,
             Fov = fov
         };

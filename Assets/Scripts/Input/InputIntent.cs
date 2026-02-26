@@ -29,6 +29,7 @@ public struct InputIntent
     public bool CommandX;
     public bool CommandC;
     public bool CommandV;
+    public bool CommandM;
 
     public bool GetCommandPressed(int slotIndex)
     {
@@ -46,6 +47,7 @@ public struct InputIntent
             case 10: return CommandX;
             case 11: return CommandC;
             case 12: return CommandV;
+            case 13: return CommandM;
             default: return false;
         }
     }
@@ -67,5 +69,6 @@ public struct InputIntent
         CommandX = false;
         CommandC = false;
         CommandV = false;
+        CommandM = false;
     }
 }

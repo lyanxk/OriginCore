@@ -1,8 +1,23 @@
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Scripting.APIUpdating;
 
-public class UnitBaseMotor : MonoBehaviour
+[MovedFrom(true, sourceNamespace: "", sourceAssembly: "", sourceClassName: "UnitBaseMotor")]
+public class UnitBase : MonoBehaviour
 {
+    public enum PerspectiveOption
+    {
+        None = 0,
+        ThirdPersonOnly = 1,
+        FirstPersonOnly = 2,
+        FirstAndThirdPerson = 3
+    }
+
+    [Header("Perspective")]
+    [SerializeField] PerspectiveOption perspectiveOption = PerspectiveOption.FirstAndThirdPerson;
+    [SerializeField] Transform thirdPersonPivot;
+    [SerializeField] Transform firstPersonPivot;
+
     public float walkSpeed = 5.0f;
     public float clickMoveSpeed = 4.5f;
     public float gravity = -12f;
@@ -36,6 +51,15 @@ public class UnitBaseMotor : MonoBehaviour
     
     public AbilityInputRouter AbilityRouter { get; private set; }
     public UnitCombat Combat { get; private set; }
+    public PerspectiveOption ViewOption => perspectiveOption;
+    public bool HasThirdPersonView =>
+        perspectiveOption == PerspectiveOption.ThirdPersonOnly ||
+        perspectiveOption == PerspectiveOption.FirstAndThirdPerson;
+    public bool HasFirstPersonView =>
+        perspectiveOption == PerspectiveOption.FirstPersonOnly ||
+        perspectiveOption == PerspectiveOption.FirstAndThirdPerson;
+    public Transform ThirdPersonPivot => thirdPersonPivot;
+    public Transform FirstPersonPivot => firstPersonPivot;
 
     public void OverridePlanarVelocity(Vector3 planarVel, float duration)
     {

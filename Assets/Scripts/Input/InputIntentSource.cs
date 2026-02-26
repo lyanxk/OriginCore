@@ -33,6 +33,7 @@ public class InputIntentSource : MonoBehaviour
     public InputActionReference commandXAction;
     public InputActionReference commandCAction;
     public InputActionReference commandVAction;
+    public InputActionReference commandMAction;
 
     public InputIntent Current { get; private set; }
 
@@ -60,6 +61,7 @@ public class InputIntentSource : MonoBehaviour
     InputAction _commandX;
     InputAction _commandC;
     InputAction _commandV;
+    InputAction _commandM;
 
     void Awake()
     {
@@ -88,6 +90,7 @@ public class InputIntentSource : MonoBehaviour
         _commandX = commandXAction?.action;
         _commandC = commandCAction?.action;
         _commandV = commandVAction?.action;
+        _commandM = commandMAction?.action;
     }
 
     void OnEnable()
@@ -116,6 +119,7 @@ public class InputIntentSource : MonoBehaviour
         _commandX?.Enable();
         _commandC?.Enable();
         _commandV?.Enable();
+        _commandM?.Enable();
 
         if (_space != null) _space.started += OnJumpStarted;
         if (_dash != null) _dash.started += OnDashStarted;
@@ -150,6 +154,7 @@ public class InputIntentSource : MonoBehaviour
         _commandX?.Disable();
         _commandC?.Disable();
         _commandV?.Disable();
+        _commandM?.Disable();
     }
 
     void Update()
@@ -208,6 +213,7 @@ public class InputIntentSource : MonoBehaviour
         bool xFromAction = _commandX != null && _commandX.WasPressedThisFrame();
         bool cFromAction = _commandC != null && _commandC.WasPressedThisFrame();
         bool vFromAction = _commandV != null && _commandV.WasPressedThisFrame();
+        bool mFromAction = _commandM != null && _commandM.WasPressedThisFrame();
 
         bool qFromKeyboard = Keyboard.current != null && Keyboard.current.qKey.wasPressedThisFrame;
         bool wFromKeyboard = Keyboard.current != null && Keyboard.current.wKey.wasPressedThisFrame;
@@ -221,6 +227,7 @@ public class InputIntentSource : MonoBehaviour
         bool xFromKeyboard = Keyboard.current != null && Keyboard.current.xKey.wasPressedThisFrame;
         bool cFromKeyboard = Keyboard.current != null && Keyboard.current.cKey.wasPressedThisFrame;
         bool vFromKeyboard = Keyboard.current != null && Keyboard.current.vKey.wasPressedThisFrame;
+        bool mFromKeyboard = Keyboard.current != null && Keyboard.current.mKey.wasPressedThisFrame;
 
         intent.CommandQ = qFromAction || qFromKeyboard;
         intent.CommandW = wFromAction || wFromKeyboard;
@@ -234,6 +241,7 @@ public class InputIntentSource : MonoBehaviour
         intent.CommandX = xFromAction || xFromKeyboard;
         intent.CommandC = cFromAction || cFromKeyboard;
         intent.CommandV = vFromAction || vFromKeyboard;
+        intent.CommandM = mFromAction || mFromKeyboard;
 
         Current = intent;
     }

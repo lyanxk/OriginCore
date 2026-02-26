@@ -343,7 +343,7 @@
             ]
         },
         {
-            "name": "Skill",
+            "name": "Command",
             "id": "f829ea54-8bdf-42bb-baa8-edd5918348d5",
             "actions": [
                 {
@@ -449,6 +449,15 @@
                     "name": "V",
                     "type": "Button",
                     "id": "1e106c7d-d563-419d-a34b-2a0d910d3e0a",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "M",
+                    "type": "Button",
+                    "id": "93aa9561-af33-4c63-94b6-c62c65de1de3",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -585,6 +594,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "V",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "510246ec-094d-4ea7-9035-7bc10614b365",
+                    "path": "<Keyboard>/m",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "M",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

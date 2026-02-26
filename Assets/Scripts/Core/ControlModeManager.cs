@@ -7,13 +7,12 @@ public class ControlModeManager : MonoBehaviour
     public InputIntentSource input;
 
     [SerializeField] RectTransform selectionBox; // 选择框
-
     [Header("Mode Switch Actions 模式切换按键")] public InputActionReference switchRTSAction; // 1
     public InputActionReference switchACTAction; // 2
     public InputActionReference switchFPSAction; // 3
 
     [FormerlySerializedAs("player")] [Header("References")]
-    public UnitBaseMotor unit;
+    public UnitBase unit;
 
     public CameraRig cameraRig;
     public Transform fpsPivot;
@@ -33,6 +32,7 @@ public class ControlModeManager : MonoBehaviour
     InputAction _switchFPS;
     CommandExecutor _unitCommandExecutor;
     bool _pendingActFpsTakeoverClear;
+    Camera _mainCam;
 
     void OnEnable()
     {
@@ -52,16 +52,12 @@ public class ControlModeManager : MonoBehaviour
     {
         if (input == null) input = FindObjectOfType<InputIntentSource>();
 
-        var mainCam = cameraRig.GetComponent<Camera>();
-
-        _rts = new RTSMode(unit, mainCam, groundMask, selectionBox, rtsCamHeight, rtsCamDistance);
-        _act = new ACTMode(unit, actPivot);
-        _fps = new FPSMode(unit, fpsPivot);
+        _mainCam = cameraRig != null ? cameraRig.GetComponent<Camera>() : null;
+        RebuildModes(unit, actPivot, fpsPivot);
         
         _switchRTS = switchRTSAction?.action;
         _switchACT = switchACTAction?.action;
         _switchFPS = switchFPSAction?.action;
-        _unitCommandExecutor = unit != null ? unit.GetComponent<CommandExecutor>() : null;
     }
 
     void Start()
@@ -72,8 +68,17 @@ public class ControlModeManager : MonoBehaviour
     void Update()
     {
         if (_switchRTS != null && switchRTSAction.action.WasPressedThisFrame()) SwitchTo(_rts);
-        if (_switchACT != null && switchACTAction.action.WasPressedThisFrame()) SwitchTo(_act);
-        if (_switchFPS != null && switchFPSAction.action.WasPressedThisFrame()) SwitchTo(_fps);
+        if (_switchACT != null && switchACTAction.action.WasPressedThisFrame())
+        {
+            if (!IsInRTSMode() || TryPrepareSwitchFromRTS(requireThirdPerson: true, requireFirstPerson: false))
+                SwitchTo(_act);
+        }
+
+        if (_switchFPS != null && switchFPSAction.action.WasPressedThisFrame())
+        {
+            if (!IsInRTSMode() || TryPrepareSwitchFromRTS(requireThirdPerson: false, requireFirstPerson: true))
+                SwitchTo(_fps);
+        }
 
         if (_current == null || input == null) return;
 
@@ -95,6 +100,7 @@ public class ControlModeManager : MonoBehaviour
         if (_current == mode) return;
 
         _current?.Exit();
+        
         _current = mode;
         _current.Enter();
         _pendingActFpsTakeoverClear = (_current == _act || _current == _fps);
@@ -119,7 +125,6 @@ public class ControlModeManager : MonoBehaviour
 
         cameraRig.SetContinuousPositionSmooth(_current.Name == "ACT");
 
-        // 立刻给一次目标，避免切换瞬间抖一下
         cameraRig.SetTarget(_current.GetCameraTarget());
     }
 
@@ -138,4 +143,67 @@ public class ControlModeManager : MonoBehaviour
                intent.AttackPressed ||
                intent.Cancel;
     }
+
+    bool IsInRTSMode()
+    {
+        return _current != null && _current.Name == "RTS";
+    }
+
+    bool TryPrepareSwitchFromRTS(bool requireThirdPerson, bool requireFirstPerson)
+    {
+        SelectionManager selection = SelectionManager.Instance;
+        if (selection == null || selection.SelectedCount <= 0)
+            return false;
+
+        Selectable selected = selection.Primary;
+        if (selected == null)
+            selected = selection.Selected[selection.SelectedCount - 1];
+
+        if (selected == null)
+            return false;
+
+        UnitBase selectedUnit = selected.GetComponent<UnitBase>();
+        if (selectedUnit == null)
+            selectedUnit = selected.GetComponentInParent<UnitBase>();
+
+        if (selectedUnit == null)
+            return false;
+
+        if (requireThirdPerson && !selectedUnit.HasThirdPersonView)
+            return false;
+
+        if (requireFirstPerson && !selectedUnit.HasFirstPersonView)
+            return false;
+
+        Transform selectedActPivot = selectedUnit.ThirdPersonPivot;
+        Transform selectedFpsPivot = selectedUnit.FirstPersonPivot;
+
+        if (selectedUnit == unit)
+        {
+            if (selectedActPivot == null)
+                selectedActPivot = actPivot;
+
+            if (selectedFpsPivot == null)
+                selectedFpsPivot = fpsPivot;
+        }
+
+        RebuildModes(selectedUnit, selectedActPivot, selectedFpsPivot);
+        return true;
+    }
+
+    void RebuildModes(UnitBase nextUnit, Transform nextActPivot, Transform nextFpsPivot)
+    {
+        if (nextUnit == null || _mainCam == null)
+            return;
+
+        unit = nextUnit;
+        actPivot = nextActPivot;
+        fpsPivot = nextFpsPivot;
+
+        _rts = new RTSMode(unit, _mainCam, groundMask, selectionBox, rtsCamHeight, rtsCamDistance);
+        _act = new ACTMode(unit, actPivot);
+        _fps = new FPSMode(unit, fpsPivot);
+        _unitCommandExecutor = unit.GetComponent<CommandExecutor>();
+    }
+
 }

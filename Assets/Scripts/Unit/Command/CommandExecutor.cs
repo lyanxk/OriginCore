@@ -14,7 +14,7 @@ public class CommandExecutor : MonoBehaviour
 
     void Awake()
     {
-        var motor = GetComponent<UnitBaseMotor>();
+        var motor = GetComponent<UnitBase>();
         _ctx = new UnitContext(motor);
     }
 

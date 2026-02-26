@@ -4,7 +4,7 @@ public class ACTMode : IControlMode
 {
     public string Name => "ACT";
 
-    readonly UnitBaseMotor _unit;
+    readonly UnitBase _unit;
     readonly Transform _tpsPivot;
 
     float _yaw;
@@ -28,7 +28,7 @@ public class ACTMode : IControlMode
     Vector3 _dashDir;
 
 
-    public ACTMode(UnitBaseMotor unit, Transform tpsPivot)
+    public ACTMode(UnitBase unit, Transform tpsPivot)
     {
         _unit = unit;
         _tpsPivot = tpsPivot;
@@ -100,7 +100,8 @@ public class ACTMode : IControlMode
     {
         Quaternion rot = Quaternion.Euler(_pitch, _yaw, 0f);
         Vector3 back = rot * Vector3.back; // 相机朝后
-        Vector3 pos = _tpsPivot.position + back * _distance + Vector3.up * _height;
+        Transform pivot = _tpsPivot != null ? _tpsPivot : _unit.transform;
+        Vector3 pos = pivot.position + back * _distance + Vector3.up * _height;
 
         return new CameraState
         {

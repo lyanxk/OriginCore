@@ -9,7 +9,6 @@ namespace Unit.Ability
         Sprite Icon { get; }
         string HotkeyText { get; }
         string Tooltip { get; }
-        AbilityAvailableMode AvailableMode { get; }
         bool IsEnabled { get; }
         float Cooldown01 { get; }
 

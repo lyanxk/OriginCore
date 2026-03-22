@@ -31,23 +31,23 @@ public struct InputIntent
     public bool CommandV;
     public bool CommandM;
 
-    public bool GetCommandPressed(int slotIndex)
+    public bool GetCommandPressed(string hotkeyToken)
     {
-        switch (slotIndex)
+        switch (CommandHotkeyUtility.NormalizeToken(hotkeyToken))
         {
-            case 1: return CommandQ;
-            case 2: return CommandW;
-            case 3: return CommandE;
-            case 4: return CommandR;
-            case 5: return CommandA;
-            case 6: return CommandS;
-            case 7: return CommandD;
-            case 8: return CommandF;
-            case 9: return CommandZ;
-            case 10: return CommandX;
-            case 11: return CommandC;
-            case 12: return CommandV;
-            case 13: return CommandM;
+            case "Q": return CommandQ;
+            case "W": return CommandW;
+            case "E": return CommandE;
+            case "R": return CommandR;
+            case "A": return CommandA;
+            case "S": return CommandS;
+            case "D": return CommandD;
+            case "F": return CommandF;
+            case "Z": return CommandZ;
+            case "X": return CommandX;
+            case "C": return CommandC;
+            case "V": return CommandV;
+            case "M": return CommandM;
             default: return false;
         }
     }

@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 2196648771772918027}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2, z: 0}
+  m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -60,7 +60,7 @@ Transform:
   m_GameObject: {fileID: 2834289125592746276}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -173,7 +173,7 @@ Transform:
   m_GameObject: {fileID: 4198138853953822667}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -193,6 +193,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3cb86ea050e6229498caa17421837c68, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  outline: {fileID: 2723365748491886532}
+  teamAffiliation: {fileID: 0}
+  commandExecutor: {fileID: 4523317871231682683}
+  combat: {fileID: 4064889438472452534}
+  motor: {fileID: 4424760524717535906}
+  abilityRouter: {fileID: 0}
+  commandCardDataSourceComponent: {fileID: 1974304872913449264}
+  groundCommandReceiverComponent: {fileID: 0}
+  selectionRouteProviderComponent: {fileID: 4523317871231682683}
 --- !u!114 &2723365748491886532
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -200,14 +209,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4198138853953822667}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   outlineMode: 0
-  outlineColor: {r: 0.0107040405, g: 1, b: 0, a: 1}
-  outlineWidth: 2
+  outlineColor: {r: 0, g: 1, b: 0, a: 1}
+  outlineWidth: 4
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
@@ -262,7 +271,7 @@ CharacterController:
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: 1, z: 0}
 --- !u!114 &4523317871231682683
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -289,6 +298,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHp: 100
   _currentHp: 0
+  teamAffiliation: {fileID: 0}
   startHpPercent: 1
 --- !u!114 &8270809938894945506
 MonoBehaviour:
@@ -329,6 +339,7 @@ MonoBehaviour:
   meleeRadius: 0.9
   attackOrigin: {fileID: 0}
   defaultOriginHeight: 1
+  teamAffiliation: {fileID: 0}
 --- !u!114 &1974304872913449264
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -341,15 +352,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd2ef13f2c1efb94c843244f500f9ffd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  unitName: 
+  displayName: 
   portrait: {fileID: 0}
   health: {fileID: 5624234258582364395}
-  motor: {fileID: 4424760524717535906}
-  commandExecutor: {fileID: 4523317871231682683}
-  combat: {fileID: 4064889438472452534}
   abilityRouter: {fileID: 0}
   maxEnergy: 100
   startEnergy: 100
+  motor: {fileID: 4424760524717535906}
+  commandExecutor: {fileID: 4523317871231682683}
+  combat: {fileID: 4064889438472452534}
   moveIcon: {fileID: 0}
   attackIcon: {fileID: 0}
   stopIcon: {fileID: 0}

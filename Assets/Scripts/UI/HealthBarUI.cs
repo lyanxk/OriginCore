@@ -1,22 +1,20 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class HealthBarUI : MonoBehaviour
 {
-    [SerializeField] Image fill; // 拖 Fill 的 Image
+    [SerializeField] Image fill;
 
     Health _health;
     Transform _camTr;
 
     void Awake()
     {
-        var canvas = GetComponent<Canvas>();
-
+        Canvas canvas = GetComponent<Canvas>();
         if (canvas != null && canvas.renderMode == RenderMode.WorldSpace)
-        {
             canvas.worldCamera = Camera.main;
-        }
 
+        DisableRaycastTargets();
         _camTr = Camera.main != null ? Camera.main.transform : null;
     }
 
@@ -26,7 +24,8 @@ public class HealthBarUI : MonoBehaviour
             _health.OnHpChanged -= OnHpChanged;
 
         _health = health;
-        if (_health == null) return;
+        if (_health == null)
+            return;
 
         _health.OnHpChanged += OnHpChanged;
         OnHpChanged(_health.CurrentHp, _health.MaxHp);
@@ -40,14 +39,27 @@ public class HealthBarUI : MonoBehaviour
 
     void LateUpdate()
     {
-        if (_camTr == null) return;
-        // 让血条面向摄像机（Billboard）
+        if (_camTr == null)
+            return;
+
         transform.forward = _camTr.forward;
     }
 
     void OnHpChanged(float current, float max)
     {
-        if (fill == null) return;
-        fill.fillAmount = (max <= 0f) ? 0f : current / max;
+        if (fill == null)
+            return;
+
+        fill.fillAmount = max <= 0f ? 0f : current / max;
+    }
+
+    void DisableRaycastTargets()
+    {
+        Graphic[] graphics = GetComponentsInChildren<Graphic>(true);
+        for (int i = 0; i < graphics.Length; i++)
+        {
+            if (graphics[i] != null)
+                graphics[i].raycastTarget = false;
+        }
     }
 }

@@ -954,6 +954,37 @@ MonoBehaviour:
   m_Spacing: {x: 0, y: 0}
   m_Constraint: 1
   m_ConstraintCount: 4
+--- !u!1 &782053147
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 782053148}
+  m_Layer: 7
+  m_Name: SpawnPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &782053148
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 782053147}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1, y: -0.5, z: -1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1386892652}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &800319736 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6128885665944820143, guid: cf53be8a57e20ec4fba9fe3ba6299406,
@@ -979,7 +1010,6 @@ GameObject:
   - component: {fileID: 883050542}
   - component: {fileID: 883050543}
   - component: {fileID: 883050548}
-  - component: {fileID: 883050549}
   - component: {fileID: 883050550}
   - component: {fileID: 883050551}
   - component: {fileID: 883050553}
@@ -1002,7 +1032,7 @@ Transform:
   m_GameObject: {fileID: 883050540}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1050,6 +1080,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3cb86ea050e6229498caa17421837c68, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  outline: {fileID: 883050548}
+  teamAffiliation: {fileID: 0}
+  commandExecutor: {fileID: 883050551}
+  combat: {fileID: 883050554}
+  motor: {fileID: 883050542}
+  abilityRouter: {fileID: 883050550}
+  commandCardDataSourceComponent: {fileID: 883050555}
+  groundCommandReceiverComponent: {fileID: 0}
+  selectionRouteProviderComponent: {fileID: 883050551}
 --- !u!143 &883050544
 CharacterController:
   m_ObjectHideFlags: 0
@@ -1075,7 +1114,7 @@ CharacterController:
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: 1, z: 0}
 --- !u!114 &883050548
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1083,38 +1122,17 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 883050540}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   outlineMode: 0
-  outlineColor: {r: 0, g: 1, b: 0.0013296604, a: 1}
+  outlineColor: {r: 0, g: 1, b: 0, a: 1}
   outlineWidth: 4
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
---- !u!114 &883050549
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 883050540}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4efead381d1f6b14fb9cbe36c57bbe5b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  abilityId: ability.dash
-  displayName: Dash
-  availableMode: 3
-  icon: {fileID: 0}
-  hotkeyText: Mouse5
-  tooltip: Dash forward quickly.
-  cooldown: 0
-  dashSpeed: 10
-  dashDuration: 0.2
 --- !u!114 &883050550
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1127,6 +1145,44 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00f738e8aca44eb08b8eefa6d31f0f22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  abilities:
+  - rid: 5414467457835597824
+  - rid: 5414467457835597825
+  - rid: -2
+  - rid: -2
+  - rid: -2
+  - rid: -2
+  - rid: -2
+  - rid: -2
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 5414467457835597824
+      type: {class: RtsBlinkAbility, ns: Unit.Ability, asm: Assembly-CSharp}
+      data:
+        abilityId: ability.rts.blink
+        displayName: Blink
+        icon: {fileID: 0}
+        tooltip: Activate, then left-click ground to blink.
+        cooldown: 2
+        maxDistance: 5
+    - rid: 5414467457835597825
+      type: {class: RtsSupportAuraAbility, ns: Unit.Ability, asm: Assembly-CSharp}
+      data:
+        abilityId: ability.rts.supportAura
+        displayName: Support Aura
+        icon: {fileID: 0}
+        tooltip: Nearby friendly units gain bonus damage and move speed.
+        unitMask:
+          serializedVersion: 2
+          m_Bits: 64
+        radius: 5
+        moveSpeedMultiplier: 1.2
+        damageMultiplier: 1.2
+        updateInterval: 0.25
+        affectSelf: 1
 --- !u!114 &883050551
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1167,6 +1223,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHp: 100
   _currentHp: 0
+  teamAffiliation: {fileID: 0}
   startHpPercent: 1
 --- !u!114 &883050554
 MonoBehaviour:
@@ -1192,6 +1249,7 @@ MonoBehaviour:
   meleeRadius: 0.9
   attackOrigin: {fileID: 0}
   defaultOriginHeight: 1
+  teamAffiliation: {fileID: 0}
 --- !u!114 &883050555
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1204,15 +1262,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd2ef13f2c1efb94c843244f500f9ffd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  unitName: 
+  displayName: 
   portrait: {fileID: 0}
   health: {fileID: 883050553}
-  motor: {fileID: 883050542}
-  commandExecutor: {fileID: 883050551}
-  combat: {fileID: 883050554}
   abilityRouter: {fileID: 883050550}
   maxEnergy: 100
   startEnergy: 100
+  motor: {fileID: 883050542}
+  commandExecutor: {fileID: 883050551}
+  combat: {fileID: 883050554}
   moveIcon: {fileID: 0}
   attackIcon: {fileID: 0}
   stopIcon: {fileID: 0}
@@ -1424,7 +1482,10 @@ GameObject:
   - component: {fileID: 1386892649}
   - component: {fileID: 1386892648}
   - component: {fileID: 1386892653}
-  - component: {fileID: 1386892654}
+  - component: {fileID: 1386892656}
+  - component: {fileID: 1386892655}
+  - component: {fileID: 1386892657}
+  - component: {fileID: 1386892658}
   m_Layer: 7
   m_Name: TestStructure
   m_TagString: Untagged
@@ -1446,6 +1507,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHp: 100
   _currentHp: 0
+  teamAffiliation: {fileID: 0}
   startHpPercent: 1
 --- !u!65 &1386892649
 BoxCollider:
@@ -1532,6 +1594,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 499345125}
+  - {fileID: 782053148}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1386892653
@@ -1548,7 +1611,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   healthBarRoot: {fileID: 499345125}
   healthBarPrefab: {fileID: 1041153979}
---- !u!114 &1386892654
+--- !u!114 &1386892655
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1557,27 +1620,112 @@ MonoBehaviour:
   m_GameObject: {fileID: 1386892647}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dd2ef13f2c1efb94c843244f500f9ffd, type: 3}
+  m_Script: {fileID: 11500000, guid: 3cb86ea050e6229498caa17421837c68, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  unitName: 
-  portrait: {fileID: 0}
-  health: {fileID: 1386892648}
-  motor: {fileID: 0}
+  outline: {fileID: 1386892658}
+  teamAffiliation: {fileID: 0}
   commandExecutor: {fileID: 0}
   combat: {fileID: 0}
+  motor: {fileID: 0}
+  abilityRouter: {fileID: 0}
+  commandCardDataSourceComponent: {fileID: 1386892657}
+  groundCommandReceiverComponent: {fileID: 1386892656}
+  selectionRouteProviderComponent: {fileID: 1386892656}
+--- !u!114 &1386892656
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1386892647}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f879a271a04830c438d3c9a52b458e00, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  slots:
+  - UnitPrefab: {fileID: 4198138853953822667, guid: 76494353aeec76946905ca31358ad48a,
+      type: 3}
+    Icon: {fileID: 0}
+    DisplayName: 
+    HotkeyText: 
+    Tooltip: 
+  - UnitPrefab: {fileID: 0}
+    Icon: {fileID: 0}
+    DisplayName: 
+    HotkeyText: 
+    Tooltip: 
+  - UnitPrefab: {fileID: 0}
+    Icon: {fileID: 0}
+    DisplayName: 
+    HotkeyText: 
+    Tooltip: 
+  - UnitPrefab: {fileID: 0}
+    Icon: {fileID: 0}
+    DisplayName: 
+    HotkeyText: 
+    Tooltip: 
+  - UnitPrefab: {fileID: 0}
+    Icon: {fileID: 0}
+    DisplayName: 
+    HotkeyText: 
+    Tooltip: 
+  - UnitPrefab: {fileID: 0}
+    Icon: {fileID: 0}
+    DisplayName: 
+    HotkeyText: 
+    Tooltip: 
+  - UnitPrefab: {fileID: 0}
+    Icon: {fileID: 0}
+    DisplayName: 
+    HotkeyText: 
+    Tooltip: 
+  - UnitPrefab: {fileID: 0}
+    Icon: {fileID: 0}
+    DisplayName: 
+    HotkeyText: 
+    Tooltip: 
+  _hasRallyPoint: 1
+  _usesDefaultRallyPoint: 1
+  _rallyPoint: {x: -10, y: 1, z: 3}
+--- !u!114 &1386892657
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1386892647}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dca560b2e022dc246831a66a48b291ab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: 
+  portrait: {fileID: 0}
+  health: {fileID: 1386892648}
   abilityRouter: {fileID: 0}
   maxEnergy: 100
   startEnergy: 100
-  moveIcon: {fileID: 0}
-  attackIcon: {fileID: 0}
-  stopIcon: {fileID: 0}
-  moveHotkey: M
-  attackHotkey: A
-  stopHotkey: S
-  moveTooltip: Move to target position.
-  attackTooltip: Attack-move to target position.
-  stopTooltip: Stop current command queue immediately.
+  production: {fileID: 1386892656}
+--- !u!114 &1386892658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1386892647}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 0
+  outlineColor: {r: 0, g: 1, b: 0, a: 1}
+  outlineWidth: 4
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!1 &1433302017
 GameObject:
   m_ObjectHideFlags: 0
@@ -1683,7 +1831,7 @@ Transform:
   m_GameObject: {fileID: 1642147260}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1771,7 +1919,7 @@ Transform:
   m_GameObject: {fileID: 1987907492}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 2, z: 0}
+  m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2032,10 +2180,6 @@ MonoBehaviour:
     type: 3}
   slotCount: 12
   tooltipController: {fileID: 0}
-  worldCamera: {fileID: 687583679}
-  groundMask:
-    serializedVersion: 2
-    m_Bits: 8
   inputSource: {fileID: 1792358917004067361}
 --- !u!1001 &1792358917004067358
 PrefabInstance:
@@ -2125,6 +2269,11 @@ PrefabInstance:
       propertyPath: selectionBox
       value: 
       objectReference: {fileID: 604648004}
+    - target: {fileID: 7452768427196981385, guid: 193ddd57e1775f5489f1a7f339e168b5,
+        type: 3}
+      propertyPath: rtsCommandPanel
+      value: 
+      objectReference: {fileID: 2121461277}
     - target: {fileID: 7452768427196981385, guid: 193ddd57e1775f5489f1a7f339e168b5,
         type: 3}
       propertyPath: groundMask.m_Bits
@@ -2236,7 +2385,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inputSource: {fileID: 1792358917004067361}
-  commandCard: {fileID: 0}
+  commandCard: {fileID: 2121461281}
 --- !u!114 &1792358917004067361 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7655931682119978042, guid: 193ddd57e1775f5489f1a7f339e168b5,
@@ -2408,7 +2557,7 @@ PrefabInstance:
     - target: {fileID: 2059788603337828485, guid: 76494353aeec76946905ca31358ad48a,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2059788603337828485, guid: 76494353aeec76946905ca31358ad48a,
         type: 3}

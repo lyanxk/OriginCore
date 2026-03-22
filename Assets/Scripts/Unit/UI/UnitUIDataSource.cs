@@ -1,26 +1,16 @@
-using System;
 using System.Collections.Generic;
 using Unit.Ability;
 using UnityEngine;
 
 [DisallowMultipleComponent]
-public class UnitUIDataSource : MonoBehaviour
+public class UnitUIDataSource : CommandCardDataSourceBase
 {
-    [Header("Display")]
-    [SerializeField] string unitName;
-    [SerializeField] Sprite portrait;
+    static readonly int[] AbilitySlotOrder = { 8, 9, 10, 11, 4, 5, 6, 7 };
 
-    [Header("Core Components")]
-    [SerializeField] Health health;
+    [Header("Unit Components")]
     [SerializeField] UnitBase motor;
     [SerializeField] CommandExecutor commandExecutor;
     [SerializeField] UnitCombat combat;
-    [SerializeField] AbilityInputRouter abilityRouter;
-
-    [Header("Energy (Reserved)")]
-    [Min(0f)]
-    [SerializeField] float maxEnergy = 100f;
-    [SerializeField] float startEnergy = 100f;
 
     [Header("Base Command UI")]
     [SerializeField] Sprite moveIcon;
@@ -38,153 +28,81 @@ public class UnitUIDataSource : MonoBehaviour
     [TextArea]
     [SerializeField] string stopTooltip = "Stop current command queue immediately.";
 
-    readonly List<CommandEntry> _entries = new List<CommandEntry>(16);
+    public override bool CanMove => commandExecutor != null && motor != null;
+    public override bool CanAttack => commandExecutor != null && combat != null;
+    public override bool CanStop => commandExecutor != null;
 
-    float _energy;
-
-    public string DisplayName => string.IsNullOrWhiteSpace(unitName) ? gameObject.name : unitName;
-    public Sprite Portrait => portrait;
-    public Health HealthComponent => health;
-
-    public bool CanMove => commandExecutor != null && motor != null;
-    public bool CanAttack => commandExecutor != null && combat != null;
-    public bool CanStop => commandExecutor != null;
-
-    void Awake()
+    protected override void CacheSpecificComponents()
     {
-        CacheComponents();
-        _energy = Mathf.Clamp(startEnergy, 0f, maxEnergy);
+        if (motor == null)
+            motor = GetComponent<UnitBase>();
+
+        if (commandExecutor == null)
+            commandExecutor = GetComponent<CommandExecutor>();
+
+        if (combat == null)
+            combat = GetComponent<UnitCombat>();
     }
 
-    void OnValidate()
+    protected override void AddCommandEntries(List<CommandEntry> entries)
     {
-        CacheComponents();
-    }
-
-    public IReadOnlyList<CommandEntry> GetCommandEntries()
-    {
-        _entries.Clear();
-
-        AddBaseCommands();
-        AddAbilityCommands();
-
-        return _entries;
-    }
-
-    public bool TryGetHealth(out float current, out float max)
-    {
-        if (health == null)
-        {
-            current = 0f;
-            max = 0f;
-            return false;
-        }
-
-        current = health.CurrentHp;
-        max = health.MaxHp;
-        return max > 0f;
-    }
-
-    public bool TryGetEnergy(out float current, out float max)
-    {
-        current = _energy;
-        max = maxEnergy;
-        return max > 0f;
-    }
-
-    public bool HasAbility(string abilityId)
-    {
-        if (abilityRouter == null) return false;
-        return abilityRouter.HasAbility(abilityId);
-    }
-
-    public bool TryActivateAbility(string abilityId)
-    {
-        if (abilityRouter == null) return false;
-        return abilityRouter.TryActivate(abilityId);
-    }
-
-    void CacheComponents()
-    {
-        if (health == null) health = GetComponent<Health>();
-        if (motor == null) motor = GetComponent<UnitBase>();
-        if (commandExecutor == null) commandExecutor = GetComponent<CommandExecutor>();
-        if (combat == null) combat = GetComponent<UnitCombat>();
-        if (abilityRouter == null) abilityRouter = GetComponent<AbilityInputRouter>();
-    }
-
-    void AddBaseCommands()
-    {
-        _entries.Add(new CommandEntry
+        entries.Add(new CommandEntry
         {
             Id = CommandEntryIds.Move,
             Icon = moveIcon,
             Name = "Move",
             HotkeyText = moveHotkey,
             Enabled = CanMove,
+            SlotIndex = 0,
             Cooldown01 = 0f,
             Tooltip = moveTooltip,
             Type = CommandEntryType.Command
         });
 
-        _entries.Add(new CommandEntry
+        entries.Add(new CommandEntry
         {
             Id = CommandEntryIds.Attack,
             Icon = attackIcon,
             Name = "Attack",
             HotkeyText = attackHotkey,
             Enabled = CanAttack,
+            SlotIndex = 1,
             Cooldown01 = 0f,
             Tooltip = attackTooltip,
             Type = CommandEntryType.Command
         });
 
-        _entries.Add(new CommandEntry
+        entries.Add(new CommandEntry
         {
             Id = CommandEntryIds.Stop,
             Icon = stopIcon,
             Name = "Stop",
             HotkeyText = stopHotkey,
             Enabled = CanStop,
+            SlotIndex = 2,
             Cooldown01 = 0f,
             Tooltip = stopTooltip,
             Type = CommandEntryType.Command
         });
     }
 
-    void AddAbilityCommands()
+    protected override void AddAbilityCommands(List<CommandEntry> entries)
     {
-        if (abilityRouter == null) return;
+        if (AbilityRouter == null)
+            return;
 
-        string currentMode = ControlModeManager.Instance != null ? ControlModeManager.Instance.CurrentModeName : string.Empty;
-        IReadOnlyList<IActivatableAbility> abilities = abilityRouter.ActivatableAbilities;
-        for (int i = 0; i < abilities.Count; i++)
+        IReadOnlyList<UnitAbility> abilitySlots = AbilityRouter.RtsAbilitySlots;
+        int slotCount = Mathf.Min(abilitySlots.Count, AbilitySlotOrder.Length);
+        for (int i = 0; i < slotCount; i++)
         {
-            IActivatableAbility ability = abilities[i];
+            UnitAbility ability = abilitySlots[i];
             if (ability == null || string.IsNullOrWhiteSpace(ability.AbilityId))
                 continue;
 
-            bool modeAvailable = ability.AvailableMode.IsAvailableInMode(currentMode);
-            _entries.Add(new CommandEntry
-            {
-                Id = ability.AbilityId,
-                Icon = ability.Icon,
-                Name = string.IsNullOrWhiteSpace(ability.DisplayName) ? ability.AbilityId : ability.DisplayName,
-                HotkeyText = ability.HotkeyText,
-                Enabled = ability.IsEnabled && modeAvailable,
-                Cooldown01 = ability.Cooldown01,
-                Tooltip = BuildAbilityTooltip(ability),
-                Type = CommandEntryType.Ability
-            });
+            if (!ability.ShowInCommandCard || !ability.IsAvailableInCurrentMode)
+                continue;
+
+            entries.Add(CreateAbilityEntry(ability, AbilitySlotOrder[i]));
         }
-    }
-
-    static string BuildAbilityTooltip(IActivatableAbility ability)
-    {
-        string modeLabel = ability.AvailableMode.ToDisplayLabel();
-        if (string.IsNullOrWhiteSpace(ability.Tooltip))
-            return $"Available mode: {modeLabel}";
-
-        return $"{ability.Tooltip}\nAvailable mode: {modeLabel}";
     }
 }

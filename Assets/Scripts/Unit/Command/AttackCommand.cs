@@ -1,7 +1,7 @@
 ﻿using Unit.Command;
 using UnityEngine;
 
-public sealed class AttackCommand : IUnitCommand
+public sealed class AttackCommand : IUnitCommand, ICommandRoutePointProvider
 {
     readonly Transform _initialTarget;
     readonly bool _isAttackMove;
@@ -22,8 +22,7 @@ public sealed class AttackCommand : IUnitCommand
     Vector3 _resolvedMoveDestination;
     bool _hasResolvedMoveDestination;
     bool _done;
-
-    // Direct attack target (kept for compatibility).
+    
     public AttackCommand(
         Transform target,
         float stopBuffer = 0.1f,
@@ -41,8 +40,7 @@ public sealed class AttackCommand : IUnitCommand
         _repathInterval = Mathf.Max(0.05f, repathInterval);
         _repathDistance = Mathf.Max(0.05f, repathDistance);
     }
-
-    // Attack-move: move to destination and auto-acquire targets in detection range.
+    
     public AttackCommand(
         Vector3 moveDestination,
         float arriveDist = -1f,
@@ -173,6 +171,25 @@ public sealed class AttackCommand : IUnitCommand
     public void End(UnitContext ctx)
     {
         ctx.Motor.CancelPathing();
+    }
+    //获取路径点
+    public bool TryGetRoutePoint(UnitContext ctx, out Vector3 worldPoint)
+    {
+        Transform routeTarget = _lockedTarget != null ? _lockedTarget : _initialTarget;
+        if (routeTarget != null)
+        {
+            worldPoint = routeTarget.position;
+            return true;
+        }
+
+        if (_isAttackMove)
+        {
+            worldPoint = _hasResolvedMoveDestination ? _resolvedMoveDestination : _moveDestination;
+            return true;
+        }
+
+        worldPoint = default;
+        return false;
     }
 
     void TryAcquireTarget(UnitContext ctx, float dt)

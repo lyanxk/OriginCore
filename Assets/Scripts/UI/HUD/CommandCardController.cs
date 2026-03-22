@@ -11,13 +11,12 @@ public class CommandCardController : MonoBehaviour
     [SerializeField] int slotCount = 12;
     [SerializeField] TooltipController tooltipController;
 
-    [Header("World Command")]
-    [SerializeField] Camera worldCamera;
-    [SerializeField] LayerMask groundMask = ~0;
+    [Header("Input")]
     [SerializeField] InputIntentSource inputSource;
 
     readonly List<CommandSlotView> _slotViews = new List<CommandSlotView>(16);
     readonly List<CommandEntry> _visibleEntries = new List<CommandEntry>(16);
+    readonly List<CommandEntry?> _slottedEntries = new List<CommandEntry?>(16);
 
     SelectionManager _selection;
 
@@ -26,13 +25,11 @@ public class CommandCardController : MonoBehaviour
 
     void Awake()
     {
-        if (worldCamera == null)
-            worldCamera = Camera.main;
-
         if (inputSource == null)
             inputSource = FindObjectOfType<InputIntentSource>();
 
         EnsureSlots();
+        EnsureSlotEntryBuffer();
     }
 
     void OnEnable()
@@ -65,21 +62,38 @@ public class CommandCardController : MonoBehaviour
 
     public bool TryExecuteBySlot(int slotIndex)
     {
-        if (slotIndex < 0 || slotIndex >= _visibleEntries.Count)
+        if (!TryGetEntryAtSlot(slotIndex, out CommandEntry entry))
             return false;
 
-        CommandEntry entry = _visibleEntries[slotIndex];
-        if (!entry.Enabled)
+        if (!entry.Enabled || entry.Type == CommandEntryType.Passive)
             return false;
 
-        bool executed = entry.Type == CommandEntryType.Ability
-            ? ExecuteAbility(entry.Id)
-            : ExecuteCommand(entry.Id);
+        bool executed;
+        if (entry.Type == CommandEntryType.Ability)
+            executed = ExecuteAbility(entry.Id);
+        else if (entry.Type == CommandEntryType.Production)
+            executed = ExecuteProduction(entry.Id);
+        else
+            executed = ExecuteCommand(entry.Id);
 
         if (executed)
             RefreshFromManager();
 
         return executed;
+    }
+
+    public bool TryGetEntryAtSlot(int slotIndex, out CommandEntry entry)
+    {
+        entry = default;
+        if (slotIndex < 0 || slotIndex >= _slottedEntries.Count)
+            return false;
+
+        CommandEntry? slottedEntry = _slottedEntries[slotIndex];
+        if (!slottedEntry.HasValue)
+            return false;
+
+        entry = slottedEntry.Value;
+        return true;
     }
 
     void BindSelectionManager()
@@ -116,6 +130,7 @@ public class CommandCardController : MonoBehaviour
     void RefreshEntries(IReadOnlyList<Selectable> selected, Selectable primary)
     {
         _visibleEntries.Clear();
+        ClearSlotEntries();
 
         if (selected == null || selected.Count == 0)
         {
@@ -130,7 +145,7 @@ public class CommandCardController : MonoBehaviour
             return;
         }
 
-        UnitUIDataSource primaryData = effectivePrimary.GetComponent<UnitUIDataSource>();
+        ICommandCardDataSource primaryData = effectivePrimary.CommandCardDataSource;
         if (primaryData == null)
         {
             BindSlots();
@@ -145,6 +160,7 @@ public class CommandCardController : MonoBehaviour
             ApplyGroupAvailability(selected);
 
         ApplyEntryVisibilityRules(effectivePrimary, primaryData);
+        AssignEntriesToSlots();
         BindSlots();
     }
 
@@ -165,7 +181,7 @@ public class CommandCardController : MonoBehaviour
                 continue;
             }
 
-            UnitUIDataSource dataSource = selectable.GetComponent<UnitUIDataSource>();
+            ICommandCardDataSource dataSource = selectable.CommandCardDataSource;
             if (dataSource != null)
             {
                 allCanMove &= dataSource.CanMove;
@@ -174,9 +190,9 @@ public class CommandCardController : MonoBehaviour
             }
             else
             {
-                bool hasExecutor = selectable.GetComponent<CommandExecutor>() != null;
-                bool hasMotor = selectable.GetComponent<UnitBase>() != null;
-                bool hasCombat = selectable.GetComponent<UnitCombat>() != null;
+                bool hasExecutor = selectable.CommandExecutor != null;
+                bool hasMotor = selectable.Motor != null;
+                bool hasCombat = selectable.Combat != null;
 
                 allCanMove &= hasExecutor && hasMotor;
                 allCanAttack &= hasExecutor && hasCombat;
@@ -199,7 +215,7 @@ public class CommandCardController : MonoBehaviour
         }
     }
 
-    void ApplyEntryVisibilityRules(Selectable primary, UnitUIDataSource primaryData)
+    void ApplyEntryVisibilityRules(Selectable primary, ICommandCardDataSource primaryData)
     {
         bool showBaseCommands = ShouldShowBaseCommands(primary, primaryData);
 
@@ -207,7 +223,7 @@ public class CommandCardController : MonoBehaviour
         {
             CommandEntry entry = _visibleEntries[i];
 
-            if (entry.Type == CommandEntryType.Ability)
+            if (entry.Type == CommandEntryType.Ability || entry.Type == CommandEntryType.Passive)
             {
                 if (!entry.Enabled)
                     _visibleEntries.RemoveAt(i);
@@ -233,7 +249,7 @@ public class CommandCardController : MonoBehaviour
             || commandId == CommandEntryIds.Stop;
     }
 
-    static bool ShouldShowBaseCommands(Selectable primary, UnitUIDataSource primaryData)
+    static bool ShouldShowBaseCommands(Selectable primary, ICommandCardDataSource primaryData)
     {
         if (primaryData != null && (primaryData.CanMove || primaryData.CanAttack || primaryData.CanStop))
             return true;
@@ -241,10 +257,7 @@ public class CommandCardController : MonoBehaviour
         if (primary == null)
             return false;
 
-        bool hasMotor = primary.GetComponent<UnitBase>() != null;
-        bool hasExecutor = primary.GetComponent<CommandExecutor>() != null;
-        bool hasCombat = primary.GetComponent<UnitCombat>() != null;
-        return hasMotor || hasExecutor || hasCombat;
+        return primary.Motor != null || primary.CommandExecutor != null || primary.Combat != null;
     }
 
     Selectable ResolvePrimary(IReadOnlyList<Selectable> selected, Selectable primary)
@@ -292,14 +305,11 @@ public class CommandCardController : MonoBehaviour
         for (int i = 0; i < _slotViews.Count; i++)
         {
             CommandSlotView slot = _slotViews[i];
-            bool hasEntry = i < _visibleEntries.Count;
-            slot.gameObject.SetActive(hasEntry);
-            if (!hasEntry)
-                continue;
+            slot.gameObject.SetActive(true);
 
-            CommandEntry entry = _visibleEntries[i];
+            bool hasEntry = TryGetEntryAtSlot(i, out CommandEntry entry);
             if (hasEntry)
-                entry.HotkeyText = GetSlotHotkeyText(i, entry.HotkeyText);
+                entry.HotkeyText = ResolveDisplayedHotkeyText(entry, i);
 
             slot.Bind(
                 i,
@@ -339,11 +349,11 @@ public class CommandCardController : MonoBehaviour
         if (primary == null)
             return false;
 
-        UnitUIDataSource dataSource = primary.GetComponent<UnitUIDataSource>();
+        ICommandCardDataSource dataSource = primary.CommandCardDataSource;
         if (dataSource != null)
             return dataSource.TryActivateAbility(abilityId);
 
-        AbilityInputRouter router = primary.GetComponent<AbilityInputRouter>();
+        AbilityInputRouter router = primary.AbilityRouter;
         return router != null && router.TryActivate(abilityId);
     }
 
@@ -355,22 +365,15 @@ public class CommandCardController : MonoBehaviour
         switch (commandId)
         {
             case CommandEntryIds.Move:
-            {
-                if (!TryGetGroundPoint(out Vector3 point))
-                    return false;
-
-                return IssueMove(point);
-            }
+                RtsQueuedOrderState.SetPendingOrder(RtsQueuedOrderType.Move);
+                return true;
 
             case CommandEntryIds.Attack:
-            {
-                if (!TryGetGroundPoint(out Vector3 point))
-                    return false;
-
-                return IssueAttack(point);
-            }
+                RtsQueuedOrderState.SetPendingOrder(RtsQueuedOrderType.Attack);
+                return true;
 
             case CommandEntryIds.Stop:
+                RtsQueuedOrderState.Clear();
                 return IssueStop();
 
             default:
@@ -378,84 +381,22 @@ public class CommandCardController : MonoBehaviour
         }
     }
 
-    bool IssueMove(Vector3 destination)
+    bool ExecuteProduction(string productionId)
     {
-        bool append = GetAppendMode();
-        bool issued = false;
+        if (_selection == null || _selection.SelectedCount == 0)
+            return false;
 
-        IReadOnlyList<Selectable> selected = _selection.Selected;
-        for (int i = 0; i < selected.Count; i++)
-        {
-            Selectable selectable = selected[i];
-            if (selectable == null) continue;
+        Selectable primary = ResolvePrimary(_selection.Selected, _selection.Primary);
+        if (primary == null)
+            return false;
 
-            CommandExecutor executor = selectable.GetComponent<CommandExecutor>();
-            if (executor == null) continue;
-
-            executor.Enqueue(new MoveCommand(destination), append);
-            issued = true;
-        }
-
-        return issued;
-    }
-
-    bool IssueAttack(Vector3 destination)
-    {
-        bool append = GetAppendMode();
-        bool issued = false;
-
-        IReadOnlyList<Selectable> selected = _selection.Selected;
-        for (int i = 0; i < selected.Count; i++)
-        {
-            Selectable selectable = selected[i];
-            if (selectable == null) continue;
-
-            UnitCombat combat = selectable.GetComponent<UnitCombat>();
-            CommandExecutor executor = selectable.GetComponent<CommandExecutor>();
-            if (combat == null || executor == null) continue;
-
-            executor.Enqueue(new AttackCommand(destination), append);
-            issued = true;
-        }
-
-        return issued;
+        ICommandCardDataSource dataSource = primary.CommandCardDataSource;
+        return dataSource != null && dataSource.TryProduce(productionId);
     }
 
     bool IssueStop()
     {
-        bool issued = false;
-
-        IReadOnlyList<Selectable> selected = _selection.Selected;
-        for (int i = 0; i < selected.Count; i++)
-        {
-            Selectable selectable = selected[i];
-            if (selectable == null) continue;
-
-            CommandExecutor executor = selectable.GetComponent<CommandExecutor>();
-            if (executor == null) continue;
-
-            executor.Enqueue(new StopCommand(), append: false);
-            issued = true;
-        }
-
-        return issued;
-    }
-
-    bool TryGetGroundPoint(out Vector3 point)
-    {
-        point = Vector3.zero;
-
-        if (worldCamera == null)
-            return false;
-
-        Vector2 pointer = GetPointerScreenPosition();
-        Ray ray = worldCamera.ScreenPointToRay(pointer);
-
-        if (!Physics.Raycast(ray, out RaycastHit hit, 500f, groundMask))
-            return false;
-
-        point = hit.point;
-        return true;
+        return RtsOrderDispatcher.TryIssueStop(_selection.Selected);
     }
 
     Vector2 GetPointerScreenPosition()
@@ -473,37 +414,69 @@ public class CommandCardController : MonoBehaviour
         return Input.mousePosition;
     }
 
-    bool GetAppendMode()
+    string ResolveDisplayedHotkeyText(CommandEntry entry, int slotIndex)
     {
-        if (inputSource != null)
-            return inputSource.Current.Shift;
+        string hotkeyToken = CommandHotkeyUtility.ResolveHotkeyToken(entry, slotIndex);
+        if (string.IsNullOrEmpty(hotkeyToken))
+            return string.Empty;
 
-        if (Keyboard.current == null)
-            return false;
+        if (inputSource == null)
+            return hotkeyToken;
 
-        return Keyboard.current.leftShiftKey.isPressed || Keyboard.current.rightShiftKey.isPressed;
+        return inputSource.GetCommandBindingDisplayString(hotkeyToken);
     }
 
-    static string GetSlotHotkeyText(int slotIndex, string fallback)
+    void AssignEntriesToSlots()
     {
-        if (!string.IsNullOrWhiteSpace(fallback))
-            return fallback;
+        EnsureSlotEntryBuffer();
 
-        switch (slotIndex)
+        for (int i = 0; i < _slottedEntries.Count; i++)
+            _slottedEntries[i] = null;
+
+        int nextAutoSlot = 0;
+        for (int i = 0; i < _visibleEntries.Count; i++)
         {
-            case 0: return "Q";
-            case 1: return "W";
-            case 2: return "E";
-            case 3: return "R";
-            case 4: return "A";
-            case 5: return "S";
-            case 6: return "D";
-            case 7: return "F";
-            case 8: return "Z";
-            case 9: return "X";
-            case 10: return "C";
-            case 11: return "V";
-            default: return fallback;
+            CommandEntry entry = _visibleEntries[i];
+            if (TryAssignPreferredSlot(entry))
+                continue;
+
+            while (nextAutoSlot < _slottedEntries.Count && _slottedEntries[nextAutoSlot].HasValue)
+                nextAutoSlot++;
+
+            if (nextAutoSlot >= _slottedEntries.Count)
+                break;
+
+            entry.SlotIndex = nextAutoSlot;
+            _slottedEntries[nextAutoSlot] = entry;
+            nextAutoSlot++;
         }
+    }
+
+    bool TryAssignPreferredSlot(CommandEntry entry)
+    {
+        if (entry.SlotIndex < 0 || entry.SlotIndex >= _slottedEntries.Count)
+            return false;
+
+        if (_slottedEntries[entry.SlotIndex].HasValue)
+            return false;
+
+        _slottedEntries[entry.SlotIndex] = entry;
+        return true;
+    }
+
+    void ClearSlotEntries()
+    {
+        EnsureSlotEntryBuffer();
+        for (int i = 0; i < _slottedEntries.Count; i++)
+            _slottedEntries[i] = null;
+    }
+
+    void EnsureSlotEntryBuffer()
+    {
+        while (_slottedEntries.Count < slotCount)
+            _slottedEntries.Add(null);
+
+        while (_slottedEntries.Count > slotCount)
+            _slottedEntries.RemoveAt(_slottedEntries.Count - 1);
     }
 }

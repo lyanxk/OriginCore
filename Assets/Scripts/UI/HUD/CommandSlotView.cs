@@ -7,6 +7,7 @@ using UnityEngine.UI;
 public class CommandSlotView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] Button button;
+    [SerializeField] Graphic backgroundGraphic;
     [SerializeField] Image iconImage;
     [SerializeField] TMP_Text nameText;
     [SerializeField] TMP_Text hotkeyText;
@@ -25,6 +26,9 @@ public class CommandSlotView : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         if (button == null)
             button = GetComponent<Button>();
+
+        if (backgroundGraphic == null && button != null)
+            backgroundGraphic = button.targetGraphic as Graphic;
 
         if (button != null)
             button.onClick.AddListener(HandleClicked);
@@ -77,6 +81,9 @@ public class CommandSlotView : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         if (!_hasEntry)
         {
+            if (backgroundGraphic != null)
+                backgroundGraphic.enabled = false;
+
             if (iconImage != null)
             {
                 iconImage.sprite = null;
@@ -104,6 +111,9 @@ public class CommandSlotView : MonoBehaviour, IPointerEnterHandler, IPointerExit
             return;
         }
 
+        if (backgroundGraphic != null)
+            backgroundGraphic.enabled = true;
+
         if (iconImage != null)
         {
             iconImage.sprite = _entry.Icon;
@@ -127,6 +137,6 @@ public class CommandSlotView : MonoBehaviour, IPointerEnterHandler, IPointerExit
         }
 
         if (button != null)
-            button.interactable = _entry.Enabled;
+            button.interactable = _entry.Enabled && _entry.Type != CommandEntryType.Passive;
     }
 }

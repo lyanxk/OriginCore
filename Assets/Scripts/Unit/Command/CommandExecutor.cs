@@ -3,7 +3,7 @@ using Unit.Command;
 using UnityEngine;
 
 [DisallowMultipleComponent]
-public class CommandExecutor : MonoBehaviour
+public class CommandExecutor : MonoBehaviour, ISelectionRouteProvider
 {
     const int MaxCommandCount = 6;
 
@@ -81,5 +81,39 @@ public class CommandExecutor : MonoBehaviour
     public void Clear()
     {
         InterruptAndClear();
+    }
+
+    public bool TryBuildSelectionRoute(List<Vector3> points)
+    {
+        if (points == null || _ctx == null || _ctx.Transform == null)
+            return false;
+
+        points.Clear();
+        points.Add(_ctx.Transform.position);
+
+        // Route preview follows the active command first, then each queued destination in order.
+        AppendRoutePoint(_current, points);
+        foreach (IUnitCommand queuedCommand in _queue)
+            AppendRoutePoint(queuedCommand, points);
+
+        return points.Count > 1;
+    }
+
+    void AppendRoutePoint(IUnitCommand command, List<Vector3> points)
+    {
+        if (command is not ICommandRoutePointProvider routePointProvider)
+            return;
+
+        if (!routePointProvider.TryGetRoutePoint(_ctx, out Vector3 routePoint))
+            return;
+
+        if (points.Count > 0)
+        {
+            Vector3 previous = points[points.Count - 1];
+            if ((previous - routePoint).sqrMagnitude <= 0.01f)
+                return;
+        }
+
+        points.Add(routePoint);
     }
 }

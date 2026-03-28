@@ -36,9 +36,8 @@ public static class RtsOrderDispatcher
         if (count == 0)
             return issued;
 
-        GroupOrderUtility.BuildSpreadDestinations(count, destination, destinationBuffer);
         for (int i = 0; i < count; i++)
-            executorBuffer[i].Enqueue(new MoveCommand(destinationBuffer[i]), append);
+            executorBuffer[i].Enqueue(new MoveCommand(destination), append);
 
         return true;
     }

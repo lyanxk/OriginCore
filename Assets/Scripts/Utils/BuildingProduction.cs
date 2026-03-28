@@ -40,7 +40,10 @@ public class BuildingProduction : MonoBehaviour, IGroundCommandReceiver, ISelect
     readonly Dictionary<int, float> _unitClearanceRadiusCache = new Dictionary<int, float>(MaxSlotCount);
 
     TeamAffiliation _teamAffiliation;
+    Vector3 _buildingCenter;
+    Vector2 _buildingHalfExtents = Vector2.one * DefaultBuildingRadius;
     float _buildingRadius = DefaultBuildingRadius;
+    int _occupancyBuildingId;
     [SerializeField, HideInInspector] bool _hasRallyPoint;
     [SerializeField, HideInInspector] bool _usesDefaultRallyPoint = true;
     [SerializeField, HideInInspector] Vector3 _rallyPoint;
@@ -54,6 +57,21 @@ public class BuildingProduction : MonoBehaviour, IGroundCommandReceiver, ISelect
         EnsureRallyPoint();
     }
 
+    void OnEnable()
+    {
+        SyncBuildingOccupancy();
+    }
+
+    void OnDisable()
+    {
+        ReleaseBuildingOccupancy();
+    }
+
+    void OnDestroy()
+    {
+        ReleaseBuildingOccupancy();
+    }
+
     void OnValidate()
     {
         EnsureSlotArray();
@@ -61,10 +79,12 @@ public class BuildingProduction : MonoBehaviour, IGroundCommandReceiver, ISelect
         CacheTeam();
         CacheBuildingColliderProfile();
         EnsureRallyPoint();
+        SyncBuildingOccupancy();
     }
 
     void Update()
     {
+        SyncBuildingOccupancy();
         TryProcessQueueHead();
     }
 
@@ -156,6 +176,12 @@ public class BuildingProduction : MonoBehaviour, IGroundCommandReceiver, ISelect
         _buildingRadius = hasBounds
             ? Mathf.Max(mergedBounds.extents.x, mergedBounds.extents.z)
             : DefaultBuildingRadius;
+        _buildingCenter = hasBounds ? mergedBounds.center : transform.position;
+        _buildingHalfExtents = hasBounds
+            ? new Vector2(
+                Mathf.Max(0.1f, mergedBounds.extents.x),
+                Mathf.Max(0.1f, mergedBounds.extents.z))
+            : Vector2.one * DefaultBuildingRadius;
     }
 
     bool TryProcessQueueHead()
@@ -190,7 +216,7 @@ public class BuildingProduction : MonoBehaviour, IGroundCommandReceiver, ISelect
         if (maxRadius < minRadius)
             maxRadius = minRadius;
 
-        Vector3 center = transform.position;
+        Vector3 center = _buildingCenter;
         Vector3 forward = transform.forward;
         float baseAngle = Mathf.Atan2(forward.z, forward.x);
 
@@ -225,6 +251,12 @@ public class BuildingProduction : MonoBehaviour, IGroundCommandReceiver, ISelect
 
     bool IsPositionAvailable(Vector3 worldPos, float clearanceRadius)
     {
+        if (OccupancySystem.TryGetInstance(out OccupancySystem occupancy))
+        {
+            if (occupancy.IsPositionOccupied(worldPos, clearanceRadius, ignoreBuildingOwner: this))
+                return false;
+        }
+
         int hitCount = Physics.OverlapSphereNonAlloc(
             worldPos,
             clearanceRadius,
@@ -340,7 +372,7 @@ public class BuildingProduction : MonoBehaviour, IGroundCommandReceiver, ISelect
         if (!_hasRallyPoint)
             return false;
 
-        Vector3 center = transform.position;
+        Vector3 center = _buildingCenter;
         if ((center - _rallyPoint).sqrMagnitude <= 0.01f)
             return false;
 
@@ -373,7 +405,7 @@ public class BuildingProduction : MonoBehaviour, IGroundCommandReceiver, ISelect
 
     Vector3 ResolveDefaultRallyPoint()
     {
-        Vector3 fallbackPoint = transform.position + transform.forward * (_buildingRadius + SpawnSearchPadding);
+        Vector3 fallbackPoint = _buildingCenter + transform.forward * (_buildingRadius + SpawnSearchPadding);
         if (NavMesh.SamplePosition(fallbackPoint, out NavMeshHit navHit, RallyPointSampleRadius, NavMesh.AllAreas))
             return navHit.position;
 
@@ -395,7 +427,15 @@ public class BuildingProduction : MonoBehaviour, IGroundCommandReceiver, ISelect
 
         UnitBase spawnedMotor = ResolveSpawnedComponent<UnitBase>(spawned);
         if (spawnedMotor != null)
-            spawnedMotor.SetDestination(_rallyPoint);
+        {
+            OccupancyStandingRequest request = OccupancyStandingRequest.CreateDefault(spawnedMotor.OccupancyRadius);
+            request.SearchMode = OccupancySearchMode.RingAroundTarget;
+
+            if (OccupancySystem.Instance.TryAssignStandingPoint(spawnedMotor, _rallyPoint, request, out Vector3 standPoint))
+                spawnedMotor.SetDestination(standPoint);
+            else
+                spawnedMotor.SetDestination(_rallyPoint);
+        }
     }
 
     static T ResolveSpawnedComponent<T>(GameObject spawned) where T : Component
@@ -414,5 +454,31 @@ public class BuildingProduction : MonoBehaviour, IGroundCommandReceiver, ISelect
     {
         if (slots == null || slots.Length != MaxSlotCount)
             Array.Resize(ref slots, MaxSlotCount);
+    }
+
+    void SyncBuildingOccupancy()
+    {
+        if (!Application.isPlaying)
+            return;
+
+        _occupancyBuildingId = OccupancySystem.Instance.RegisterOrUpdateBuilding(
+            this,
+            _buildingCenter,
+            _buildingHalfExtents,
+            Mathf.Max(_buildingRadius, DefaultBuildingRadius));
+    }
+
+    void ReleaseBuildingOccupancy()
+    {
+        if (!Application.isPlaying)
+            return;
+
+        if (_occupancyBuildingId == 0)
+            return;
+
+        if (OccupancySystem.TryGetInstance(out OccupancySystem occupancy))
+            occupancy.UnregisterBuilding(this);
+
+        _occupancyBuildingId = 0;
     }
 }

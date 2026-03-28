@@ -1068,6 +1068,21 @@ MonoBehaviour:
   cornerReachDist: 0.25
   repathInterval: 0.25
   repathOnMoveTarget: 0.6
+  occupancyRadius: 0.45
+  unitSeparationRange: 0.4
+  buildingPushRange: 0.3
+  buildingPathLookAheadDistance: 2.5
+  buildingPathSteerWeight: 2.2
+  buildingAvoidanceStrength: 2.25
+  buildingEdgeSlideStrength: 1.4
+  localCorrectionSpeed: 2.8
+  illegalRecoverSearchRadius: 3
+  illegalRecoverCooldown: 0.35
+  navMeshRecoverSpeed: 3
+  navMeshCheckRadius: 0.4
+  navMeshRecoverSampleRadius: 2.5
+  navMeshHardSnapDistance: 1.25
+  navMeshHardSnapCooldown: 0.25
 --- !u!114 &883050543
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1145,7 +1160,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00f738e8aca44eb08b8eefa6d31f0f22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  abilities:
+  rtsAbilities:
   - rid: 5414467457835597824
   - rid: 5414467457835597825
   - rid: -2
@@ -1154,6 +1169,9 @@ MonoBehaviour:
   - rid: -2
   - rid: -2
   - rid: -2
+  actFpsAbilities:
+  - rid: 5414467585456209920
+  actFpsAbilitiesInitialized: 1
   references:
     version: 2
     RefIds:
@@ -1183,6 +1201,17 @@ MonoBehaviour:
         damageMultiplier: 1.2
         updateInterval: 0.25
         affectSelf: 1
+    - rid: 5414467585456209920
+      type: {class: DashAbility, ns: Unit.Ability, asm: Assembly-CSharp}
+      data:
+        abilityId: ability.dash
+        displayName: Dash
+        icon: {fileID: 0}
+        hotkeyText: Mouse5
+        tooltip: Dash forward quickly.
+        cooldown: 0
+        dashSpeed: 10
+        dashDuration: 0.2
 --- !u!114 &883050551
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2365,6 +2394,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1792358917004067360}
+    - targetCorrespondingSourceObject: {fileID: 7176705108140614539, guid: 193ddd57e1775f5489f1a7f339e168b5,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1792358917004067366}
   m_SourcePrefab: {fileID: 100100000, guid: 193ddd57e1775f5489f1a7f339e168b5, type: 3}
 --- !u!1 &1792358917004067359 stripped
 GameObject:
@@ -2396,6 +2429,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 11d743fb253c6fd4b9e90ad119b1aa32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1792358917004067366
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1792358917004067359}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e97f097631bfb94999af70430f2c4d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1001 &5265934612773285674

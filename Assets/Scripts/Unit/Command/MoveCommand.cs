@@ -7,11 +7,13 @@ public sealed class MoveCommand : IUnitCommand, ICommandRoutePointProvider
     readonly float _arriveDist;
     readonly float _stuckTimeout;
     readonly float _stuckMoveThreshold;
+
     Vector3 _resolvedDest;
     bool _hasResolvedDest;
     Vector3 _lastPosition;
     float _stuckTimer;
     bool _done;
+    bool _arrived;
 
     public MoveCommand(
         Vector3 dest,
@@ -28,7 +30,20 @@ public sealed class MoveCommand : IUnitCommand, ICommandRoutePointProvider
     public void Begin(UnitContext ctx)
     {
         _done = false;
-        ctx.Motor.SetDestination(_dest);
+        _arrived = false;
+
+        Vector3 targetForPathing = _dest;
+        UnitBase motor = ctx?.Motor;
+        if (motor != null)
+        {
+            OccupancyStandingRequest request = OccupancyStandingRequest.CreateDefault(motor.OccupancyRadius);
+            request.SearchMode = OccupancySearchMode.RingAroundTarget;
+
+            if (OccupancySystem.Instance.TryAssignStandingPoint(motor, _dest, request, out Vector3 standingPoint))
+                targetForPathing = standingPoint;
+        }
+
+        ctx.Motor.SetDestination(targetForPathing);
         _resolvedDest = ctx.Motor.CurrentDestination;
         _hasResolvedDest = ctx.Motor.HasDestination;
         _lastPosition = ctx.Transform.position;
@@ -84,11 +99,15 @@ public sealed class MoveCommand : IUnitCommand, ICommandRoutePointProvider
         // 用水平距离判定（默认与 motor 的 arriveDistance 保持一致）
         Vector3 a = ctx.Transform.position; a.y = 0f;
         Vector3 b = doneDest;              b.y = 0f;
-        return Vector3.Distance(a, b) <= arriveDist;
+        _arrived = Vector3.Distance(a, b) <= arriveDist;
+        return _arrived;
     }
 
     public void End(UnitContext ctx)
     {
+        if (!_arrived && ctx?.Motor != null && OccupancySystem.TryGetInstance(out OccupancySystem occupancy))
+            occupancy.ReleaseClaim(ctx.Motor);
+
         ctx.Motor.CancelPathing();
     }
     //获取路径点

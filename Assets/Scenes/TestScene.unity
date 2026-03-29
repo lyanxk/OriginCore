@@ -954,6 +954,25 @@ MonoBehaviour:
   m_Spacing: {x: 0, y: 0}
   m_Constraint: 1
   m_ConstraintCount: 4
+--- !u!1 &754671241 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4198138853953822667, guid: 76494353aeec76946905ca31358ad48a,
+    type: 3}
+  m_PrefabInstance: {fileID: 7678273778404885366}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &754671252
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 754671241}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 587eff391a77ad146abb0c557e62888b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  team: 2
 --- !u!1 &782053147
 GameObject:
   m_ObjectHideFlags: 0
@@ -1016,6 +1035,7 @@ GameObject:
   - component: {fileID: 883050552}
   - component: {fileID: 883050554}
   - component: {fileID: 883050555}
+  - component: {fileID: 883050556}
   m_Layer: 6
   m_Name: TestHeroUnit
   m_TagString: Player
@@ -1096,7 +1116,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outline: {fileID: 883050548}
-  teamAffiliation: {fileID: 0}
+  teamAffiliation: {fileID: 883050556}
   commandExecutor: {fileID: 883050551}
   combat: {fileID: 883050554}
   motor: {fileID: 883050542}
@@ -1163,8 +1183,8 @@ MonoBehaviour:
   rtsAbilities:
   - rid: 5414467457835597824
   - rid: 5414467457835597825
-  - rid: -2
-  - rid: -2
+  - rid: 5414467457835597826
+  - rid: 5414467457835597827
   - rid: -2
   - rid: -2
   - rid: -2
@@ -1201,6 +1221,26 @@ MonoBehaviour:
         damageMultiplier: 1.2
         updateInterval: 0.25
         affectSelf: 1
+    - rid: 5414467457835597826
+      type: {class: RtsVoidImplosionAbility, ns: Unit.Ability, asm: Assembly-CSharp}
+      data:
+        abilityId: ability.rts.voidImplosion
+        displayName: Void Implosion
+        icon: {fileID: 0}
+        tooltip: Activate, then left-click a point to implode nearby enemies.
+        cooldown: 0
+        damage: 50
+        radius: 1
+    - rid: 5414467457835597827
+      type: {class: RtsCelestialSentenceAbility, ns: Unit.Ability, asm: Assembly-CSharp}
+      data:
+        abilityId: ability.rts.celestialSentence
+        displayName: Celestial Sentence
+        icon: {fileID: 0}
+        tooltip: Release immediately to damage nearby enemies.
+        cooldown: 0
+        damage: 50
+        radius: 1
     - rid: 5414467585456209920
       type: {class: DashAbility, ns: Unit.Ability, asm: Assembly-CSharp}
       data:
@@ -1252,7 +1292,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHp: 100
   _currentHp: 0
-  teamAffiliation: {fileID: 0}
+  teamAffiliation: {fileID: 883050556}
   startHpPercent: 1
 --- !u!114 &883050554
 MonoBehaviour:
@@ -1278,7 +1318,7 @@ MonoBehaviour:
   meleeRadius: 0.9
   attackOrigin: {fileID: 0}
   defaultOriginHeight: 1
-  teamAffiliation: {fileID: 0}
+  teamAffiliation: {fileID: 883050556}
 --- !u!114 &883050555
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1309,6 +1349,19 @@ MonoBehaviour:
   moveTooltip: Move to target position.
   attackTooltip: Attack-move to target position.
   stopTooltip: Stop current command queue immediately.
+--- !u!114 &883050556
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 883050540}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 587eff391a77ad146abb0c557e62888b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  team: 0
 --- !u!1 &1041153977
 GameObject:
   m_ObjectHideFlags: 0
@@ -2644,15 +2697,34 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4064889438472452534, guid: 76494353aeec76946905ca31358ad48a,
+        type: 3}
+      propertyPath: teamAffiliation
+      value: 
+      objectReference: {fileID: 754671252}
     - target: {fileID: 4198138853953822667, guid: 76494353aeec76946905ca31358ad48a,
         type: 3}
       propertyPath: m_Name
       value: BaseUnit
       objectReference: {fileID: 0}
+    - target: {fileID: 5624234258582364395, guid: 76494353aeec76946905ca31358ad48a,
+        type: 3}
+      propertyPath: teamAffiliation
+      value: 
+      objectReference: {fileID: 754671252}
+    - target: {fileID: 7097667328746856919, guid: 76494353aeec76946905ca31358ad48a,
+        type: 3}
+      propertyPath: teamAffiliation
+      value: 
+      objectReference: {fileID: 754671252}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4198138853953822667, guid: 76494353aeec76946905ca31358ad48a,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 754671252}
   m_SourcePrefab: {fileID: 100100000, guid: 76494353aeec76946905ca31358ad48a, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

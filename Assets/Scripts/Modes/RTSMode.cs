@@ -5,6 +5,13 @@ using UnityEngine.UI;
 
 public class RTSMode : IControlMode
 {
+    const int PointPreviewSegments = 48;
+    const float PointPreviewLineWidth = 0.08f;
+    const float PointPreviewYOffset = 0.06f;
+    static readonly Color PointPreviewColor = new Color(1f, 0.45f, 0.1f, 0.95f);
+
+    static Material s_pointPreviewMaterial;
+
     public string Name => "RTS";
 
     readonly UnitBase _unit;
@@ -53,6 +60,8 @@ public class RTSMode : IControlMode
     EventSystem _pointerEventSystem;
     PointerEventData _pointerEventData;
     Graphic _selectionBoxGraphic;
+    GameObject _pointTargetPreviewObject;
+    LineRenderer _pointTargetPreviewLine;
 
     SelectionManager Sel => SelectionManager.Instance;
 
@@ -100,11 +109,13 @@ public class RTSMode : IControlMode
         _camFocus = _unit.transform.position;
         _unit.CancelPathing();
         RtsQueuedOrderState.Clear();
+        HidePointTargetingPreview();
     }
 
     public void Exit()
     {
         RtsQueuedOrderState.Clear();
+        DestroyPointTargetingPreview();
         Sel?.ClearSelection();
     }
 
@@ -248,6 +259,8 @@ public class RTSMode : IControlMode
             RtsAbilityTargetingState.Clear();
             Sel?.ClearSelection();
         }
+
+        UpdateAbilityTargetingPreview(intent.PointerScreenPos);
     }
 
     bool HandleMoveCommand(InputIntent intent)
@@ -311,6 +324,113 @@ public class RTSMode : IControlMode
             default:
                 return false;
         }
+    }
+
+    void UpdateAbilityTargetingPreview(Vector2 pointerScreenPos)
+    {
+        if (!RtsAbilityTargetingState.HasPending ||
+            RtsAbilityTargetingState.TargetingMode != Unit.Ability.RtsAbilityTargetingMode.Point)
+        {
+            HidePointTargetingPreview();
+            return;
+        }
+
+        float previewRadius = RtsAbilityTargetingState.PointPreviewRadius;
+        if (previewRadius <= 0.01f || IsPointerOverBlockingUi(pointerScreenPos))
+        {
+            HidePointTargetingPreview();
+            return;
+        }
+
+        Ray ray = _cam.ScreenPointToRay(pointerScreenPos);
+        if (!Physics.Raycast(ray, out RaycastHit hit, 500f, _groundMask))
+        {
+            HidePointTargetingPreview();
+            return;
+        }
+
+        ShowPointTargetingPreview(hit.point, previewRadius);
+    }
+
+    void ShowPointTargetingPreview(Vector3 center, float radius)
+    {
+        EnsurePointTargetingPreview();
+        if (_pointTargetPreviewLine == null)
+            return;
+
+        radius = Mathf.Max(0.05f, radius);
+        _pointTargetPreviewLine.positionCount = PointPreviewSegments;
+        _pointTargetPreviewLine.loop = true;
+
+        for (int i = 0; i < PointPreviewSegments; i++)
+        {
+            float angle = i / (float)PointPreviewSegments * Mathf.PI * 2f;
+            Vector3 offset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * radius;
+            _pointTargetPreviewLine.SetPosition(i, center + offset + Vector3.up * PointPreviewYOffset);
+        }
+
+        _pointTargetPreviewLine.enabled = true;
+    }
+
+    void HidePointTargetingPreview()
+    {
+        if (_pointTargetPreviewLine != null)
+            _pointTargetPreviewLine.enabled = false;
+    }
+
+    void EnsurePointTargetingPreview()
+    {
+        if (_pointTargetPreviewLine != null)
+            return;
+
+        _pointTargetPreviewObject = new GameObject("RtsPointTargetPreview");
+        _pointTargetPreviewLine = _pointTargetPreviewObject.AddComponent<LineRenderer>();
+        _pointTargetPreviewLine.useWorldSpace = true;
+        _pointTargetPreviewLine.alignment = LineAlignment.View;
+        _pointTargetPreviewLine.textureMode = LineTextureMode.Stretch;
+        _pointTargetPreviewLine.loop = true;
+        _pointTargetPreviewLine.startWidth = PointPreviewLineWidth;
+        _pointTargetPreviewLine.endWidth = PointPreviewLineWidth;
+        _pointTargetPreviewLine.startColor = PointPreviewColor;
+        _pointTargetPreviewLine.endColor = PointPreviewColor;
+        _pointTargetPreviewLine.numCapVertices = 2;
+        _pointTargetPreviewLine.numCornerVertices = 2;
+        _pointTargetPreviewLine.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        _pointTargetPreviewLine.receiveShadows = false;
+        _pointTargetPreviewLine.enabled = false;
+
+        Material previewMaterial = GetPointTargetingPreviewMaterial();
+        if (previewMaterial != null)
+            _pointTargetPreviewLine.sharedMaterial = previewMaterial;
+    }
+
+    void DestroyPointTargetingPreview()
+    {
+        if (_pointTargetPreviewObject != null)
+            Object.Destroy(_pointTargetPreviewObject);
+
+        _pointTargetPreviewObject = null;
+        _pointTargetPreviewLine = null;
+    }
+
+    static Material GetPointTargetingPreviewMaterial()
+    {
+        if (s_pointPreviewMaterial != null)
+            return s_pointPreviewMaterial;
+
+        Shader shader = Shader.Find("Sprites/Default");
+        if (shader == null)
+            shader = Shader.Find("Unlit/Color");
+
+        if (shader == null)
+            return null;
+
+        s_pointPreviewMaterial = new Material(shader)
+        {
+            name = "RtsPointTargetPreview"
+        };
+
+        return s_pointPreviewMaterial;
     }
 
     Vector2 GetEdgePan(Vector2 pointerScreenPos)

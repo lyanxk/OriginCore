@@ -136,6 +136,7 @@ namespace Unit.Ability
         public virtual RtsAbilityTargetingMode TargetingMode => ActivationType == RtsAbilityActivationType.Passive
             ? RtsAbilityTargetingMode.None
             : RtsAbilityTargetingMode.Self;
+        public virtual float TargetingPreviewRadius => 0f;
         public sealed override CommandEntryType EntryType => ActivationType == RtsAbilityActivationType.Passive
             ? CommandEntryType.Passive
             : CommandEntryType.Ability;

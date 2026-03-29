@@ -12,6 +12,9 @@ public static class RtsAbilityTargetingState
                                      && (s_targetingMode == RtsAbilityTargetingMode.Unit
                                          || s_targetingMode == RtsAbilityTargetingMode.Point);
     public static RtsAbilityTargetingMode TargetingMode => HasPending ? s_targetingMode : RtsAbilityTargetingMode.None;
+    public static float PointPreviewRadius => HasPending && s_targetingMode == RtsAbilityTargetingMode.Point && s_ability != null
+        ? Mathf.Max(0f, s_ability.TargetingPreviewRadius)
+        : 0f;
 
     public static bool IsPending(AbilityInputRouter router, RtsUnitAbility ability)
     {

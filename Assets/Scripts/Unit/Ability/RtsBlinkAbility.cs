@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Unit.Ability
 {
     [Serializable]
-    public class RtsBlinkAbility : RtsUnitAbility, IRtsGroundTargetAbility
+    public class RtsBlinkAbility : RtsUnitAbility
     {
         [Header("Ability")]
         [SerializeField] string abilityId = "ability.rts.blink";
@@ -25,6 +25,7 @@ namespace Unit.Ability
         public override Sprite Icon => icon;
         public override string Tooltip => tooltip;
         public override bool IsEnabled => Time.time >= _nextReadyTime;
+        public override RtsAbilityTargetingMode TargetingMode => RtsAbilityTargetingMode.Point;
 
         public override float Cooldown01
         {
@@ -37,23 +38,7 @@ namespace Unit.Ability
             }
         }
 
-        public override bool TryActivate()
-        {
-            if (Motor == null || !IsAvailableInCurrentMode || !IsEnabled)
-                return false;
-
-            if (RtsAbilityTargetingState.IsPending(Router, this))
-            {
-                RtsAbilityTargetingState.Clear();
-                return true;
-            }
-
-            RtsQueuedOrderState.Clear();
-            RtsAbilityTargetingState.SetPending(Router, this, this);
-            return true;
-        }
-
-        public bool TryActivateAtPoint(Vector3 worldPoint)
+        protected override bool TryActivateOnPoint(Vector3 worldPoint)
         {
             if (Motor == null || !IsEnabled)
                 return false;

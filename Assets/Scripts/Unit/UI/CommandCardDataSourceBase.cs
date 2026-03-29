@@ -140,9 +140,42 @@ public abstract class CommandCardDataSourceBase : MonoBehaviour, ICommandCardDat
 
     protected static string BuildAbilityTooltip(UnitAbility ability)
     {
-        if (string.IsNullOrWhiteSpace(ability.Tooltip))
+        string tooltip = ability.Tooltip ?? string.Empty;
+
+        if (ability is RtsUnitAbility rtsAbility)
+        {
+            string typeLabel = GetRtsAbilityTypeLabel(rtsAbility);
+            if (string.IsNullOrWhiteSpace(tooltip))
+                return typeLabel;
+
+            if (!string.IsNullOrWhiteSpace(typeLabel))
+                return $"{typeLabel}\n{tooltip}";
+        }
+
+        return tooltip;
+    }
+
+    static string GetRtsAbilityTypeLabel(RtsUnitAbility ability)
+    {
+        if (ability == null)
             return string.Empty;
 
-        return ability.Tooltip;
+        if (ability.ActivationType == RtsAbilityActivationType.Passive)
+            return "Passive";
+
+        switch (ability.TargetingMode)
+        {
+            case RtsAbilityTargetingMode.Self:
+                return "Active - Self";
+
+            case RtsAbilityTargetingMode.Unit:
+                return "Active - Unit Target";
+
+            case RtsAbilityTargetingMode.Point:
+                return "Active - Cast Point";
+
+            default:
+                return "Active";
+        }
     }
 }

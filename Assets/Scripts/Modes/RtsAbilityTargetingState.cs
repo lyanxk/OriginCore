@@ -1,31 +1,61 @@
 using Unit.Ability;
+using UnityEngine;
 
 public static class RtsAbilityTargetingState
 {
     static AbilityInputRouter s_router;
-    static UnitAbility s_ability;
-    static IRtsGroundTargetAbility s_groundTargetAbility;
+    static RtsUnitAbility s_ability;
+    static RtsAbilityTargetingMode s_targetingMode;
 
-    public static bool HasPending => s_router != null && s_groundTargetAbility != null;
+    public static bool HasPending => s_router != null
+                                     && s_ability != null
+                                     && (s_targetingMode == RtsAbilityTargetingMode.Unit
+                                         || s_targetingMode == RtsAbilityTargetingMode.Point);
+    public static RtsAbilityTargetingMode TargetingMode => HasPending ? s_targetingMode : RtsAbilityTargetingMode.None;
 
-    public static bool IsPending(AbilityInputRouter router, UnitAbility ability)
+    public static bool IsPending(AbilityInputRouter router, RtsUnitAbility ability)
     {
         return router != null && router == s_router && ability != null && ability == s_ability && HasPending;
     }
 
-    public static void SetPending(AbilityInputRouter router, UnitAbility ability, IRtsGroundTargetAbility groundTargetAbility)
+    public static void SetPending(AbilityInputRouter router, RtsUnitAbility ability)
     {
+        if (router == null || ability == null)
+        {
+            Clear();
+            return;
+        }
+
+        RtsAbilityTargetingMode targetingMode = ability.TargetingMode;
+        if (targetingMode != RtsAbilityTargetingMode.Unit && targetingMode != RtsAbilityTargetingMode.Point)
+        {
+            Clear();
+            return;
+        }
+
         s_router = router;
         s_ability = ability;
-        s_groundTargetAbility = groundTargetAbility;
+        s_targetingMode = targetingMode;
     }
 
-    public static bool TryActivateAtPoint(UnityEngine.Vector3 worldPoint)
+    public static bool TryActivateAtPoint(Vector3 worldPoint)
     {
-        if (!HasPending)
+        if (!HasPending || s_targetingMode != RtsAbilityTargetingMode.Point)
             return false;
 
-        if (!s_groundTargetAbility.TryActivateAtPoint(worldPoint))
+        if (!s_ability.TryActivatePendingPoint(worldPoint))
+            return false;
+
+        Clear();
+        return true;
+    }
+
+    public static bool TryActivateOnUnit(Selectable target, Vector3 worldPoint)
+    {
+        if (!HasPending || s_targetingMode != RtsAbilityTargetingMode.Unit)
+            return false;
+
+        if (!s_ability.TryActivatePendingUnit(target, worldPoint))
             return false;
 
         Clear();
@@ -36,7 +66,7 @@ public static class RtsAbilityTargetingState
     {
         s_router = null;
         s_ability = null;
-        s_groundTargetAbility = null;
+        s_targetingMode = RtsAbilityTargetingMode.None;
     }
 
     public static void Clear(AbilityInputRouter router)

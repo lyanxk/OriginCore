@@ -187,9 +187,7 @@ public class RTSMode : IControlMode
             intent.LeftClick &&
             !IsPointerOverBlockingUi(intent.PointerScreenPos))
         {
-            Ray blinkRay = _cam.ScreenPointToRay(intent.PointerScreenPos);
-            if (Physics.Raycast(blinkRay, out RaycastHit blinkHit, 500f, _groundMask))
-                canceledOrderWithClick = RtsAbilityTargetingState.TryActivateAtPoint(blinkHit.point);
+            canceledOrderWithClick = TryHandlePendingAbility(intent.PointerScreenPos);
         }
 
         if ((_isAttackOrderMode || _isMoveOrderMode) && intent.RightClick)
@@ -287,6 +285,32 @@ public class RTSMode : IControlMode
         }
 
         return RtsOrderDispatcher.TryIssueAttack(Sel.Selected, orderPoint, intent.Shift);
+    }
+
+    bool TryHandlePendingAbility(Vector2 pointerScreenPos)
+    {
+        Ray ray = _cam.ScreenPointToRay(pointerScreenPos);
+
+        switch (RtsAbilityTargetingState.TargetingMode)
+        {
+            case Unit.Ability.RtsAbilityTargetingMode.Unit:
+                if (!Physics.Raycast(ray, out RaycastHit unitHit, 500f))
+                    return false;
+
+                if (!Selectable.TryResolve(unitHit.collider, out Selectable target))
+                    return false;
+
+                return RtsAbilityTargetingState.TryActivateOnUnit(target, unitHit.point);
+
+            case Unit.Ability.RtsAbilityTargetingMode.Point:
+                if (!Physics.Raycast(ray, out RaycastHit pointHit, 500f, _groundMask))
+                    return false;
+
+                return RtsAbilityTargetingState.TryActivateAtPoint(pointHit.point);
+
+            default:
+                return false;
+        }
     }
 
     Vector2 GetEdgePan(Vector2 pointerScreenPos)

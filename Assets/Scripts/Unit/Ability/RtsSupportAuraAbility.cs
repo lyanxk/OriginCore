@@ -32,7 +32,7 @@ namespace Unit.Ability
         public override string DisplayName => string.IsNullOrWhiteSpace(displayName) ? "Support Aura" : displayName;
         public override Sprite Icon => icon;
         public override string Tooltip => tooltip;
-        public override CommandEntryType EntryType => CommandEntryType.Passive;
+        public override RtsAbilityActivationType ActivationType => RtsAbilityActivationType.Passive;
         public override bool IsEnabled => true;
 
         public override void Tick(float deltaTime)

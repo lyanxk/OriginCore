@@ -3,6 +3,20 @@ using UnityEngine;
 
 namespace Unit.Ability
 {
+    public enum RtsAbilityActivationType
+    {
+        Passive = 0,
+        Active = 1
+    }
+
+    public enum RtsAbilityTargetingMode
+    {
+        None = 0,
+        Self = 1,
+        Unit = 2,
+        Point = 3
+    }
+
     [Serializable]
     public abstract class UnitAbility : IAbilityInput, IActivatableAbility
     {
@@ -118,9 +132,83 @@ namespace Unit.Ability
     [Serializable]
     public abstract class RtsUnitAbility : UnitAbility
     {
+        public virtual RtsAbilityActivationType ActivationType => RtsAbilityActivationType.Active;
+        public virtual RtsAbilityTargetingMode TargetingMode => ActivationType == RtsAbilityActivationType.Passive
+            ? RtsAbilityTargetingMode.None
+            : RtsAbilityTargetingMode.Self;
+        public sealed override CommandEntryType EntryType => ActivationType == RtsAbilityActivationType.Passive
+            ? CommandEntryType.Passive
+            : CommandEntryType.Ability;
+
+        public sealed override bool TryActivate()
+        {
+            if (!IsAvailableInCurrentMode || !IsEnabled)
+                return false;
+
+            if (ActivationType == RtsAbilityActivationType.Passive)
+                return false;
+
+            switch (TargetingMode)
+            {
+                case RtsAbilityTargetingMode.Self:
+                    RtsQueuedOrderState.Clear();
+                    RtsAbilityTargetingState.Clear();
+                    return TryActivateSelf();
+
+                case RtsAbilityTargetingMode.Unit:
+                case RtsAbilityTargetingMode.Point:
+                    if (Router == null)
+                        return false;
+
+                    if (RtsAbilityTargetingState.IsPending(Router, this))
+                    {
+                        RtsAbilityTargetingState.Clear();
+                        return true;
+                    }
+
+                    RtsQueuedOrderState.Clear();
+                    RtsAbilityTargetingState.SetPending(Router, this);
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
         protected sealed override bool IsAvailableInMode(string modeName)
         {
             return string.Equals(modeName, "RTS", StringComparison.OrdinalIgnoreCase);
+        }
+
+        internal bool TryActivatePendingUnit(Selectable target, Vector3 worldPoint)
+        {
+            if (TargetingMode != RtsAbilityTargetingMode.Unit)
+                return false;
+
+            return TryActivateOnUnit(target, worldPoint);
+        }
+
+        internal bool TryActivatePendingPoint(Vector3 worldPoint)
+        {
+            if (TargetingMode != RtsAbilityTargetingMode.Point)
+                return false;
+
+            return TryActivateOnPoint(worldPoint);
+        }
+
+        protected virtual bool TryActivateSelf()
+        {
+            return false;
+        }
+
+        protected virtual bool TryActivateOnUnit(Selectable target, Vector3 worldPoint)
+        {
+            return false;
+        }
+
+        protected virtual bool TryActivateOnPoint(Vector3 worldPoint)
+        {
+            return false;
         }
     }
 
@@ -132,10 +220,5 @@ namespace Unit.Ability
             return string.Equals(modeName, "ACT", StringComparison.OrdinalIgnoreCase)
                    || string.Equals(modeName, "FPS", StringComparison.OrdinalIgnoreCase);
         }
-    }
-
-    public interface IRtsGroundTargetAbility
-    {
-        bool TryActivateAtPoint(Vector3 worldPoint);
     }
 }

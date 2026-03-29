@@ -2,16 +2,31 @@ using System;
 using System.Collections.Generic;
 using Unit.Ability;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [DisallowMultipleComponent]
 public class AbilityInputRouter : MonoBehaviour
 {
-    readonly List<IAbilityInput> _abilities = new List<IAbilityInput>(16);
-    readonly List<IActivatableAbility> _activatableAbilities = new List<IActivatableAbility>(16);
-    readonly Dictionary<string, IActivatableAbility> _abilityMap =
-        new Dictionary<string, IActivatableAbility>(StringComparer.OrdinalIgnoreCase);
+    const int RtsAbilitySlotCount = 8;
 
-    public IReadOnlyList<IActivatableAbility> ActivatableAbilities => _activatableAbilities;
+    [FormerlySerializedAs("commonAbilities")]
+    [FormerlySerializedAs("abilities")]
+    [SerializeReference]
+    UnitAbility[] rtsAbilities = new UnitAbility[RtsAbilitySlotCount];
+
+    [SerializeReference]
+    UnitAbility[] actFpsAbilities = Array.Empty<UnitAbility>();
+
+    [SerializeField, HideInInspector]
+    bool actFpsAbilitiesInitialized;
+
+    readonly List<UnitAbility> _activeAbilities = new List<UnitAbility>(RtsAbilitySlotCount + 8);
+    readonly Dictionary<string, UnitAbility> _abilityMap =
+        new Dictionary<string, UnitAbility>(StringComparer.OrdinalIgnoreCase);
+
+    public IReadOnlyList<UnitAbility> Abilities => _activeAbilities;
+    public IReadOnlyList<UnitAbility> RtsAbilitySlots => rtsAbilities;
+    public IReadOnlyList<UnitAbility> ActFpsAbilitySlots => actFpsAbilities;
 
     void Awake()
     {
@@ -23,49 +38,44 @@ public class AbilityInputRouter : MonoBehaviour
         Refresh();
     }
 
+    void OnDisable()
+    {
+        ShutdownAbilities();
+        RtsAbilityTargetingState.Clear(this);
+    }
+
+    void OnValidate()
+    {
+        EnsureAbilitySlots();
+        InitializeActFpsAbilitiesIfNeeded();
+        Refresh();
+    }
+
+    void Update()
+    {
+        for (int i = 0; i < _activeAbilities.Count; i++)
+            _activeAbilities[i].Tick(Time.deltaTime);
+    }
+
     public void Refresh()
     {
-        _abilities.Clear();
-        _activatableAbilities.Clear();
+        EnsureAbilitySlots();
+        InitializeActFpsAbilitiesIfNeeded();
+        ShutdownAbilities();
+
+        _activeAbilities.Clear();
         _abilityMap.Clear();
 
-        MonoBehaviour[] mbs = GetComponents<MonoBehaviour>();
-        for (int i = 0; i < mbs.Length; i++)
-        {
-            MonoBehaviour mono = mbs[i];
-            if (mono == null) continue;
-
-            if (mono is IAbilityInput input)
-                _abilities.Add(input);
-
-            if (mono is not IActivatableAbility activatable)
-                continue;
-
-            if (string.IsNullOrWhiteSpace(activatable.AbilityId))
-                continue;
-
-            if (_abilityMap.ContainsKey(activatable.AbilityId))
-            {
-                Debug.LogWarning(
-                    $"Duplicate ability id '{activatable.AbilityId}' on '{name}'. Keeping first registration.",
-                    this);
-                continue;
-            }
-
-            _activatableAbilities.Add(activatable);
-            _abilityMap.Add(activatable.AbilityId, activatable);
-        }
+        RegisterAbilityGroup(rtsAbilities);
+        RegisterAbilityGroup(actFpsAbilities);
     }
 
     public void Process(InputIntent intent)
     {
-        string currentMode = ControlModeManager.Instance != null ? ControlModeManager.Instance.CurrentModeName : string.Empty;
-
-        for (int i = 0; i < _abilities.Count; i++)
+        for (int i = 0; i < actFpsAbilities.Length; i++)
         {
-            IAbilityInput ability = _abilities[i];
-            if (ability is IActivatableAbility activatable &&
-                !activatable.AvailableMode.IsAvailableInMode(currentMode))
+            UnitAbility ability = actFpsAbilities[i];
+            if (ability == null)
                 continue;
 
             ability.ProcessInput(intent);
@@ -77,11 +87,10 @@ public class AbilityInputRouter : MonoBehaviour
         if (string.IsNullOrWhiteSpace(abilityId))
             return false;
 
-        if (!_abilityMap.TryGetValue(abilityId, out IActivatableAbility ability))
+        if (!_abilityMap.TryGetValue(abilityId, out UnitAbility ability))
             return false;
 
-        string currentMode = ControlModeManager.Instance != null ? ControlModeManager.Instance.CurrentModeName : string.Empty;
-        if (!ability.AvailableMode.IsAvailableInMode(currentMode))
+        if (!ability.IsAvailableInCurrentMode)
             return false;
 
         return ability.TryActivate();
@@ -93,5 +102,85 @@ public class AbilityInputRouter : MonoBehaviour
             return false;
 
         return _abilityMap.ContainsKey(abilityId);
+    }
+
+    void EnsureAbilitySlots()
+    {
+        rtsAbilities = EnsureRtsSlotArraySize(rtsAbilities);
+        if (actFpsAbilities == null)
+            actFpsAbilities = Array.Empty<UnitAbility>();
+    }
+
+    void ShutdownAbilities()
+    {
+        for (int i = 0; i < _activeAbilities.Count; i++)
+            _activeAbilities[i].Unbind();
+    }
+
+    void InitializeActFpsAbilitiesIfNeeded()
+    {
+        if (actFpsAbilitiesInitialized)
+            return;
+
+        bool hasConfiguredAbility = false;
+        for (int i = 0; i < actFpsAbilities.Length; i++)
+        {
+            if (actFpsAbilities[i] == null)
+                continue;
+
+            hasConfiguredAbility = true;
+            break;
+        }
+
+        actFpsAbilitiesInitialized = true;
+        if (hasConfiguredAbility)
+            return;
+
+        actFpsAbilities = new UnitAbility[] { new DashAbility() };
+    }
+
+    void RegisterAbilityGroup(UnitAbility[] abilityGroup)
+    {
+        if (abilityGroup == null)
+            return;
+
+        for (int i = 0; i < abilityGroup.Length; i++)
+        {
+            UnitAbility ability = abilityGroup[i];
+            if (ability == null)
+                continue;
+
+            ability.Bind(this, i);
+            _activeAbilities.Add(ability);
+
+            if (string.IsNullOrWhiteSpace(ability.AbilityId))
+                continue;
+
+            if (_abilityMap.ContainsKey(ability.AbilityId))
+            {
+                Debug.LogWarning(
+                    $"Duplicate ability id '{ability.AbilityId}' on '{name}'. Keeping first registration.",
+                    this);
+                continue;
+            }
+
+            _abilityMap.Add(ability.AbilityId, ability);
+        }
+    }
+
+    static UnitAbility[] EnsureRtsSlotArraySize(UnitAbility[] source)
+    {
+        if (source != null && source.Length == RtsAbilitySlotCount)
+            return source;
+
+        UnitAbility[] resized = new UnitAbility[RtsAbilitySlotCount];
+        if (source == null)
+            return resized;
+
+        int copyCount = Mathf.Min(source.Length, resized.Length);
+        for (int i = 0; i < copyCount; i++)
+            resized[i] = source[i];
+
+        return resized;
     }
 }

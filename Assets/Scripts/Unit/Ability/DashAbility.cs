@@ -1,92 +1,68 @@
 using System;
-using Unit.Ability;
 using UnityEngine;
 
-public class DashAbility : MonoBehaviour, IAbilityInput, IActivatableAbility
+namespace Unit.Ability
 {
-    [Header("Ability")]
-    [SerializeField] string abilityId = "ability.dash";
-    [SerializeField] string displayName = "Dash";
-    [SerializeField] AbilityAvailableMode availableMode = AbilityAvailableMode.ACTAndFPS;
-    [SerializeField] Sprite icon;
-    [SerializeField] string hotkeyText = "Mouse5";
-    [TextArea]
-    [SerializeField] string tooltip = "Dash forward quickly.";
-    [Min(0f)]
-    [SerializeField] float cooldown = 0f;
-
-    [Header("Movement")]
-    public float dashSpeed = 10f;
-    public float dashDuration = 0.2f;
-
-    UnitBase _motor;
-    Transform _tf;
-    float _nextReadyTime;
-
-    public string AbilityId => abilityId;
-    public string DisplayName => string.IsNullOrWhiteSpace(displayName) ? "Dash" : displayName;
-    public AbilityAvailableMode AvailableMode => availableMode;
-    public Sprite Icon => icon;
-    public string HotkeyText => hotkeyText;
-    public string Tooltip => tooltip;
-    public bool IsEnabled => Time.time >= _nextReadyTime;
-
-    public float Cooldown01
+    [Serializable]
+    public class DashAbility : ActFpsUnitAbility
     {
-        get
+        [Header("Ability")]
+        [SerializeField] string abilityId = "ability.dash";
+        [SerializeField] string displayName = "Dash";
+        [SerializeField] Sprite icon;
+        [SerializeField] string hotkeyText = "Mouse5";
+        [TextArea]
+        [SerializeField] string tooltip = "Dash forward quickly.";
+        [Min(0f)]
+        [SerializeField] float cooldown;
+
+        [Header("Movement")]
+        [SerializeField] float dashSpeed = 10f;
+        [SerializeField] float dashDuration = 0.2f;
+
+        float _nextReadyTime;
+
+        public override string AbilityId => abilityId;
+        public override string DisplayName => string.IsNullOrWhiteSpace(displayName) ? "Dash" : displayName;
+        public override Sprite Icon => icon;
+        public override string HotkeyText => hotkeyText;
+        public override string Tooltip => tooltip;
+        public override bool IsEnabled => Time.time >= _nextReadyTime;
+
+        public override float Cooldown01
         {
-            if (cooldown <= 0f || IsEnabled)
-                return 0f;
+            get
+            {
+                if (cooldown <= 0f || IsEnabled)
+                    return 0f;
 
-            return Mathf.Clamp01((_nextReadyTime - Time.time) / cooldown);
+                return Mathf.Clamp01((_nextReadyTime - Time.time) / cooldown);
+            }
         }
-    }
 
-    void Awake()
-    {
-        _motor = GetComponent<UnitBase>();
-        _tf = transform;
-    }
+        public override void ProcessInput(InputIntent intent)
+        {
+            if (intent.Dash)
+                TryActivate();
+        }
 
-    public void ProcessInput(InputIntent intent)
-    {
-        if (intent.Dash)
-            TryActivate();
-    }
+        public override bool TryActivate()
+        {
+            if (Motor == null || !IsAvailableInCurrentMode || !IsEnabled)
+                return false;
 
-    public bool TryActivate()
-    {
-        if (_motor == null)
-            return false;
+            Vector3 dashDirection = CachedTransform != null ? CachedTransform.forward : Vector3.forward;
+            dashDirection.y = 0f;
+            if (dashDirection.sqrMagnitude < 1e-6f)
+                return false;
 
-        string currentMode = ControlModeManager.Instance != null ? ControlModeManager.Instance.CurrentModeName : string.Empty;
-        if (!availableMode.IsAvailableInMode(currentMode))
-            return false;
+            dashDirection.Normalize();
+            Motor.OverridePlanarVelocity(dashDirection * dashSpeed, dashDuration);
 
-        if (!IsEnabled)
-            return false;
+            if (cooldown > 0f)
+                _nextReadyTime = Time.time + cooldown;
 
-        bool dashed = DashForward();
-        if (!dashed)
-            return false;
-
-        if (cooldown > 0f)
-            _nextReadyTime = Time.time + cooldown;
-
-        return true;
-    }
-
-    public bool DashForward()
-    {
-        if (_motor == null) return false;
-
-        Vector3 dir = _tf.forward;
-        dir.y = 0f;
-
-        if (dir.sqrMagnitude < 1e-6f) return false;
-        dir.Normalize();
-
-        _motor.OverridePlanarVelocity(dir * dashSpeed, dashDuration);
-        return true;
+            return true;
+        }
     }
 }

@@ -29,30 +29,43 @@ public class UnitCombat : MonoBehaviour
     public Transform attackOrigin;
     public float defaultOriginHeight = 1.0f;
 
+    [Header("Team")]
+    [SerializeField] TeamAffiliation teamAffiliation;
+
     readonly Collider[] _overlapBuffer = new Collider[32];
     readonly RaycastHit[] _raycastBuffer = new RaycastHit[32];
     readonly List<ICombatSkill> _skills = new List<ICombatSkill>(8);
     readonly Dictionary<string, ICombatSkill> _skillMap =
         new Dictionary<string, ICombatSkill>(StringComparer.OrdinalIgnoreCase);
+    readonly Dictionary<object, float> _damageMultipliers = new Dictionary<object, float>(4);
 
     float _nextAttackTime;
+    float _cachedDamageMultiplier = 1f;
 
     public float AttackRange => attackRange;
     public float DetectionRange => detectionRange;
     public bool IsReady => Time.time >= _nextAttackTime;
     public IReadOnlyList<ICombatSkill> Skills => _skills;
+    public TeamAffiliation TeamAffiliation => teamAffiliation;
 
     public event Action<Health, float> OnDamageApplied;
     public event Action<string> OnSkillUsed;
 
     void Awake()
     {
+        CacheTeamAffiliation();
         RefreshSkills();
     }
 
     void OnEnable()
     {
+        CacheTeamAffiliation();
         RefreshSkills();
+    }
+
+    void OnValidate()
+    {
+        CacheTeamAffiliation();
     }
 
     public void RefreshSkills()
@@ -111,6 +124,29 @@ public class UnitCombat : MonoBehaviour
     public bool TryUsePrimaryInDirection(Vector3 direction)
     {
         return TryAttackDirection(direction);
+    }
+
+    public void SetDamageMultiplier(object source, float multiplier)
+    {
+        if (source == null)
+            return;
+
+        if (multiplier <= 1f)
+        {
+            ClearDamageMultiplier(source);
+            return;
+        }
+
+        _damageMultipliers[source] = multiplier;
+        RecalculateDamageMultiplier();
+    }
+
+    public void ClearDamageMultiplier(object source)
+    {
+        if (source == null || !_damageMultipliers.Remove(source))
+            return;
+
+        RecalculateDamageMultiplier();
     }
 
     public bool IsTargetInRange(Transform target, float extraRange = 0f)
@@ -207,7 +243,7 @@ public class UnitCombat : MonoBehaviour
 
         bool didHit = hit != null;
         if (didHit)
-            TryApplyDamage(hit, damage);
+            TryApplyDamage(hit, damage * _cachedDamageMultiplier);
 
         if (didHit || consumeCooldownOnMiss)
             _nextAttackTime = Time.time + attackCooldown;
@@ -299,9 +335,12 @@ public class UnitCombat : MonoBehaviour
     {
         if (hitComponent == null) return null;
 
-        Health h = hitComponent.GetComponentInParent<Health>();
+        if (!Health.TryResolve(hitComponent, out Health h))
+            return null;
+
         if (h == null) return null;
-        if (h.gameObject == gameObject) return null;
+        if (h.transform.root == transform.root) return null;
+        if (!CanAttackHealth(h)) return null;
 
         return h;
     }
@@ -312,5 +351,38 @@ public class UnitCombat : MonoBehaviour
             return attackOrigin.position;
 
         return transform.position + Vector3.up * defaultOriginHeight;
+    }
+
+    void CacheTeamAffiliation()
+    {
+        if (teamAffiliation == null)
+            teamAffiliation = GetComponent<TeamAffiliation>();
+
+        if (teamAffiliation == null)
+            teamAffiliation = GetComponentInParent<TeamAffiliation>();
+    }
+
+    bool CanAttackHealth(Health targetHealth)
+    {
+        if (targetHealth == null)
+            return false;
+
+        if (teamAffiliation == null)
+            return false;
+
+        TeamAffiliation targetTeam = targetHealth.TeamAffiliation;
+
+        if (targetTeam == null)
+            return false;
+
+        return teamAffiliation.IsHostileTo(targetTeam);
+    }
+
+    void RecalculateDamageMultiplier()
+    {
+        // Damage buffs also use the strongest source to avoid runaway scaling from overlapping support units.
+        _cachedDamageMultiplier = 1f;
+        foreach (KeyValuePair<object, float> modifier in _damageMultipliers)
+            _cachedDamageMultiplier = Mathf.Max(_cachedDamageMultiplier, modifier.Value);
     }
 }

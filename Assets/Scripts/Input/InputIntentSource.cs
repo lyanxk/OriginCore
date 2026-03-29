@@ -203,47 +203,19 @@ public class InputIntentSource : MonoBehaviour
         if (_space != null && _space.WasPressedThisFrame()) intent.Space = true;
         if (_dash != null && _dash.WasPressedThisFrame()) intent.Dash = true;
 
-        bool qFromAction = _commandQ != null && _commandQ.WasPressedThisFrame();
-        bool wFromAction = _commandW != null && _commandW.WasPressedThisFrame();
-        bool eFromAction = _commandE != null && _commandE.WasPressedThisFrame();
-        bool rFromAction = _commandR != null && _commandR.WasPressedThisFrame();
-        bool aFromAction = _commandA != null && _commandA.WasPressedThisFrame();
-        bool sFromAction = _commandS != null && _commandS.WasPressedThisFrame();
-        bool dFromAction = _commandD != null && _commandD.WasPressedThisFrame();
-        bool fFromAction = _commandF != null && _commandF.WasPressedThisFrame();
-        bool zFromAction = _commandZ != null && _commandZ.WasPressedThisFrame();
-        bool xFromAction = _commandX != null && _commandX.WasPressedThisFrame();
-        bool cFromAction = _commandC != null && _commandC.WasPressedThisFrame();
-        bool vFromAction = _commandV != null && _commandV.WasPressedThisFrame();
-        bool mFromAction = _commandM != null && _commandM.WasPressedThisFrame();
-
-        bool qFromKeyboard = Keyboard.current != null && Keyboard.current.qKey.wasPressedThisFrame;
-        bool wFromKeyboard = Keyboard.current != null && Keyboard.current.wKey.wasPressedThisFrame;
-        bool eFromKeyboard = Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame;
-        bool rFromKeyboard = Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame;
-        bool aFromKeyboard = Keyboard.current != null && Keyboard.current.aKey.wasPressedThisFrame;
-        bool sFromKeyboard = Keyboard.current != null && Keyboard.current.sKey.wasPressedThisFrame;
-        bool dFromKeyboard = Keyboard.current != null && Keyboard.current.dKey.wasPressedThisFrame;
-        bool fFromKeyboard = Keyboard.current != null && Keyboard.current.fKey.wasPressedThisFrame;
-        bool zFromKeyboard = Keyboard.current != null && Keyboard.current.zKey.wasPressedThisFrame;
-        bool xFromKeyboard = Keyboard.current != null && Keyboard.current.xKey.wasPressedThisFrame;
-        bool cFromKeyboard = Keyboard.current != null && Keyboard.current.cKey.wasPressedThisFrame;
-        bool vFromKeyboard = Keyboard.current != null && Keyboard.current.vKey.wasPressedThisFrame;
-        bool mFromKeyboard = Keyboard.current != null && Keyboard.current.mKey.wasPressedThisFrame;
-
-        intent.CommandQ = qFromAction || qFromKeyboard;
-        intent.CommandW = wFromAction || wFromKeyboard;
-        intent.CommandE = eFromAction || eFromKeyboard;
-        intent.CommandR = rFromAction || rFromKeyboard;
-        intent.CommandA = aFromAction || aFromKeyboard;
-        intent.CommandS = sFromAction || sFromKeyboard;
-        intent.CommandD = dFromAction || dFromKeyboard;
-        intent.CommandF = fFromAction || fFromKeyboard;
-        intent.CommandZ = zFromAction || zFromKeyboard;
-        intent.CommandX = xFromAction || xFromKeyboard;
-        intent.CommandC = cFromAction || cFromKeyboard;
-        intent.CommandV = vFromAction || vFromKeyboard;
-        intent.CommandM = mFromAction || mFromKeyboard;
+        intent.CommandQ = _commandQ != null && _commandQ.WasPressedThisFrame();
+        intent.CommandW = _commandW != null && _commandW.WasPressedThisFrame();
+        intent.CommandE = _commandE != null && _commandE.WasPressedThisFrame();
+        intent.CommandR = _commandR != null && _commandR.WasPressedThisFrame();
+        intent.CommandA = _commandA != null && _commandA.WasPressedThisFrame();
+        intent.CommandS = _commandS != null && _commandS.WasPressedThisFrame();
+        intent.CommandD = _commandD != null && _commandD.WasPressedThisFrame();
+        intent.CommandF = _commandF != null && _commandF.WasPressedThisFrame();
+        intent.CommandZ = _commandZ != null && _commandZ.WasPressedThisFrame();
+        intent.CommandX = _commandX != null && _commandX.WasPressedThisFrame();
+        intent.CommandC = _commandC != null && _commandC.WasPressedThisFrame();
+        intent.CommandV = _commandV != null && _commandV.WasPressedThisFrame();
+        intent.CommandM = _commandM != null && _commandM.WasPressedThisFrame();
 
         Current = intent;
     }
@@ -251,6 +223,39 @@ public class InputIntentSource : MonoBehaviour
     void LateUpdate()
     {
         intent.ClearOneFrameActions();
+    }
+
+    public string GetCommandBindingDisplayString(string hotkeyToken)
+    {
+        InputAction action = GetCommandAction(hotkeyToken);
+        if (action == null)
+            return CommandHotkeyUtility.NormalizeToken(hotkeyToken);
+
+        string display = action.GetBindingDisplayString();
+        return string.IsNullOrWhiteSpace(display)
+            ? CommandHotkeyUtility.NormalizeToken(hotkeyToken)
+            : display;
+    }
+
+    InputAction GetCommandAction(string hotkeyToken)
+    {
+        switch (CommandHotkeyUtility.NormalizeToken(hotkeyToken))
+        {
+            case "Q": return _commandQ;
+            case "W": return _commandW;
+            case "E": return _commandE;
+            case "R": return _commandR;
+            case "A": return _commandA;
+            case "S": return _commandS;
+            case "D": return _commandD;
+            case "F": return _commandF;
+            case "Z": return _commandZ;
+            case "X": return _commandX;
+            case "C": return _commandC;
+            case "V": return _commandV;
+            case "M": return _commandM;
+            default: return null;
+        }
     }
 
     void OnJumpStarted(InputAction.CallbackContext ctx) => intent.Space = true;

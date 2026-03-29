@@ -1,7 +1,17 @@
-﻿using UnityEngine;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class RTSMode : IControlMode
 {
+    const int PointPreviewSegments = 48;
+    const float PointPreviewLineWidth = 0.08f;
+    const float PointPreviewYOffset = 0.06f;
+    static readonly Color PointPreviewColor = new Color(1f, 0.45f, 0.1f, 0.95f);
+
+    static Material s_pointPreviewMaterial;
+
     public string Name => "RTS";
 
     readonly UnitBase _unit;
@@ -43,6 +53,15 @@ public class RTSMode : IControlMode
     Vector2 _dragStart;
     const float DragThreshold = 8f;
     readonly RectTransform _selectionBox;
+    readonly List<CommandExecutor> _moveExecutors = new List<CommandExecutor>(32);
+    readonly List<Vector3> _groupMoveDestinations = new List<Vector3>(32);
+    readonly List<RaycastResult> _uiRaycastResults = new List<RaycastResult>(16);
+
+    EventSystem _pointerEventSystem;
+    PointerEventData _pointerEventData;
+    Graphic _selectionBoxGraphic;
+    GameObject _pointTargetPreviewObject;
+    LineRenderer _pointTargetPreviewLine;
 
     SelectionManager Sel => SelectionManager.Instance;
 
@@ -70,7 +89,13 @@ public class RTSMode : IControlMode
 
         _selectionBox = selectionBox;
         if (_selectionBox != null)
+        {
             _selectionBox.gameObject.SetActive(false);
+
+            _selectionBoxGraphic = _selectionBox.GetComponent<Graphic>();
+            if (_selectionBoxGraphic != null)
+                _selectionBoxGraphic.raycastTarget = false;
+        }
     }
 
     public void Enter()
@@ -83,11 +108,15 @@ public class RTSMode : IControlMode
 
         _camFocus = _unit.transform.position;
         _unit.CancelPathing();
+        RtsQueuedOrderState.Clear();
+        HidePointTargetingPreview();
     }
 
     public void Exit()
     {
-        Sel.ClearSelection();
+        RtsQueuedOrderState.Clear();
+        DestroyPointTargetingPreview();
+        Sel?.ClearSelection();
     }
 
     public void Tick(float dt, InputIntent intent)
@@ -97,19 +126,33 @@ public class RTSMode : IControlMode
         {
             _isAttackOrderMode = false;
             _isMoveOrderMode = false;
+            RtsQueuedOrderState.Clear();
+            RtsAbilityTargetingState.Clear();
+        }
+
+        ApplyQueuedOrderState(hasSelection);
+
+        if (RtsAbilityTargetingState.HasPending)
+        {
+            _isAttackOrderMode = false;
+            _isMoveOrderMode = false;
+            RtsQueuedOrderState.Clear();
+            CancelSelectionDrag();
         }
 
         if (intent.CommandS && hasSelection)
         {
-            IssueStopCommand();
+            RtsOrderDispatcher.TryIssueStop(Sel.Selected);
             _isAttackOrderMode = false;
             _isMoveOrderMode = false;
+            RtsQueuedOrderState.Clear();
             CancelSelectionDrag();
         }
 
         if ((intent.AttackPressed || intent.CommandA) && hasSelection)
         {
             _isAttackOrderMode = !_isAttackOrderMode;
+            RtsQueuedOrderState.Clear();
             if (_isAttackOrderMode)
             {
                 _isMoveOrderMode = false;
@@ -120,6 +163,7 @@ public class RTSMode : IControlMode
         if (intent.CommandM && hasSelection)
         {
             _isMoveOrderMode = !_isMoveOrderMode;
+            RtsQueuedOrderState.Clear();
             if (_isMoveOrderMode)
             {
                 _isAttackOrderMode = false;
@@ -149,54 +193,94 @@ public class RTSMode : IControlMode
             _camFocus.z = Mathf.Clamp(_camFocus.z, BoundsMinXZ.y, BoundsMaxXZ.y);
         }
 
+        bool canceledOrderWithClick = false;
+        if (RtsAbilityTargetingState.HasPending &&
+            intent.LeftClick &&
+            !IsPointerOverBlockingUi(intent.PointerScreenPos))
+        {
+            canceledOrderWithClick = TryHandlePendingAbility(intent.PointerScreenPos);
+        }
+
+        if ((_isAttackOrderMode || _isMoveOrderMode) && intent.RightClick)
+        {
+            _isAttackOrderMode = false;
+            _isMoveOrderMode = false;
+            RtsQueuedOrderState.Clear();
+            CancelSelectionDrag();
+            canceledOrderWithClick = true;
+        }
+
         if (_isAttackOrderMode)
         {
             CancelSelectionDrag();
             if (HandleAttackCommand(intent))
+            {
                 _isAttackOrderMode = false;
+                RtsQueuedOrderState.Clear();
+            }
         }
         else if (_isMoveOrderMode)
         {
             CancelSelectionDrag();
             if (HandleMoveCommand(intent))
+            {
                 _isMoveOrderMode = false;
+                RtsQueuedOrderState.Clear();
+            }
+        }
+        else if (RtsAbilityTargetingState.HasPending)
+        {
+            CancelSelectionDrag();
         }
         else
         {
             HandleSelection(intent);
         }
 
-        if (!_isAttackOrderMode && !_isMoveOrderMode && intent.RightClick && Sel != null && Sel.SelectedCount > 0)
+        if (!canceledOrderWithClick &&
+            !RtsAbilityTargetingState.HasPending &&
+            !_isAttackOrderMode &&
+            !_isMoveOrderMode &&
+            intent.RightClick &&
+            !IsPointerOverBlockingUi(intent.PointerScreenPos) &&
+            Sel != null &&
+            Sel.SelectedCount > 0)
         {
             Ray ray = _cam.ScreenPointToRay(intent.PointerScreenPos);
             if (Physics.Raycast(ray, out RaycastHit hit, 500f, _groundMask))
-                IssueMoveCommand(hit.point, intent.Shift);
+                RtsOrderDispatcher.TryIssueMove(Sel.Selected, hit.point, intent.Shift, _moveExecutors, _groupMoveDestinations);
         }
 
         if (intent.Cancel)
         {
             _isAttackOrderMode = false;
             _isMoveOrderMode = false;
+            RtsQueuedOrderState.Clear();
+            RtsAbilityTargetingState.Clear();
             Sel?.ClearSelection();
         }
+
+        UpdateAbilityTargetingPreview(intent.PointerScreenPos);
     }
 
     bool HandleMoveCommand(InputIntent intent)
     {
         if (!intent.LeftClick) return false;
         if (Sel == null || Sel.SelectedCount <= 0) return false;
+        if (IsPointerOverBlockingUi(intent.PointerScreenPos)) return false;
 
         Ray ray = _cam.ScreenPointToRay(intent.PointerScreenPos);
         if (!Physics.Raycast(ray, out RaycastHit hit, 500f, _groundMask))
             return false;
 
-        return IssueMoveCommand(hit.point, intent.Shift);
+        return RtsOrderDispatcher.TryIssueMove(Sel.Selected, hit.point, intent.Shift, _moveExecutors, _groupMoveDestinations);
     }
 
     bool HandleAttackCommand(InputIntent intent)
     {
         if (!intent.LeftClick) return false;
         if (Sel == null || Sel.SelectedCount <= 0) return false;
+        if (IsPointerOverBlockingUi(intent.PointerScreenPos)) return false;
 
         Ray ray = _cam.ScreenPointToRay(intent.PointerScreenPos);
         Vector3 orderPoint;
@@ -213,61 +297,140 @@ public class RTSMode : IControlMode
             return false;
         }
 
-        return IssueAttackCommand(orderPoint, intent.Shift);
+        return RtsOrderDispatcher.TryIssueAttack(Sel.Selected, orderPoint, intent.Shift);
     }
 
-    bool IssueMoveCommand(Vector3 destination, bool append)
+    bool TryHandlePendingAbility(Vector2 pointerScreenPos)
     {
-        bool issued = false;
-        foreach (var s in Sel.Selected)
+        Ray ray = _cam.ScreenPointToRay(pointerScreenPos);
+
+        switch (RtsAbilityTargetingState.TargetingMode)
         {
-            if (s == null) continue;
+            case Unit.Ability.RtsAbilityTargetingMode.Unit:
+                if (!Physics.Raycast(ray, out RaycastHit unitHit, 500f))
+                    return false;
 
-            CommandExecutor exec = s.GetComponent<CommandExecutor>();
-            if (exec == null) continue;
+                if (!Selectable.TryResolve(unitHit.collider, out Selectable target))
+                    return false;
 
-            exec.Enqueue(new MoveCommand(destination), append);
-            issued = true;
+                return RtsAbilityTargetingState.TryActivateOnUnit(target, unitHit.point);
+
+            case Unit.Ability.RtsAbilityTargetingMode.Point:
+                if (!Physics.Raycast(ray, out RaycastHit pointHit, 500f, _groundMask))
+                    return false;
+
+                return RtsAbilityTargetingState.TryActivateAtPoint(pointHit.point);
+
+            default:
+                return false;
         }
-
-        return issued;
     }
 
-    bool IssueAttackCommand(Vector3 orderPoint, bool append)
+    void UpdateAbilityTargetingPreview(Vector2 pointerScreenPos)
     {
-        bool issued = false;
-        foreach (var s in Sel.Selected)
+        if (!RtsAbilityTargetingState.HasPending ||
+            RtsAbilityTargetingState.TargetingMode != Unit.Ability.RtsAbilityTargetingMode.Point)
         {
-            if (s == null) continue;
-
-            UnitCombat combat = s.GetComponent<UnitCombat>();
-            if (combat == null) continue;
-
-            CommandExecutor exec = s.GetComponent<CommandExecutor>();
-            if (exec == null) continue;
-
-            exec.Enqueue(new AttackCommand(orderPoint), append);
-            issued = true;
+            HidePointTargetingPreview();
+            return;
         }
 
-        return issued;
+        float previewRadius = RtsAbilityTargetingState.PointPreviewRadius;
+        if (previewRadius <= 0.01f || IsPointerOverBlockingUi(pointerScreenPos))
+        {
+            HidePointTargetingPreview();
+            return;
+        }
+
+        Ray ray = _cam.ScreenPointToRay(pointerScreenPos);
+        if (!Physics.Raycast(ray, out RaycastHit hit, 500f, _groundMask))
+        {
+            HidePointTargetingPreview();
+            return;
+        }
+
+        ShowPointTargetingPreview(hit.point, previewRadius);
     }
 
-    bool IssueStopCommand()
+    void ShowPointTargetingPreview(Vector3 center, float radius)
     {
-        bool issued = false;
-        foreach (var s in Sel.Selected)
+        EnsurePointTargetingPreview();
+        if (_pointTargetPreviewLine == null)
+            return;
+
+        radius = Mathf.Max(0.05f, radius);
+        _pointTargetPreviewLine.positionCount = PointPreviewSegments;
+        _pointTargetPreviewLine.loop = true;
+
+        for (int i = 0; i < PointPreviewSegments; i++)
         {
-            if (s == null) continue;
-
-            CommandExecutor exec = s.GetComponent<CommandExecutor>();
-            if (exec == null) continue;
-
-            exec.Enqueue(new StopCommand(), append: false);
-            issued = true;
+            float angle = i / (float)PointPreviewSegments * Mathf.PI * 2f;
+            Vector3 offset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * radius;
+            _pointTargetPreviewLine.SetPosition(i, center + offset + Vector3.up * PointPreviewYOffset);
         }
 
-        return issued;
+        _pointTargetPreviewLine.enabled = true;
+    }
+
+    void HidePointTargetingPreview()
+    {
+        if (_pointTargetPreviewLine != null)
+            _pointTargetPreviewLine.enabled = false;
+    }
+
+    void EnsurePointTargetingPreview()
+    {
+        if (_pointTargetPreviewLine != null)
+            return;
+
+        _pointTargetPreviewObject = new GameObject("RtsPointTargetPreview");
+        _pointTargetPreviewLine = _pointTargetPreviewObject.AddComponent<LineRenderer>();
+        _pointTargetPreviewLine.useWorldSpace = true;
+        _pointTargetPreviewLine.alignment = LineAlignment.View;
+        _pointTargetPreviewLine.textureMode = LineTextureMode.Stretch;
+        _pointTargetPreviewLine.loop = true;
+        _pointTargetPreviewLine.startWidth = PointPreviewLineWidth;
+        _pointTargetPreviewLine.endWidth = PointPreviewLineWidth;
+        _pointTargetPreviewLine.startColor = PointPreviewColor;
+        _pointTargetPreviewLine.endColor = PointPreviewColor;
+        _pointTargetPreviewLine.numCapVertices = 2;
+        _pointTargetPreviewLine.numCornerVertices = 2;
+        _pointTargetPreviewLine.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        _pointTargetPreviewLine.receiveShadows = false;
+        _pointTargetPreviewLine.enabled = false;
+
+        Material previewMaterial = GetPointTargetingPreviewMaterial();
+        if (previewMaterial != null)
+            _pointTargetPreviewLine.sharedMaterial = previewMaterial;
+    }
+
+    void DestroyPointTargetingPreview()
+    {
+        if (_pointTargetPreviewObject != null)
+            Object.Destroy(_pointTargetPreviewObject);
+
+        _pointTargetPreviewObject = null;
+        _pointTargetPreviewLine = null;
+    }
+
+    static Material GetPointTargetingPreviewMaterial()
+    {
+        if (s_pointPreviewMaterial != null)
+            return s_pointPreviewMaterial;
+
+        Shader shader = Shader.Find("Sprites/Default");
+        if (shader == null)
+            shader = Shader.Find("Unlit/Color");
+
+        if (shader == null)
+            return null;
+
+        s_pointPreviewMaterial = new Material(shader)
+        {
+            name = "RtsPointTargetPreview"
+        };
+
+        return s_pointPreviewMaterial;
     }
 
     Vector2 GetEdgePan(Vector2 pointerScreenPos)
@@ -302,7 +465,19 @@ public class RTSMode : IControlMode
 
     void HandleSelection(InputIntent intent)
     {
-        if (Sel == null) return;
+        if (Sel == null)
+            return;
+
+        if (IsPointerOverBlockingUi(intent.PointerScreenPos))
+        {
+            if (_isDragging && !intent.LeftHeld)
+            {
+                _isDragging = false;
+                HideSelectionBox();
+            }
+
+            return;
+        }
 
         if (intent.LeftClick)
         {
@@ -336,11 +511,11 @@ public class RTSMode : IControlMode
                 Ray ray = _cam.ScreenPointToRay(dragEnd);
                 if (Physics.Raycast(ray, out RaycastHit hit, 500f))
                 {
-                    Selectable sel = hit.collider.GetComponentInParent<Selectable>();
+                    Selectable.TryResolve(hit.collider, out Selectable sel);
 
                     if (!additive) Sel.ClearSelection();
 
-                    if (sel != null) Sel.AddSelection(sel);
+                    if (RtsOrderDispatcher.CanControlSelectable(sel)) Sel.AddSelection(sel);
                     else if (!additive) Sel.ClearSelection();
                 }
                 else
@@ -356,6 +531,8 @@ public class RTSMode : IControlMode
                 foreach (var s in Sel.AllSelectables)
                 {
                     if (s == null) continue;
+                    if (!RtsOrderDispatcher.CanControlSelectable(s)) continue;
+
                     Vector3 sp = _cam.WorldToScreenPoint(s.transform.position);
                     if (sp.z < 0f) continue;
 
@@ -405,6 +582,65 @@ public class RTSMode : IControlMode
     {
         float t = Mathf.InverseLerp(HeightMin, HeightMax, _height);
         _pitch = Mathf.Lerp(PitchMin, PitchMax, t);
+    }
+
+    void ApplyQueuedOrderState(bool hasSelection)
+    {
+        if (!hasSelection)
+            return;
+
+        switch (RtsQueuedOrderState.PendingOrder)
+        {
+            case RtsQueuedOrderType.Move:
+                _isMoveOrderMode = true;
+                _isAttackOrderMode = false;
+                CancelSelectionDrag();
+                break;
+
+            case RtsQueuedOrderType.Attack:
+                _isAttackOrderMode = true;
+                _isMoveOrderMode = false;
+                CancelSelectionDrag();
+                break;
+        }
+    }
+
+    bool IsPointerOverBlockingUi(Vector2 pointerScreenPos)
+    {
+        EventSystem eventSystem = EventSystem.current;
+        if (eventSystem == null)
+            return false;
+
+        if (_pointerEventData == null || _pointerEventSystem != eventSystem)
+        {
+            _pointerEventData = new PointerEventData(eventSystem);
+            _pointerEventSystem = eventSystem;
+        }
+
+        _pointerEventData.position = pointerScreenPos;
+        _uiRaycastResults.Clear();
+        eventSystem.RaycastAll(_pointerEventData, _uiRaycastResults);
+
+        for (int i = 0; i < _uiRaycastResults.Count; i++)
+        {
+            GameObject hitObject = _uiRaycastResults[i].gameObject;
+            if (hitObject == null)
+                continue;
+
+            if (_selectionBox != null && hitObject.transform.IsChildOf(_selectionBox))
+                continue;
+
+            Canvas canvas = hitObject.GetComponentInParent<Canvas>();
+            if (canvas == null || !canvas.isActiveAndEnabled)
+                continue;
+
+            if (canvas.renderMode == RenderMode.WorldSpace)
+                continue;
+
+            return true;
+        }
+
+        return false;
     }
 
     public CameraState GetCameraTarget()

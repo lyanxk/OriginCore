@@ -1,4 +1,6 @@
-﻿namespace Unit.Command
+using UnityEngine;
+
+namespace Unit.Command
 {
     public interface IUnitCommand
     {
@@ -8,4 +10,8 @@
         void End(UnitContext ctx);
     }
 
+    public interface ICommandRoutePointProvider
+    {
+        bool TryGetRoutePoint(UnitContext ctx, out Vector3 worldPoint);
+    }
 }

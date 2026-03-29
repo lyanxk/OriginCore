@@ -1,7 +1,7 @@
 ﻿using Unit.Command;
 using UnityEngine;
 
-public sealed class AttackCommand : IUnitCommand
+public sealed class AttackCommand : IUnitCommand, ICommandRoutePointProvider
 {
     readonly Transform _initialTarget;
     readonly bool _isAttackMove;
@@ -19,9 +19,10 @@ public sealed class AttackCommand : IUnitCommand
     float _repathTimer;
     bool _hasChasePos;
     Vector3 _lastChasePos;
+    Vector3 _resolvedMoveDestination;
+    bool _hasResolvedMoveDestination;
     bool _done;
-
-    // Direct attack target (kept for compatibility).
+    
     public AttackCommand(
         Transform target,
         float stopBuffer = 0.1f,
@@ -39,8 +40,7 @@ public sealed class AttackCommand : IUnitCommand
         _repathInterval = Mathf.Max(0.05f, repathInterval);
         _repathDistance = Mathf.Max(0.05f, repathDistance);
     }
-
-    // Attack-move: move to destination and auto-acquire targets in detection range.
+    
     public AttackCommand(
         Vector3 moveDestination,
         float arriveDist = -1f,
@@ -69,9 +69,15 @@ public sealed class AttackCommand : IUnitCommand
         _scanTimer = 0f;
         _repathTimer = 0f;
         _hasChasePos = false;
+        _hasResolvedMoveDestination = false;
+        _resolvedMoveDestination = Vector3.zero;
 
         if (_isAttackMove)
+        {
             ctx.Motor.SetDestination(_moveDestination);
+            _resolvedMoveDestination = ctx.Motor.CurrentDestination;
+            _hasResolvedMoveDestination = ctx.Motor.HasDestination;
+        }
 
         if (ctx.Combat == null)
         {
@@ -122,7 +128,11 @@ public sealed class AttackCommand : IUnitCommand
             _hasChasePos = false;
 
             if (_isAttackMove)
+            {
                 ctx.Motor.SetDestination(_moveDestination);
+                _resolvedMoveDestination = ctx.Motor.CurrentDestination;
+                _hasResolvedMoveDestination = ctx.Motor.HasDestination;
+            }
             else
                 _done = true;
 
@@ -162,6 +172,25 @@ public sealed class AttackCommand : IUnitCommand
     {
         ctx.Motor.CancelPathing();
     }
+    //获取路径点
+    public bool TryGetRoutePoint(UnitContext ctx, out Vector3 worldPoint)
+    {
+        Transform routeTarget = _lockedTarget != null ? _lockedTarget : _initialTarget;
+        if (routeTarget != null)
+        {
+            worldPoint = routeTarget.position;
+            return true;
+        }
+
+        if (_isAttackMove)
+        {
+            worldPoint = _hasResolvedMoveDestination ? _resolvedMoveDestination : _moveDestination;
+            return true;
+        }
+
+        worldPoint = default;
+        return false;
+    }
 
     void TryAcquireTarget(UnitContext ctx, float dt)
     {
@@ -195,7 +224,7 @@ public sealed class AttackCommand : IUnitCommand
         float arriveDist = _arriveDist > 0f ? _arriveDist : ctx.Motor.arriveDistance;
 
         Vector3 a = ctx.Transform.position;
-        Vector3 b = _moveDestination;
+        Vector3 b = _hasResolvedMoveDestination ? _resolvedMoveDestination : _moveDestination;
         a.y = 0f;
         b.y = 0f;
         return Vector3.Distance(a, b) <= arriveDist;

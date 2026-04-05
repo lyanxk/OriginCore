@@ -54,7 +54,6 @@ public class RTSMode : IControlMode
     const float DragThreshold = 8f;
     readonly RectTransform _selectionBox;
     readonly List<CommandExecutor> _moveExecutors = new List<CommandExecutor>(32);
-    readonly List<Vector3> _groupMoveDestinations = new List<Vector3>(32);
     readonly List<RaycastResult> _uiRaycastResults = new List<RaycastResult>(16);
 
     EventSystem _pointerEventSystem;
@@ -248,7 +247,7 @@ public class RTSMode : IControlMode
         {
             Ray ray = _cam.ScreenPointToRay(intent.PointerScreenPos);
             if (Physics.Raycast(ray, out RaycastHit hit, 500f, _groundMask))
-                RtsOrderDispatcher.TryIssueMove(Sel.Selected, hit.point, intent.Shift, _moveExecutors, _groupMoveDestinations);
+                RtsOrderDispatcher.TryIssueMove(Sel.Selected, hit.point, intent.Shift, _moveExecutors);
         }
 
         if (intent.Cancel)
@@ -273,7 +272,7 @@ public class RTSMode : IControlMode
         if (!Physics.Raycast(ray, out RaycastHit hit, 500f, _groundMask))
             return false;
 
-        return RtsOrderDispatcher.TryIssueMove(Sel.Selected, hit.point, intent.Shift, _moveExecutors, _groupMoveDestinations);
+        return RtsOrderDispatcher.TryIssueMove(Sel.Selected, hit.point, intent.Shift, _moveExecutors);
     }
 
     bool HandleAttackCommand(InputIntent intent)

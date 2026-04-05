@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unit.Command;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -32,6 +33,13 @@ public class UnitCombat : MonoBehaviour
     [Header("Team")]
     [SerializeField] TeamAffiliation teamAffiliation;
 
+    [Header("Auto Targeting")]
+    public bool autoChaseTargets = true;
+    [Min(1f)] public float loseTargetRangeMultiplier = 2f;
+    [Min(0.05f)] public float targetScanInterval = 0.15f;
+    [Min(0.05f)] public float chaseRepathInterval = 0.2f;
+    [Min(0.05f)] public float chaseRepathDistance = 0.5f;
+
     readonly Collider[] _overlapBuffer = new Collider[32];
     readonly RaycastHit[] _raycastBuffer = new RaycastHit[32];
     readonly List<ICombatSkill> _skills = new List<ICombatSkill>(8);
@@ -41,6 +49,14 @@ public class UnitCombat : MonoBehaviour
 
     float _nextAttackTime;
     float _cachedDamageMultiplier = 1f;
+    UnitBase _motor;
+    CommandExecutor _commandExecutor;
+    Transform _lockedTarget;
+    Vector3 _lastChasePosition;
+    float _scanTimer;
+    float _chaseTimer;
+    bool _hasChasePosition;
+    bool _isAutoChasing;
 
     public float AttackRange => attackRange;
     public float DetectionRange => detectionRange;
@@ -53,19 +69,24 @@ public class UnitCombat : MonoBehaviour
 
     void Awake()
     {
-        CacheTeamAffiliation();
+        CacheReferences();
         RefreshSkills();
     }
 
     void OnEnable()
     {
-        CacheTeamAffiliation();
+        CacheReferences();
         RefreshSkills();
     }
 
     void OnValidate()
     {
-        CacheTeamAffiliation();
+        CacheReferences();
+    }
+
+    void Update()
+    {
+        TickAutoCombat(Time.deltaTime);
     }
 
     public void RefreshSkills()
@@ -151,34 +172,30 @@ public class UnitCombat : MonoBehaviour
 
     public bool IsTargetInRange(Transform target, float extraRange = 0f)
     {
-        if (target == null) return false;
-
-        Vector3 a = transform.position;
-        Vector3 b = target.position;
-        a.y = 0f;
-        b.y = 0f;
-
-        return Vector3.Distance(a, b) <= attackRange + Mathf.Max(0f, extraRange);
+        return IsTargetWithinRange(target, attackRange + Mathf.Max(0f, extraRange));
     }
 
     public bool IsTargetInDetectionRange(Transform target, float extraRange = 0f)
     {
-        if (target == null) return false;
+        return IsTargetWithinRange(target, detectionRange + Mathf.Max(0f, extraRange));
+    }
 
-        Vector3 a = transform.position;
-        Vector3 b = target.position;
-        a.y = 0f;
-        b.y = 0f;
-
-        return Vector3.Distance(a, b) <= detectionRange + Mathf.Max(0f, extraRange);
+    public bool CanKeepTargetLocked(Transform target)
+    {
+        return IsTargetWithinRange(target, detectionRange * Mathf.Max(1f, loseTargetRangeMultiplier));
     }
 
     public Transform FindNearestTargetInDetectionRange()
     {
+        return FindNearestTarget(detectionRange);
+    }
+
+    Transform FindNearestTarget(float searchRange)
+    {
         Vector3 origin = transform.position;
         int count = Physics.OverlapSphereNonAlloc(
             origin,
-            detectionRange,
+            Mathf.Max(0.1f, searchRange),
             _overlapBuffer,
             targetMask,
             QueryTriggerInteraction.Ignore);
@@ -353,13 +370,11 @@ public class UnitCombat : MonoBehaviour
         return transform.position + Vector3.up * defaultOriginHeight;
     }
 
-    void CacheTeamAffiliation()
+    void CacheReferences()
     {
-        if (teamAffiliation == null)
-            teamAffiliation = GetComponent<TeamAffiliation>();
-
-        if (teamAffiliation == null)
-            teamAffiliation = GetComponentInParent<TeamAffiliation>();
+        teamAffiliation = ResolveNearbyComponent(teamAffiliation);
+        _motor = ResolveNearbyComponent(_motor);
+        _commandExecutor = ResolveNearbyComponent(_commandExecutor);
     }
 
     bool CanAttackHealth(Health targetHealth)
@@ -384,5 +399,132 @@ public class UnitCombat : MonoBehaviour
         _cachedDamageMultiplier = 1f;
         foreach (KeyValuePair<object, float> modifier in _damageMultipliers)
             _cachedDamageMultiplier = Mathf.Max(_cachedDamageMultiplier, modifier.Value);
+    }
+
+    void TickAutoCombat(float dt)
+    {
+        if (!CanRunAutoCombat())
+        {
+            ClearLockedTarget();
+            StopAutoChase();
+            return;
+        }
+
+        if (!CanKeepTargetLocked(_lockedTarget))
+            ClearLockedTarget();
+
+        TryAcquireTarget(dt);
+        if (_lockedTarget == null)
+        {
+            StopAutoChase();
+            return;
+        }
+
+        FaceTarget(_lockedTarget.position);
+        if (IsTargetInRange(_lockedTarget))
+        {
+            StopAutoChase();
+            TryUsePrimaryOnTarget(_lockedTarget);
+            return;
+        }
+
+        _chaseTimer -= dt;
+        Vector3 chasePosition = _lockedTarget.position;
+        bool targetMoved = !_hasChasePosition
+                           || FlattenedSqr(chasePosition - _lastChasePosition)
+                           >= chaseRepathDistance * chaseRepathDistance;
+        if (_chaseTimer > 0f && !targetMoved)
+            return;
+
+        _motor.SetDestination(chasePosition);
+        _lastChasePosition = chasePosition;
+        _chaseTimer = chaseRepathInterval;
+        _hasChasePosition = true;
+        _isAutoChasing = true;
+    }
+
+    bool CanRunAutoCombat()
+    {
+        return autoChaseTargets
+               && teamAffiliation != null
+               && _motor != null
+               && !_motor.HasFirstPersonView
+               && !_motor.HasThirdPersonView
+               && (_commandExecutor == null || _commandExecutor.IsIdle);
+    }
+
+    void TryAcquireTarget(float dt)
+    {
+        if (_lockedTarget != null)
+            return;
+
+        _scanTimer -= dt;
+        if (_scanTimer > 0f)
+            return;
+
+        _scanTimer = targetScanInterval;
+        _lockedTarget = FindNearestTargetInDetectionRange();
+        if (_lockedTarget == null)
+            return;
+
+        _chaseTimer = 0f;
+        _hasChasePosition = false;
+    }
+
+    void ClearLockedTarget()
+    {
+        _lockedTarget = null;
+        _scanTimer = 0f;
+    }
+
+    void StopAutoChase()
+    {
+        if (_isAutoChasing && _motor != null && (_commandExecutor == null || _commandExecutor.IsIdle))
+            _motor.CancelPathing();
+
+        _isAutoChasing = false;
+        _hasChasePosition = false;
+    }
+
+    void FaceTarget(Vector3 targetPosition)
+    {
+        if (_motor == null)
+            return;
+
+        Vector3 direction = targetPosition - transform.position;
+        direction.y = 0f;
+        if (direction.sqrMagnitude <= 1e-6f)
+            return;
+
+        float yaw = Quaternion.LookRotation(direction, Vector3.up).eulerAngles.y;
+        _motor.SetYaw(yaw);
+    }
+
+    bool IsTargetWithinRange(Transform target, float range)
+    {
+        if (target == null)
+            return false;
+
+        Vector3 delta = target.position - transform.position;
+        delta.y = 0f;
+        return delta.sqrMagnitude <= range * range;
+    }
+
+    T ResolveNearbyComponent<T>(T current) where T : Component
+    {
+        if (current != null)
+            return current;
+
+        T resolved = GetComponent<T>();
+        if (resolved != null)
+            return resolved;
+
+        return GetComponentInParent<T>();
+    }
+
+    static float FlattenedSqr(Vector3 delta)
+    {
+        delta.y = 0f;
+        return delta.sqrMagnitude;
     }
 }

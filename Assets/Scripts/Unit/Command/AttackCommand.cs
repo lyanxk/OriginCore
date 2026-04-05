@@ -9,7 +9,6 @@ public sealed class AttackCommand : IUnitCommand, ICommandRoutePointProvider
 
     readonly float _stopBuffer;
     readonly float _scanInterval;
-    readonly float _targetLoseExtraRange;
     readonly float _arriveDist;
     readonly float _repathInterval;
     readonly float _repathDistance;
@@ -35,7 +34,6 @@ public sealed class AttackCommand : IUnitCommand, ICommandRoutePointProvider
 
         _stopBuffer = Mathf.Max(0f, stopBuffer);
         _scanInterval = 0.15f;
-        _targetLoseExtraRange = 2f;
         _arriveDist = -1f;
         _repathInterval = Mathf.Max(0.05f, repathInterval);
         _repathDistance = Mathf.Max(0.05f, repathDistance);
@@ -45,7 +43,6 @@ public sealed class AttackCommand : IUnitCommand, ICommandRoutePointProvider
         Vector3 moveDestination,
         float arriveDist = -1f,
         float scanInterval = 0.15f,
-        float targetLoseExtraRange = 2f,
         float stopBuffer = 0.1f,
         float repathInterval = 0.2f,
         float repathDistance = 0.5f)
@@ -56,7 +53,6 @@ public sealed class AttackCommand : IUnitCommand, ICommandRoutePointProvider
 
         _stopBuffer = Mathf.Max(0f, stopBuffer);
         _scanInterval = Mathf.Max(0.05f, scanInterval);
-        _targetLoseExtraRange = Mathf.Max(0f, targetLoseExtraRange);
         _arriveDist = arriveDist;
         _repathInterval = Mathf.Max(0.05f, repathInterval);
         _repathDistance = Mathf.Max(0.05f, repathDistance);
@@ -122,7 +118,7 @@ public sealed class AttackCommand : IUnitCommand, ICommandRoutePointProvider
             }
         }
 
-        if (!ctx.Combat.IsTargetInDetectionRange(_lockedTarget, _targetLoseExtraRange))
+        if (!ctx.Combat.CanKeepTargetLocked(_lockedTarget))
         {
             _lockedTarget = null;
             _hasChasePos = false;

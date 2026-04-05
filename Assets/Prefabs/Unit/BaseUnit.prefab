@@ -139,7 +139,6 @@ MonoBehaviour:
   sampleRadius: 2
   cornerReachDist: 0.25
   repathInterval: 0.25
-  repathOnMoveTarget: 0.6
   occupancyRadius: 0.45
   unitSeparationRange: 0.4
   buildingPushRange: 0.3
@@ -249,6 +248,11 @@ MonoBehaviour:
   attackOrigin: {fileID: 0}
   defaultOriginHeight: 1
   teamAffiliation: {fileID: 4076325844960353870}
+  autoChaseTargets: 1
+  loseTargetRangeMultiplier: 2
+  targetScanInterval: 0.15
+  chaseRepathInterval: 0.2
+  chaseRepathDistance: 0.5
 --- !u!114 &1974304872913449264
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -318,7 +322,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 265c948684f729f41ad959b578d2d4d7,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 265c948684f729f41ad959b578d2d4d7,
         type: 3}
@@ -328,7 +332,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 265c948684f729f41ad959b578d2d4d7,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 265c948684f729f41ad959b578d2d4d7,
         type: 3}
@@ -343,7 +347,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 265c948684f729f41ad959b578d2d4d7,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
+      value: 90
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 265c948684f729f41ad959b578d2d4d7,
         type: 3}

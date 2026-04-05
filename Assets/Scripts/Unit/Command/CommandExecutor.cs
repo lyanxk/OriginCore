@@ -12,6 +12,8 @@ public class CommandExecutor : MonoBehaviour, ISelectionRouteProvider
 
     UnitContext _ctx;
 
+    public bool IsIdle => _current == null && _queue.Count == 0;
+
     void Awake()
     {
         var motor = GetComponent<UnitBase>();

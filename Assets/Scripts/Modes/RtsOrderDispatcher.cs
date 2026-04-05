@@ -7,10 +7,9 @@ public static class RtsOrderDispatcher
         IReadOnlyList<Selectable> selected,
         Vector3 destination,
         bool append,
-        List<CommandExecutor> executorBuffer,
-        List<Vector3> destinationBuffer)
+        List<CommandExecutor> executorBuffer)
     {
-        if (selected == null || executorBuffer == null || destinationBuffer == null)
+        if (selected == null || executorBuffer == null)
             return false;
 
         bool issued = false;

@@ -37,7 +37,6 @@ public class UnitBase : MonoBehaviour
     public float sampleRadius = 2.0f;
     public float cornerReachDist = 0.25f;
     public float repathInterval = 0.25f;
-    public float repathOnMoveTarget = 0.6f;
 
     [Header("Occupancy")]
     [Min(0.1f)] public float occupancyRadius = 0.45f;
@@ -62,7 +61,6 @@ public class UnitBase : MonoBehaviour
     Vector3[] _corners = System.Array.Empty<Vector3>();
     int _cornerIndex;
     float _repathTimer;
-    Vector3 _lastRepathDest;
     float _illegalRecoverTimer;
     float _navMeshHardSnapTimer;
 
@@ -185,7 +183,7 @@ public class UnitBase : MonoBehaviour
             _destination = worldPos;
 
         _hasDestination = true;
-        RecalculatePath(force: true);
+        RecalculatePath();
         _repathTimer = repathInterval;
     }
 
@@ -195,11 +193,7 @@ public class UnitBase : MonoBehaviour
         if (dir.sqrMagnitude > 1e-6f)
             dir.Normalize();
 
-        Vector3 baseVelocity = dir * speed * _cachedMoveSpeedMultiplier;
-        Vector3 localCorrection = BuildLocalCorrectionVelocity(Time.deltaTime, baseVelocity);
-        StepMovement(baseVelocity + localCorrection);
-        TryRecoverToLegalPosition();
-        TrySnapBackToNavMesh();
+        ApplyMovement(dir * speed * _cachedMoveSpeedMultiplier, Time.deltaTime);
     }
 
     void Update()
@@ -208,33 +202,7 @@ public class UnitBase : MonoBehaviour
         _illegalRecoverTimer = Mathf.Max(0f, _illegalRecoverTimer - dt);
         _navMeshHardSnapTimer = Mathf.Max(0f, _navMeshHardSnapTimer - dt);
 
-        Vector3 plannedVelocity = Vector3.zero;
-        if (_hasDestination)
-        {
-            if (IsArrivedToDestination())
-            {
-                CancelPathing();
-            }
-            else
-            {
-                _repathTimer -= dt;
-                if (_repathTimer <= 0f)
-                {
-                    bool destMoved =
-                        (_destination - _lastRepathDest).sqrMagnitude >= repathOnMoveTarget * repathOnMoveTarget;
-                    RecalculatePath(force: destMoved);
-                    _repathTimer = repathInterval;
-                }
-
-                Vector3 dir = GetPathMoveDir();
-                plannedVelocity = dir * clickMoveSpeed * _cachedMoveSpeedMultiplier;
-            }
-        }
-
-        Vector3 localCorrection = BuildLocalCorrectionVelocity(dt, plannedVelocity);
-        StepMovement(plannedVelocity + localCorrection);
-        TryRecoverToLegalPosition();
-        TrySnapBackToNavMesh();
+        ApplyMovement(GetPlannedVelocity(dt), dt);
     }
 
     public void Jump()
@@ -245,10 +213,37 @@ public class UnitBase : MonoBehaviour
         _verticalVel.y = Mathf.Sqrt(2f * jumpHeight * -gravity);
     }
 
-    void StepMovement(Vector3 planarVelocity)
+    void ApplyMovement(Vector3 plannedVelocity, float dt)
     {
-        float dt = Time.deltaTime;
+        Vector3 localCorrection = BuildLocalCorrectionVelocity(dt, plannedVelocity);
+        StepMovement(plannedVelocity + localCorrection, dt);
+        TryRecoverToLegalPosition();
+        TrySnapBackToNavMesh();
+    }
 
+    Vector3 GetPlannedVelocity(float dt)
+    {
+        if (!_hasDestination)
+            return Vector3.zero;
+
+        if (IsArrivedToDestination())
+        {
+            CancelPathing();
+            return Vector3.zero;
+        }
+
+        _repathTimer -= dt;
+        if (_repathTimer <= 0f)
+        {
+            RecalculatePath();
+            _repathTimer = repathInterval;
+        }
+
+        return GetPathMoveDir() * clickMoveSpeed * _cachedMoveSpeedMultiplier;
+    }
+
+    void StepMovement(Vector3 planarVelocity, float dt)
+    {
         if (_hasPlanarOverride)
         {
             _planarOverrideTimer -= dt;
@@ -260,6 +255,8 @@ public class UnitBase : MonoBehaviour
                 _planarOverrideVel = Vector3.zero;
             }
         }
+
+        FaceMovementDirection(planarVelocity);
 
         if (_cc == null)
             return;
@@ -289,7 +286,7 @@ public class UnitBase : MonoBehaviour
         return Vector3.Distance(a, b) <= arriveDistance;
     }
 
-    void RecalculatePath(bool force)
+    void RecalculatePath()
     {
         if (!_hasDestination)
             return;
@@ -300,7 +297,6 @@ public class UnitBase : MonoBehaviour
             _path,
             NavMeshRoadNetwork.DefaultStartSampleRadius,
             sampleRadius);
-        _lastRepathDest = _destination;
 
         if (!ok)
         {
@@ -346,6 +342,16 @@ public class UnitBase : MonoBehaviour
 
         dir.Normalize();
         return ApplyPathBuildingSteering(dir);
+    }
+
+    void FaceMovementDirection(Vector3 planarVelocity)
+    {
+        planarVelocity.y = 0f;
+        if (planarVelocity.sqrMagnitude <= 1e-6f)
+            return;
+
+        float yaw = Quaternion.LookRotation(planarVelocity, Vector3.up).eulerAngles.y;
+        SetYaw(yaw);
     }
 
     public void SetYaw(float yawDegrees)
@@ -527,7 +533,7 @@ public class UnitBase : MonoBehaviour
 
         _verticalVel = Vector3.zero;
         if (_hasDestination)
-            RecalculatePath(force: true);
+            RecalculatePath();
     }
 
     void SyncOccupancyRadiusFromController()

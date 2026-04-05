@@ -355,7 +355,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 00ddf197277b2b74aaccd31a944a7b71, type: 3}
+  m_Sprite: {fileID: 21300000, guid: a803bf02a3a67c64f8f0ef8926d65062, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -422,6 +422,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   button: {fileID: 7753076741025006711}
+  backgroundGraphic: {fileID: 0}
   iconImage: {fileID: 60257601062288272}
   nameText: {fileID: 0}
   hotkeyText: {fileID: 4889997803664510734}

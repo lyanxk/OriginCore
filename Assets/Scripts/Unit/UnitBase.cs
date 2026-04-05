@@ -294,9 +294,6 @@ public class UnitBase : MonoBehaviour
         if (!_hasDestination)
             return;
 
-        if (!force && (_destination - _lastRepathDest).sqrMagnitude < 0.0001f)
-            return;
-
         bool ok = NavMeshRoadNetwork.TryBuildPath(
             transform.position,
             _destination,
@@ -479,10 +476,13 @@ public class UnitBase : MonoBehaviour
         if (delta.sqrMagnitude <= 0.0025f)
             return;
 
-        if (delta.sqrMagnitude >= 0.36f)
+        bool overlapsBuilding = occupancy.IsOverlappingBuilding(transform.position, OccupancyRadius * 0.95f);
+        if (delta.sqrMagnitude >= 0.36f && (overlapsBuilding || !_hasDestination))
             RepositionWithoutPathReset(legalPoint);
         else
-            OverridePlanarVelocity(delta.normalized * Mathf.Max(0f, localCorrectionSpeed), 0.12f);
+            OverridePlanarVelocity(
+                delta.normalized * Mathf.Max(Mathf.Max(0f, localCorrectionSpeed), clickMoveSpeed),
+                0.18f);
 
         _illegalRecoverTimer = illegalRecoverCooldown;
     }

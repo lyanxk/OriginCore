@@ -217,6 +217,29 @@ public sealed class OccupancySystem : MonoBehaviour
         return false;
     }
 
+    public bool IsOverlappingBuilding(
+        Vector3 position,
+        float radius,
+        Object ignoreBuildingOwner = null)
+    {
+        EnsureInitialized();
+        PruneDeadEntries();
+
+        int ignoreBuildingId = GetOwnerId(ignoreBuildingOwner);
+        float checkRadius = Mathf.Max(0.05f, radius);
+
+        foreach (KeyValuePair<int, BuildingEntry> pair in _buildings)
+        {
+            if (pair.Key == ignoreBuildingId)
+                continue;
+
+            if (IsOverlappingBuildingXZ(position, checkRadius, pair.Value))
+                return true;
+        }
+
+        return false;
+    }
+
     public bool TryAssignStandingPoint(
         UnitBase unit,
         Vector3 targetCenter,

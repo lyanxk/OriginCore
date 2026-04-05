@@ -19,6 +19,8 @@ public struct BuildingProductionSlot
 [DisallowMultipleComponent]
 public class BuildingProduction : MonoBehaviour, IGroundCommandReceiver, ISelectionRouteProvider
 {
+    const string GroundLayerName = "Ground";
+    const string LegacyGroundLayerName = "Groud";
     const int OverlapBufferSize = 64;
     const int AngleSampleCount = 24;
     const int RadiusSampleCount = 5;
@@ -257,11 +259,13 @@ public class BuildingProduction : MonoBehaviour, IGroundCommandReceiver, ISelect
                 return false;
         }
 
+        // Check the unit body volume above the floor so support surfaces do not block valid spawn points.
+        Vector3 clearanceCenter = worldPos + Vector3.up * Mathf.Max(clearanceRadius, 0.05f);
         int hitCount = Physics.OverlapSphereNonAlloc(
-            worldPos,
+            clearanceCenter,
             clearanceRadius,
             _overlapBuffer,
-            ~0,
+            GetSpawnBlockerMask(),
             QueryTriggerInteraction.Ignore);
 
         for (int i = 0; i < hitCount; i++)
@@ -274,6 +278,25 @@ public class BuildingProduction : MonoBehaviour, IGroundCommandReceiver, ISelect
         }
 
         return true;
+    }
+
+    static int GetSpawnBlockerMask()
+    {
+        int mask = ~0;
+        int groundLayer = ResolveGroundLayer();
+        if (groundLayer >= 0)
+            mask &= ~(1 << groundLayer);
+
+        return mask;
+    }
+
+    static int ResolveGroundLayer()
+    {
+        int groundLayer = LayerMask.NameToLayer(GroundLayerName);
+        if (groundLayer >= 0)
+            return groundLayer;
+
+        return LayerMask.NameToLayer(LegacyGroundLayerName);
     }
 
     bool IsBuildingCollider(Collider collider)

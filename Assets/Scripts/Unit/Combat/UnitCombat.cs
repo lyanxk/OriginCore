@@ -448,8 +448,6 @@ public class UnitCombat : MonoBehaviour
         return autoChaseTargets
                && teamAffiliation != null
                && _motor != null
-               && !_motor.HasFirstPersonView
-               && !_motor.HasThirdPersonView
                && (_commandExecutor == null || _commandExecutor.IsIdle);
     }
 

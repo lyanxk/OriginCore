@@ -190,6 +190,11 @@ public class UnitCombat : MonoBehaviour
         return FindNearestTarget(detectionRange);
     }
 
+    public Transform FindNearestTargetInAttackRange()
+    {
+        return FindNearestTarget(attackRange);
+    }
+
     Transform FindNearestTarget(float searchRange)
     {
         Vector3 origin = transform.position;

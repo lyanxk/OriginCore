@@ -62,7 +62,7 @@ public class ControlModeManager : MonoBehaviour
         if (input == null) input = FindObjectOfType<InputIntentSource>();
 
         _mainCam = cameraRig != null ? cameraRig.GetComponent<Camera>() : null;
-        RebuildModes(unit, actPivot, fpsPivot);
+        RebuildModes(unit, ResolveHero(unit));
         TryCacheRtsCommandPanel();
         
         _switchRTS = switchRTSAction?.action;
@@ -205,41 +205,45 @@ public class ControlModeManager : MonoBehaviour
         if (selectedUnit == null)
             return false;
 
-        if (requireThirdPerson && !selectedUnit.HasThirdPersonView)
+        HeroBase selectedHero = ResolveHero(selectedUnit);
+        if (selectedHero == null)
             return false;
 
-        if (requireFirstPerson && !selectedUnit.HasFirstPersonView)
+        if (requireThirdPerson && !selectedHero.HasThirdPersonView)
             return false;
 
-        Transform selectedActPivot = selectedUnit.ThirdPersonPivot;
-        Transform selectedFpsPivot = selectedUnit.FirstPersonPivot;
+        if (requireFirstPerson && !selectedHero.HasFirstPersonView)
+            return false;
 
-        if (selectedUnit == unit)
-        {
-            if (selectedActPivot == null)
-                selectedActPivot = actPivot;
-
-            if (selectedFpsPivot == null)
-                selectedFpsPivot = fpsPivot;
-        }
-
-        RebuildModes(selectedUnit, selectedActPivot, selectedFpsPivot);
+        RebuildModes(selectedUnit, selectedHero);
         return true;
     }
 
-    void RebuildModes(UnitBase nextUnit, Transform nextActPivot, Transform nextFpsPivot)
+    void RebuildModes(UnitBase nextUnit, HeroBase hero)
     {
         if (nextUnit == null || _mainCam == null)
             return;
 
         unit = nextUnit;
-        actPivot = nextActPivot;
-        fpsPivot = nextFpsPivot;
+        actPivot = hero != null && hero.ThirdPersonPivot != null ? hero.ThirdPersonPivot : nextUnit.transform;
+        fpsPivot = hero != null && hero.FirstPersonPivot != null ? hero.FirstPersonPivot : nextUnit.transform;
 
         _rts = new RTSMode(unit, _mainCam, groundMask, selectionBox, rtsCamHeight, rtsCamDistance);
         _act = new ACTMode(unit, actPivot);
         _fps = new FPSMode(unit, fpsPivot);
         _unitCommandExecutor = unit.GetComponent<CommandExecutor>();
+    }
+
+    static HeroBase ResolveHero(UnitBase targetUnit)
+    {
+        if (targetUnit == null)
+            return null;
+
+        HeroBase hero = targetUnit.GetComponent<HeroBase>();
+        if (hero != null)
+            return hero;
+
+        return targetUnit.GetComponentInParent<HeroBase>();
     }
 
 }

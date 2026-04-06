@@ -1215,6 +1215,7 @@ GameObject:
   - component: {fileID: 883050553}
   - component: {fileID: 883050552}
   - component: {fileID: 883050554}
+  - component: {fileID: 883050557}
   - component: {fileID: 883050555}
   - component: {fileID: 883050556}
   m_Layer: 6
@@ -1255,9 +1256,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6afeda2dee87ed8459cec4c4bd3165cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  perspectiveOption: 3
-  thirdPersonPivot: {fileID: 637539842}
-  firstPersonPivot: {fileID: 562574536}
   walkSpeed: 5
   clickMoveSpeed: 4.5
   gravity: -12
@@ -1499,11 +1497,30 @@ MonoBehaviour:
   attackOrigin: {fileID: 0}
   defaultOriginHeight: 1
   teamAffiliation: {fileID: 883050556}
-  autoChaseTargets: 1
+  autoChaseTargets: 0
   loseTargetRangeMultiplier: 2
   targetScanInterval: 0.15
   chaseRepathInterval: 0.2
   chaseRepathDistance: 0.5
+--- !u!114 &883050557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 883050540}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f8a7f33f2c84e6db4c2b9f5a9d6c1ab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  perspectiveOption: 3
+  thirdPersonPivot: {fileID: 637539842}
+  firstPersonPivot: {fileID: 562574536}
+  combat: {fileID: 883050554}
+  motor: {fileID: 883050542}
+  commandExecutor: {fileID: 883050551}
+  scanInterval: 0.15
 --- !u!114 &883050555
 MonoBehaviour:
   m_ObjectHideFlags: 0

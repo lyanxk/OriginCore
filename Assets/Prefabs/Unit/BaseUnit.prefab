@@ -126,9 +126,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6afeda2dee87ed8459cec4c4bd3165cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  perspectiveOption: 0
-  thirdPersonPivot: {fileID: 0}
-  firstPersonPivot: {fileID: 0}
   walkSpeed: 5
   clickMoveSpeed: 4.5
   gravity: -12

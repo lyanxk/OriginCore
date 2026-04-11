@@ -105,7 +105,9 @@ public class ControlModeManager : MonoBehaviour
             _pendingActFpsTakeoverClear = false;
         }
 
-        if (!_pendingActFpsTakeoverClear)
+        if (_pendingActFpsTakeoverClear)
+            _current.Tick(Time.deltaTime, CreateLookOnlyIntent(input.Current));
+        else
             _current.Tick(Time.deltaTime, input.Current);
 
         // 相机目标交给Rig平滑处理
@@ -171,7 +173,6 @@ public class ControlModeManager : MonoBehaviour
         const float deadZone = 0.0001f;
 
         return intent.Move.sqrMagnitude > deadZone ||
-               intent.Look.sqrMagnitude > deadZone ||
                intent.LeftClick ||
                intent.LeftHeld ||
                intent.RightClick ||
@@ -180,6 +181,33 @@ public class ControlModeManager : MonoBehaviour
                intent.Dash ||
                intent.AttackPressed ||
                intent.Cancel;
+    }
+
+    static InputIntent CreateLookOnlyIntent(InputIntent source)
+    {
+        source.Move = Vector2.zero;
+        source.LeftClick = false;
+        source.LeftHeld = false;
+        source.RightClick = false;
+        source.RightHeld = false;
+        source.Space = false;
+        source.Dash = false;
+        source.AttackPressed = false;
+        source.Cancel = false;
+        source.CommandQ = false;
+        source.CommandW = false;
+        source.CommandE = false;
+        source.CommandR = false;
+        source.CommandA = false;
+        source.CommandS = false;
+        source.CommandD = false;
+        source.CommandF = false;
+        source.CommandZ = false;
+        source.CommandX = false;
+        source.CommandC = false;
+        source.CommandV = false;
+        source.CommandM = false;
+        return source;
     }
 
     bool IsInRTSMode()

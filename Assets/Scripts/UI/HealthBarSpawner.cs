@@ -16,12 +16,19 @@ public class HealthBarSpawner : MonoBehaviour
 
     void Start()
     {
-        if (_health == null || healthBarRoot == null || healthBarPrefab == null)
+        if (_health == null || healthBarRoot == null)
             return;
 
-        _barInstance = Instantiate(healthBarPrefab, healthBarRoot);
-        _barInstance.transform.localPosition = Vector3.zero;
-        _barInstance.transform.localRotation = Quaternion.identity;
+        _barInstance = healthBarRoot.GetComponentInChildren<HealthBarUI>(true);
+        if (_barInstance == null)
+        {
+            if (healthBarPrefab == null)
+                return;
+
+            _barInstance = Instantiate(healthBarPrefab, healthBarRoot);
+            _barInstance.transform.localPosition = Vector3.zero;
+            _barInstance.transform.localRotation = Quaternion.identity;
+        }
 
         _barInstance.Bind(_health);
     }

@@ -36,8 +36,6 @@ public class FPSMode : IControlMode
 
         _yaw = _unit.GetYaw();
         _pitch = 0f;
-
-        _unit.CancelPathing();
     }
 
     public void Exit()

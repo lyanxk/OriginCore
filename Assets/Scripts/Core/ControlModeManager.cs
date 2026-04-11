@@ -98,13 +98,15 @@ public class ControlModeManager : MonoBehaviour
 
         if (_current == null || input == null) return;
 
-        if (_pendingActFpsTakeoverClear && HasActFpsTakeoverInput(input.Current))
+        bool hasTakeoverInput = HasActFpsTakeoverInput(input.Current);
+        if (_pendingActFpsTakeoverClear && hasTakeoverInput)
         {
             _unitCommandExecutor?.InterruptAndClear();
             _pendingActFpsTakeoverClear = false;
         }
 
-        _current.Tick(Time.deltaTime, input.Current);
+        if (!_pendingActFpsTakeoverClear)
+            _current.Tick(Time.deltaTime, input.Current);
 
         // 相机目标交给Rig平滑处理
         cameraRig.SetTarget(_current.GetCameraTarget());

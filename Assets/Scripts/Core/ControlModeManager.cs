@@ -125,21 +125,17 @@ public class ControlModeManager : MonoBehaviour
         _current.Enter();
         _pendingActFpsTakeoverClear = (_current == _act || _current == _fps);
 
-        // 根据模式调整过渡手感（你可以随便调）
-        if (_current.Name == "RTS")
-        {
+        //模式切换平滑
+        if (_current.Name == "RTS") {
             cameraRig.SetSmooth(0.22f, 0.14f, 0.18f);
         }
-        else if (_current.Name == "ACT")
-        {
+        else if (_current.Name == "ACT") {
             cameraRig.SetSmooth(0.14f, 0f, 0.14f);
         }
-        else if (_current.Name == "FPS")
-        {
+        else if (_current.Name == "FPS") {
             cameraRig.SetSmooth(0f, 0f, 0f);
         }
-        else
-        {
+        else {
             cameraRig.SetSmooth(0f, 0f, 0f);
         }
 
@@ -149,6 +145,7 @@ public class ControlModeManager : MonoBehaviour
         SetRtsCommandPanelActive(_current.Name == "RTS");
     }
 
+    //启用GUI 右下角指令
     void SetRtsCommandPanelActive(bool isRtsMode)
     {
         if (rtsCommandPanel == null)
@@ -157,7 +154,7 @@ public class ControlModeManager : MonoBehaviour
         if (rtsCommandPanel != null && rtsCommandPanel.activeSelf != isRtsMode)
             rtsCommandPanel.SetActive(isRtsMode);
     }
-
+    //缓存GUI对象
     void TryCacheRtsCommandPanel()
     {
         if (rtsCommandPanel != null)
@@ -167,7 +164,7 @@ public class ControlModeManager : MonoBehaviour
         if (commandCard != null)
             rtsCommandPanel = commandCard.gameObject;
     }
-
+    //判断目前角色是否处于RTS模式的控制下
     static bool HasActFpsTakeoverInput(InputIntent intent)
     {
         const float deadZone = 0.0001f;
@@ -182,7 +179,7 @@ public class ControlModeManager : MonoBehaviour
                intent.AttackPressed ||
                intent.Cancel;
     }
-
+    //处理RTS模式切换后 其他输入前的视角移动输入
     static InputIntent CreateLookOnlyIntent(InputIntent source)
     {
         source.Move = Vector2.zero;

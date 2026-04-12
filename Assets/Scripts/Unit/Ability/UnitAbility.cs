@@ -222,4 +222,13 @@ namespace Unit.Ability
                    || string.Equals(modeName, "FPS", StringComparison.OrdinalIgnoreCase);
         }
     }
+
+    [Serializable]
+    public abstract class ActUnitAbility : UnitAbility
+    {
+        protected override bool IsAvailableInMode(string modeName)
+        {
+            return string.Equals(modeName, "ACT", StringComparison.OrdinalIgnoreCase);
+        }
+    }
 }

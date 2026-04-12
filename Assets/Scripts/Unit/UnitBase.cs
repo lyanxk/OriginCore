@@ -54,6 +54,9 @@ public class UnitBase : MonoBehaviour
     bool _hasPlanarOverride;
     Vector3 _planarOverrideVel;
     float _planarOverrideTimer;
+    bool _flightEnabled;
+    float _flightVerticalInput;
+    float _flightVerticalSpeed;
 
     readonly Dictionary<object, float> _moveSpeedMultipliers = new Dictionary<object, float>(4);
     float _cachedMoveSpeedMultiplier = 1f;
@@ -63,6 +66,7 @@ public class UnitBase : MonoBehaviour
     public bool HasDestination => _hasDestination;
     public Vector3 CurrentDestination => _destination;
     public float OccupancyRadius => Mathf.Max(0.1f, occupancyRadius);
+    public bool IsFlightEnabled => _flightEnabled;
 
     public void OverridePlanarVelocity(Vector3 planarVel, float duration)
     {
@@ -119,6 +123,30 @@ public class UnitBase : MonoBehaviour
 
         if (wasEnabled)
             _cc.enabled = true;
+    }
+
+    public void SetFlightEnabled(bool enabled)
+    {
+        if (_flightEnabled == enabled)
+            return;
+
+        _flightEnabled = enabled;
+        _flightVerticalInput = 0f;
+        _flightVerticalSpeed = 0f;
+        _verticalVel = Vector3.zero;
+    }
+
+    public void SetFlightVerticalInput(float input, float verticalSpeed)
+    {
+        if (!_flightEnabled)
+        {
+            _flightVerticalInput = 0f;
+            _flightVerticalSpeed = 0f;
+            return;
+        }
+
+        _flightVerticalInput = Mathf.Clamp(input, -1f, 1f);
+        _flightVerticalSpeed = Mathf.Max(0f, verticalSpeed);
     }
 
     void Awake()
@@ -185,6 +213,9 @@ public class UnitBase : MonoBehaviour
 
     public void Jump()
     {
+        if (_flightEnabled)
+            return;
+
         if (_cc == null || !_cc.isGrounded)
             return;
 
@@ -193,8 +224,13 @@ public class UnitBase : MonoBehaviour
 
     void ApplyMovement(Vector3 plannedVelocity, float dt)
     {
-        Vector3 localCorrection = BuildLocalCorrectionVelocity(dt, plannedVelocity);
+        Vector3 localCorrection = _flightEnabled
+            ? Vector3.zero
+            : BuildLocalCorrectionVelocity(dt, plannedVelocity);
         StepMovement(plannedVelocity + localCorrection, dt);
+        if (_flightEnabled)
+            return;
+
         TryRecoverToLegalPosition();
         TrySnapBackToNavMesh();
     }
@@ -239,7 +275,11 @@ public class UnitBase : MonoBehaviour
         if (_cc == null)
             return;
 
-        if (_cc.isGrounded)
+        if (_flightEnabled)
+        {
+            _verticalVel.y = _flightVerticalInput * _flightVerticalSpeed;
+        }
+        else if (_cc.isGrounded)
         {
             if (_verticalVel.y < 0f)
                 _verticalVel.y = groundedStick;

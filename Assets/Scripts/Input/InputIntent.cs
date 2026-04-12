@@ -13,6 +13,7 @@ public struct InputIntent
     public bool Shift;
     public bool Cancel;
     public bool Space;
+    public bool SpaceHeld;
     public bool Dash;
     public bool AttackPressed; // Attack down this frame
 

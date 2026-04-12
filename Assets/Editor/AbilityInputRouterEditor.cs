@@ -160,7 +160,7 @@ public class AbilityInputRouterEditor : Editor
 
         s_cachedRtsAbilityTypes = CollectAbilityTypes<RtsUnitAbility>();
         s_cachedRtsAbilityNames = BuildAbilityNames(s_cachedRtsAbilityTypes);
-        s_cachedActFpsAbilityTypes = CollectAbilityTypes<ActFpsUnitAbility>();
+        s_cachedActFpsAbilityTypes = CollectAbilityTypes(typeof(ActFpsUnitAbility), typeof(ActUnitAbility));
         s_cachedActFpsAbilityNames = BuildAbilityNames(s_cachedActFpsAbilityTypes);
     }
 
@@ -173,6 +173,33 @@ public class AbilityInputRouterEditor : Editor
                 continue;
 
             types.Add(type);
+        }
+
+        types.Sort((a, b) => string.CompareOrdinal(a.Name, b.Name));
+        return types;
+    }
+
+    static List<Type> CollectAbilityTypes(params Type[] abilityBaseTypes)
+    {
+        List<Type> types = new List<Type>();
+        HashSet<Type> uniqueTypes = new HashSet<Type>();
+        if (abilityBaseTypes == null)
+            return types;
+
+        for (int i = 0; i < abilityBaseTypes.Length; i++)
+        {
+            Type baseType = abilityBaseTypes[i];
+            if (baseType == null || !typeof(UnitAbility).IsAssignableFrom(baseType))
+                continue;
+
+            foreach (Type type in TypeCache.GetTypesDerivedFrom(baseType))
+            {
+                if (type.IsAbstract || type.IsGenericType)
+                    continue;
+
+                if (uniqueTypes.Add(type))
+                    types.Add(type);
+            }
         }
 
         types.Sort((a, b) => string.CompareOrdinal(a.Name, b.Name));

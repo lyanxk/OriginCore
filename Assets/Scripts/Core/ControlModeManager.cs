@@ -175,6 +175,7 @@ public class ControlModeManager : MonoBehaviour
                intent.RightClick ||
                intent.RightHeld ||
                intent.Space ||
+               intent.SpaceHeld ||
                intent.Dash ||
                intent.AttackPressed ||
                intent.Cancel;
@@ -188,6 +189,7 @@ public class ControlModeManager : MonoBehaviour
         source.RightClick = false;
         source.RightHeld = false;
         source.Space = false;
+        source.SpaceHeld = false;
         source.Dash = false;
         source.AttackPressed = false;
         source.Cancel = false;

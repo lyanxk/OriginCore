@@ -120,7 +120,10 @@ public class AbilityInputRouter : MonoBehaviour
     void InitializeActFpsAbilitiesIfNeeded()
     {
         if (actFpsAbilitiesInitialized)
+        {
+            UpgradeLegacyDefaultActFpsAbilities();
             return;
+        }
 
         bool hasConfiguredAbility = false;
         for (int i = 0; i < actFpsAbilities.Length; i++)
@@ -134,9 +137,33 @@ public class AbilityInputRouter : MonoBehaviour
 
         actFpsAbilitiesInitialized = true;
         if (hasConfiguredAbility)
+        {
+            UpgradeLegacyDefaultActFpsAbilities();
+            return;
+        }
+
+        actFpsAbilities = CreateDefaultActFpsAbilities();
+    }
+
+    void UpgradeLegacyDefaultActFpsAbilities()
+    {
+        if (actFpsAbilities == null || actFpsAbilities.Length != 1)
             return;
 
-        actFpsAbilities = new UnitAbility[] { new DashAbility() };
+        if (actFpsAbilities[0] is not DashAbility)
+            return;
+
+        actFpsAbilities = CreateDefaultActFpsAbilities();
+    }
+
+    static UnitAbility[] CreateDefaultActFpsAbilities()
+    {
+        return new UnitAbility[]
+        {
+            new DashAbility(),
+            new FlightAbility(),
+            new ChargedShotAbility()
+        };
     }
 
     void RegisterAbilityGroup(UnitAbility[] abilityGroup)

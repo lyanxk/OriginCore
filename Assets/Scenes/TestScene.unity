@@ -96,7 +96,8 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 0}
+  m_LightingDataAsset: {fileID: 112000000, guid: 6c73eb466d2437e4395561762ba68280,
+    type: 2}
   m_LightingSettings: {fileID: 0}
 --- !u!196 &4
 NavMeshSettings:
@@ -1768,7 +1769,9 @@ MonoBehaviour:
   - rid: -2
   - rid: -2
   actFpsAbilities:
-  - rid: 5414467585456209920
+  - rid: 7344946864006889472
+  - rid: 7344946864006889473
+  - rid: 7344946864006889474
   actFpsAbilitiesInitialized: 1
   references:
     version: 2
@@ -1819,7 +1822,7 @@ MonoBehaviour:
         cooldown: 0
         damage: 50
         radius: 1
-    - rid: 5414467585456209920
+    - rid: 7344946864006889472
       type: {class: DashAbility, ns: Unit.Ability, asm: Assembly-CSharp}
       data:
         abilityId: ability.dash
@@ -1830,6 +1833,31 @@ MonoBehaviour:
         cooldown: 0
         dashSpeed: 10
         dashDuration: 0.2
+    - rid: 7344946864006889473
+      type: {class: FlightAbility, ns: Unit.Ability, asm: Assembly-CSharp}
+      data:
+        abilityId: ability.act.flight
+        displayName: Flight
+        icon: {fileID: 0}
+        hotkeyText: Double Space
+        tooltip: Double-tap Space to toggle flight. While flying, Space rises and
+          Shift descends.
+        doubleTapWindow: 0.3
+        verticalSpeed: 6
+    - rid: 7344946864006889474
+      type: {class: ChargedShotAbility, ns: Unit.Ability, asm: Assembly-CSharp}
+      data:
+        abilityId: ability.act.chargedShot
+        displayName: Charged Shot
+        icon: {fileID: 0}
+        hotkeyText: Hold RMB
+        tooltip: Hold right mouse to charge. Release to fire. Locks the nearest target
+          once when charging starts.
+        maxChargeLevel: 3
+        secondsPerChargeLevel: 2
+        range: 18
+        baseDamage: 20
+        bonusDamagePerExtraCharge: 20
 --- !u!114 &883050551
 MonoBehaviour:
   m_ObjectHideFlags: 0

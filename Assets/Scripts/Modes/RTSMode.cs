@@ -193,11 +193,13 @@ public class RTSMode : IControlMode
         }
 
         bool canceledOrderWithClick = false;
+        bool consumedSelectionClick = false;
         if (RtsAbilityTargetingState.HasPending &&
             intent.LeftClick &&
             !IsPointerOverBlockingUi(intent.PointerScreenPos))
         {
-            canceledOrderWithClick = TryHandlePendingAbility(intent.PointerScreenPos);
+            consumedSelectionClick = TryHandlePendingAbility(intent.PointerScreenPos);
+            canceledOrderWithClick = consumedSelectionClick;
         }
 
         if ((_isAttackOrderMode || _isMoveOrderMode) && intent.RightClick)
@@ -231,7 +233,7 @@ public class RTSMode : IControlMode
         {
             CancelSelectionDrag();
         }
-        else
+        else if (!consumedSelectionClick)
         {
             HandleSelection(intent);
         }

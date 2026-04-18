@@ -4,15 +4,20 @@ using UnityEngine.UI;
 public class HealthBarUI : MonoBehaviour
 {
     [SerializeField] Image fill;
+    [SerializeField] Color hostileFillColor = Color.red;
 
     Health _health;
     Transform _camTr;
+    Color _defaultFillColor;
 
     void Awake()
     {
         Canvas canvas = GetComponent<Canvas>();
         if (canvas != null && canvas.renderMode == RenderMode.WorldSpace)
             canvas.worldCamera = Camera.main;
+
+        if (fill != null)
+            _defaultFillColor = fill.color;
 
         DisableRaycastTargets();
         _camTr = Camera.main != null ? Camera.main.transform : null;
@@ -27,6 +32,7 @@ public class HealthBarUI : MonoBehaviour
         if (_health == null)
             return;
 
+        ApplyFillColor();
         _health.OnHpChanged += OnHpChanged;
         OnHpChanged(_health.CurrentHp, _health.MaxHp);
     }
@@ -51,6 +57,17 @@ public class HealthBarUI : MonoBehaviour
             return;
 
         fill.fillAmount = max <= 0f ? 0f : current / max;
+    }
+
+    void ApplyFillColor()
+    {
+        if (fill == null)
+            return;
+
+        TeamAffiliation teamAffiliation = _health != null ? _health.TeamAffiliation : null;
+        bool isHostile = teamAffiliation != null
+                         && TeamAffiliation.IsHostile(teamAffiliation.Team, TeamType.Friendly);
+        fill.color = isHostile ? hostileFillColor : _defaultFillColor;
     }
 
     void DisableRaycastTargets()

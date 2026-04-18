@@ -41,24 +41,24 @@ public static class RtsAbilityTargetingState
         s_targetingMode = targetingMode;
     }
 
-    public static bool TryActivateAtPoint(Vector3 worldPoint)
+    public static bool TryActivateAtPoint(Vector3 worldPoint, bool append)
     {
         if (!HasPending || s_targetingMode != RtsAbilityTargetingMode.Point)
             return false;
 
-        if (!s_ability.TryActivatePendingPoint(worldPoint))
+        if (!s_ability.TryActivatePendingPoint(worldPoint, append))
             return false;
 
         Clear();
         return true;
     }
 
-    public static bool TryActivateOnUnit(Selectable target, Vector3 worldPoint)
+    public static bool TryActivateOnUnit(Selectable target, Vector3 worldPoint, bool append)
     {
         if (!HasPending || s_targetingMode != RtsAbilityTargetingMode.Unit)
             return false;
 
-        if (!s_ability.TryActivatePendingUnit(target, worldPoint))
+        if (!s_ability.TryActivatePendingUnit(target, worldPoint, append))
             return false;
 
         Clear();

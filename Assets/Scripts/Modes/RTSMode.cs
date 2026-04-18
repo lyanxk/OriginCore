@@ -198,7 +198,7 @@ public class RTSMode : IControlMode
             intent.LeftClick &&
             !IsPointerOverBlockingUi(intent.PointerScreenPos))
         {
-            consumedSelectionClick = TryHandlePendingAbility(intent.PointerScreenPos);
+            consumedSelectionClick = TryHandlePendingAbility(intent.PointerScreenPos, intent.Shift);
             canceledOrderWithClick = consumedSelectionClick;
         }
 
@@ -301,7 +301,7 @@ public class RTSMode : IControlMode
         return RtsOrderDispatcher.TryIssueAttack(Sel.Selected, orderPoint, intent.Shift);
     }
 
-    bool TryHandlePendingAbility(Vector2 pointerScreenPos)
+    bool TryHandlePendingAbility(Vector2 pointerScreenPos, bool append = false)
     {
         Ray ray = _cam.ScreenPointToRay(pointerScreenPos);
 
@@ -314,13 +314,13 @@ public class RTSMode : IControlMode
                 if (!Selectable.TryResolve(unitHit.collider, out Selectable target))
                     return false;
 
-                return RtsAbilityTargetingState.TryActivateOnUnit(target, unitHit.point);
+                return RtsAbilityTargetingState.TryActivateOnUnit(target, unitHit.point, append);
 
             case Unit.Ability.RtsAbilityTargetingMode.Point:
                 if (!Physics.Raycast(ray, out RaycastHit pointHit, 500f, _groundMask))
                     return false;
 
-                return RtsAbilityTargetingState.TryActivateAtPoint(pointHit.point);
+                return RtsAbilityTargetingState.TryActivateAtPoint(pointHit.point, append);
 
             default:
                 return false;

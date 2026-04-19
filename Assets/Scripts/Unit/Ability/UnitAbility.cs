@@ -104,6 +104,11 @@ namespace Unit.Ability
             return false;
         }
 
+        public virtual bool TryActivate(bool append)
+        {
+            return TryActivate();
+        }
+
         public virtual void Tick(float deltaTime)
         {
         }
@@ -149,6 +154,11 @@ namespace Unit.Ability
 
         public sealed override bool TryActivate()
         {
+            return TryActivate(false);
+        }
+
+        public override bool TryActivate(bool append)
+        {
             if (!IsAvailableInCurrentMode || !IsEnabled)
                 return false;
 
@@ -160,7 +170,7 @@ namespace Unit.Ability
                 case RtsAbilityTargetingMode.Self:
                     RtsQueuedOrderState.Clear();
                     RtsAbilityTargetingState.Clear();
-                    if (TryEnqueueCommand(CreateQueuedSelfCommand(), append: false))
+                    if (TryEnqueueCommand(CreateQueuedSelfCommand(), append))
                         return true;
 
                     return TryActivateSelf();

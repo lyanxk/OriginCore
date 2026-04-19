@@ -84,6 +84,11 @@ public class AbilityInputRouter : MonoBehaviour
 
     public bool TryActivate(string abilityId)
     {
+        return TryActivate(abilityId, append: false);
+    }
+
+    public bool TryActivate(string abilityId, bool append)
+    {
         if (string.IsNullOrWhiteSpace(abilityId))
             return false;
 
@@ -93,7 +98,7 @@ public class AbilityInputRouter : MonoBehaviour
         if (!ability.IsAvailableInCurrentMode)
             return false;
 
-        return ability.TryActivate();
+        return ability.TryActivate(append);
     }
 
     public bool HasAbility(string abilityId)

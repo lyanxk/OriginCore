@@ -15,6 +15,6 @@ public interface ICommandCardDataSource
     bool TryGetHealth(out float current, out float max);
     bool TryGetEnergy(out float current, out float max);
     bool HasAbility(string abilityId);
-    bool TryActivateAbility(string abilityId);
+    bool TryActivateAbility(string abilityId, bool append = false);
     bool TryProduce(string productionId);
 }

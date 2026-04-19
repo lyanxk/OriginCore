@@ -350,11 +350,12 @@ public class CommandCardController : MonoBehaviour
             return false;
 
         ICommandCardDataSource dataSource = primary.CommandCardDataSource;
+        bool append = IsQueueAppendRequested();
         if (dataSource != null)
-            return dataSource.TryActivateAbility(abilityId);
+            return dataSource.TryActivateAbility(abilityId, append);
 
         AbilityInputRouter router = primary.AbilityRouter;
-        return router != null && router.TryActivate(abilityId);
+        return router != null && router.TryActivate(abilityId, append);
     }
 
     bool ExecuteCommand(string commandId)
@@ -424,6 +425,17 @@ public class CommandCardController : MonoBehaviour
             return hotkeyToken;
 
         return inputSource.GetCommandBindingDisplayString(hotkeyToken);
+    }
+
+    bool IsQueueAppendRequested()
+    {
+        if (inputSource != null)
+            return inputSource.Current.Shift;
+
+        if (Keyboard.current != null)
+            return Keyboard.current.leftShiftKey.isPressed || Keyboard.current.rightShiftKey.isPressed;
+
+        return Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
     }
 
     void AssignEntriesToSlots()

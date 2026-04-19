@@ -2121,6 +2121,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fill: {fileID: 584735}
+  hostileFillColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!114 &1041153980
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2483,7 +2484,7 @@ MonoBehaviour:
     Tooltip: 
   _hasRallyPoint: 1
   _usesDefaultRallyPoint: 1
-  _rallyPoint: {x: -10, y: 0.19288416, z: 3}
+  _rallyPoint: {x: -10, y: 1, z: 3}
 --- !u!114 &1386892657
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3277,6 +3278,11 @@ PrefabInstance:
       propertyPath: teamAffiliation
       value: 
       objectReference: {fileID: 754671252}
+    - target: {fileID: 4064889438472452534, guid: 76494353aeec76946905ca31358ad48a,
+        type: 3}
+      propertyPath: autoChaseTargets
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4198138853953822667, guid: 76494353aeec76946905ca31358ad48a,
         type: 3}
       propertyPath: m_Name

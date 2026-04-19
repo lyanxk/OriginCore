@@ -76,9 +76,9 @@ public abstract class CommandCardDataSourceBase : MonoBehaviour, ICommandCardDat
         return abilityRouter != null && abilityRouter.HasAbility(abilityId);
     }
 
-    public virtual bool TryActivateAbility(string abilityId)
+    public virtual bool TryActivateAbility(string abilityId, bool append = false)
     {
-        return abilityRouter != null && abilityRouter.TryActivate(abilityId);
+        return abilityRouter != null && abilityRouter.TryActivate(abilityId, append);
     }
 
     public virtual bool TryProduce(string productionId)

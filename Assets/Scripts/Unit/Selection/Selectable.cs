@@ -1,15 +1,17 @@
-﻿using System.Collections.Generic;
-using Gameplay;
+﻿using Gameplay;
+using System.Collections.Generic;
 using Unit.Ability;
 using Unit.Combat;
 using Unit.Command;
 using Unit.Movement;
 using Unit.UI;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace Unit.Selection
 {
     [DisallowMultipleComponent]
+    [MovedFrom(true, sourceNamespace: "", sourceAssembly: "Assembly-CSharp", sourceClassName: "Selectable")]
     public class Selectable : MonoBehaviour
     {
         const float RouteLineWidth = 0.12f;

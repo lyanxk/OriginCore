@@ -44,6 +44,7 @@ GameObject:
   - component: {fileID: 7097667328746856919}
   - component: {fileID: 2723365748491886532}
   - component: {fileID: 4424760524717535906}
+  - component: {fileID: 7549681122034567890}
   - component: {fileID: 320958382295078791}
   - component: {fileID: 4523317871231682683}
   - component: {fileID: 5624234258582364395}
@@ -85,8 +86,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3cb86ea050e6229498caa17421837c68, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   outline: {fileID: 2723365748491886532}
   teamAffiliation: {fileID: 4076325844960353870}
   commandExecutor: {fileID: 4523317871231682683}
@@ -151,6 +152,31 @@ MonoBehaviour:
   navMeshRecoverSampleRadius: 2.5
   navMeshHardSnapDistance: 1.25
   navMeshHardSnapCooldown: 0.25
+--- !u!114 &7549681122034567890
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4198138853953822667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c4f8f2d8f3a41b4e8d7c8b9a6f5e4d3, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  motor: {fileID: 4424760524717535906}
+  animator: {fileID: 0}
+  animatorController: {fileID: 9100000, guid: 61570b7a88ce60e48bc07938d22788d6,
+    type: 2}
+  disableRootMotion: 1
+  idleStateName: ARM_Stickman|StandIdle_24f
+  moveStateName: ARM_Stickman|WalkCycle_24f
+  movingSpeedThreshold: 0.08
+  crossFadeDuration: 0.12
+  scaleMovePlaybackSpeed: 1
+  referenceMoveSpeed: 4.5
+  minMovePlaybackSpeed: 0.85
+  maxMovePlaybackSpeed: 1.35
 --- !u!143 &320958382295078791
 CharacterController:
   m_ObjectHideFlags: 0

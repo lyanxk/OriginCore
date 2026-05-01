@@ -8,7 +8,7 @@ using UnityEngine.Scripting.APIUpdating;
 
 namespace Unit.Movement
 {
-    [MovedFrom(true, sourceNamespace: "", sourceAssembly: "", sourceClassName: "UnitBaseMotor")]
+    [MovedFrom(true, sourceNamespace: "", sourceAssembly: "Assembly-CSharp", sourceClassName: "UnitBase")]
     public class UnitBase : MonoBehaviour
     {
         public float walkSpeed = 5.0f;
@@ -59,6 +59,7 @@ namespace Unit.Movement
         bool _hasPlanarOverride;
         Vector3 _planarOverrideVel;
         float _planarOverrideTimer;
+        Vector3 _lastPlanarVelocity;
         bool _flightEnabled;
         float _flightVerticalInput;
         float _flightVerticalSpeed;
@@ -72,6 +73,8 @@ namespace Unit.Movement
         public Vector3 CurrentDestination => _destination;
         public float OccupancyRadius => Mathf.Max(0.1f, occupancyRadius);
         public bool IsFlightEnabled => _flightEnabled;
+        public Vector3 PlanarVelocity => _lastPlanarVelocity;
+        public float PlanarSpeed => _lastPlanarVelocity.magnitude;
 
         public void OverridePlanarVelocity(Vector3 planarVel, float duration)
         {
@@ -112,6 +115,7 @@ namespace Unit.Movement
             _hasPlanarOverride = false;
             _planarOverrideVel = Vector3.zero;
             _planarOverrideTimer = 0f;
+            _lastPlanarVelocity = Vector3.zero;
             _verticalVel = Vector3.zero;
 
             if (_cc == null)
@@ -274,6 +278,9 @@ namespace Unit.Movement
                     _planarOverrideVel = Vector3.zero;
                 }
             }
+
+            _lastPlanarVelocity = planarVelocity;
+            _lastPlanarVelocity.y = 0f;
 
             FaceMovementDirection(planarVelocity);
 

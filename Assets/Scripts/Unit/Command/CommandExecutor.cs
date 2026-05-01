@@ -2,10 +2,12 @@
 using Unit.Movement;
 using Unit.Selection;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace Unit.Command
 {
     [DisallowMultipleComponent]
+    [MovedFrom(true, sourceNamespace: "", sourceAssembly: "Assembly-CSharp", sourceClassName: "CommandExecutor")]
     public class CommandExecutor : MonoBehaviour, ISelectionRouteProvider
     {
         const int MaxCommandCount = 6;

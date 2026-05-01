@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Gameplay;
+using System;
 using System.Collections.Generic;
-using Gameplay;
 using Modes;
 using Unit.Movement;
 using Unit.Selection;

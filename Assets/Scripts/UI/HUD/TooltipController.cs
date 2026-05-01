@@ -1,10 +1,12 @@
-using TMPro;
+﻿using TMPro;
 using Unit.UI;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 using UnityEngine.InputSystem;
 
 namespace UI.HUD
 {
+    [MovedFrom(true, sourceNamespace: "", sourceAssembly: "Assembly-CSharp", sourceClassName: "TooltipController")]
     public class TooltipController : MonoBehaviour
     {
         [SerializeField] RectTransform tooltipRoot;

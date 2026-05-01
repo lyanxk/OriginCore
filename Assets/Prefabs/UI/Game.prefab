@@ -84,11 +84,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   input: {fileID: 7655931682119978042}
   selectionBox: {fileID: 0}
-  switchRTSAction: {fileID: 437684622041599635, guid: 4e0c811b83694ae488f5e283d5b49243,
+  switchRtsAction: {fileID: 437684622041599635, guid: 4e0c811b83694ae488f5e283d5b49243,
     type: 3}
-  switchACTAction: {fileID: 1953845101869190164, guid: 4e0c811b83694ae488f5e283d5b49243,
+  switchActAction: {fileID: 1953845101869190164, guid: 4e0c811b83694ae488f5e283d5b49243,
     type: 3}
-  switchFPSAction: {fileID: -7120965213227796069, guid: 4e0c811b83694ae488f5e283d5b49243,
+  switchFpsAction: {fileID: -7120965213227796069, guid: 4e0c811b83694ae488f5e283d5b49243,
     type: 3}
   unit: {fileID: 0}
   cameraRig: {fileID: 0}

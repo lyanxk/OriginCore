@@ -1,12 +1,13 @@
+﻿using Gameplay;
 using System;
 using System.Collections.Generic;
-using Gameplay;
 using Navigation;
 using Unit.Command;
 using Unit.Movement;
 using Unit.Selection;
 using Unit.UI;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 using UnityEngine.AI;
 
 namespace Building
@@ -24,6 +25,7 @@ namespace Building
     }
 
     [DisallowMultipleComponent]
+    [MovedFrom(true, sourceNamespace: "", sourceAssembly: "Assembly-CSharp", sourceClassName: "BuildingProduction")]
     public class BuildingProduction : MonoBehaviour, IGroundCommandReceiver, ISelectionRouteProvider
     {
         const string GroundLayerName = "Ground";

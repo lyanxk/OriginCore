@@ -1,8 +1,10 @@
 ﻿using Gameplay;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace UI
 {
+    [MovedFrom(true, sourceNamespace: "", sourceAssembly: "Assembly-CSharp", sourceClassName: "HealthBarSpawner")]
     public class HealthBarSpawner : MonoBehaviour
     {
         [Header("Refs")]

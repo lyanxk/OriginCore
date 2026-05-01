@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Gameplay;
+using System;
 using Core;
-using Gameplay;
 using Input;
 using Modes;
 using Unit.Combat;

@@ -1,35 +1,37 @@
-using Unit.Command;
 using UnityEngine;
 
-public sealed class StopCommand : IUnitCommand
+namespace Unit.Command
 {
-    bool _done;
-
-    public void Begin(UnitContext ctx)
+    public sealed class StopCommand : IUnitCommand
     {
-        _done = true;
+        bool _done;
 
-        if (ctx == null || ctx.Motor == null)
-            return;
+        public void Begin(UnitContext ctx)
+        {
+            _done = true;
 
-        ctx.Motor.CancelPathing();
+            if (ctx == null || ctx.Motor == null)
+                return;
 
-        // Clear short-lived planar overrides such as dashes.
-        ctx.Motor.OverridePlanarVelocity(Vector3.zero, 0.01f);
-    }
-
-    public void Tick(UnitContext ctx, float dt)
-    {
-    }
-
-    public bool IsDone(UnitContext ctx)
-    {
-        return _done;
-    }
-
-    public void End(UnitContext ctx)
-    {
-        if (ctx?.Motor != null)
             ctx.Motor.CancelPathing();
+
+            // Clear short-lived planar overrides such as dashes.
+            ctx.Motor.OverridePlanarVelocity(Vector3.zero, 0.01f);
+        }
+
+        public void Tick(UnitContext ctx, float dt)
+        {
+        }
+
+        public bool IsDone(UnitContext ctx)
+        {
+            return _done;
+        }
+
+        public void End(UnitContext ctx)
+        {
+            if (ctx?.Motor != null)
+                ctx.Motor.CancelPathing();
+        }
     }
 }

@@ -1,35 +1,39 @@
-﻿using UnityEngine;
+﻿using Gameplay;
+using UnityEngine;
 
-public class HealthBarSpawner : MonoBehaviour
+namespace UI
 {
-    [Header("Refs")]
-    [SerializeField] Transform healthBarRoot;   // 拖 HealthBarRoot
-    [SerializeField] HealthBarUI healthBarPrefab; // 拖你的血条 Prefab（带 HealthBarUI 的那个）
-
-    Health _health;
-    HealthBarUI _barInstance;
-
-    void Awake()
+    public class HealthBarSpawner : MonoBehaviour
     {
-        _health = GetComponent<Health>();
-    }
+        [Header("Refs")]
+        [SerializeField] Transform healthBarRoot;   // 拖 HealthBarRoot
+        [SerializeField] HealthBarUI healthBarPrefab; // 拖你的血条 Prefab（带 HealthBarUI 的那个）
 
-    void Start()
-    {
-        if (_health == null || healthBarRoot == null)
-            return;
+        Health _health;
+        HealthBarUI _barInstance;
 
-        _barInstance = healthBarRoot.GetComponentInChildren<HealthBarUI>(true);
-        if (_barInstance == null)
+        void Awake()
         {
-            if (healthBarPrefab == null)
-                return;
-
-            _barInstance = Instantiate(healthBarPrefab, healthBarRoot);
-            _barInstance.transform.localPosition = Vector3.zero;
-            _barInstance.transform.localRotation = Quaternion.identity;
+            _health = GetComponent<Health>();
         }
 
-        _barInstance.Bind(_health);
+        void Start()
+        {
+            if (_health == null || healthBarRoot == null)
+                return;
+
+            _barInstance = healthBarRoot.GetComponentInChildren<HealthBarUI>(true);
+            if (_barInstance == null)
+            {
+                if (healthBarPrefab == null)
+                    return;
+
+                _barInstance = Instantiate(healthBarPrefab, healthBarRoot);
+                _barInstance.transform.localPosition = Vector3.zero;
+                _barInstance.transform.localRotation = Quaternion.identity;
+            }
+
+            _barInstance.Bind(_health);
+        }
     }
 }

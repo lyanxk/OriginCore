@@ -1825,7 +1825,7 @@ MonoBehaviour:
     - rid: 7344946864006889472
       type: {class: DashAbility, ns: Unit.Ability, asm: Assembly-CSharp}
       data:
-        abilityId: ability.dash
+        abilityId: ability.act.dash
         displayName: Dash
         icon: {fileID: 0}
         hotkeyText: Mouse5

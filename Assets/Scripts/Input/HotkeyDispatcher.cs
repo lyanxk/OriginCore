@@ -1,47 +1,52 @@
+using UI.HUD;
+using Unit.UI;
 using UnityEngine;
 
-public class HotkeyDispatcher : MonoBehaviour
+namespace Input
 {
-    [SerializeField] InputIntentSource inputSource;
-    [SerializeField] CommandCardController commandCard;
-
-    void Awake()
+    public class HotkeyDispatcher : MonoBehaviour
     {
-        if (inputSource == null)
-            inputSource = FindObjectOfType<InputIntentSource>();
+        [SerializeField] InputIntentSource inputSource;
+        [SerializeField] CommandCardController commandCard;
 
-        if (commandCard == null)
-            commandCard = FindObjectOfType<CommandCardController>();
-    }
-
-    void Update()
-    {
-        if (inputSource == null || commandCard == null || !commandCard.isActiveAndEnabled)
-            return;
-
-        InputIntent intent = inputSource.Current;
-
-        for (int slotIndex = 0; slotIndex < commandCard.SlotCount; slotIndex++)
+        void Awake()
         {
-            if (!commandCard.TryGetEntryAtSlot(slotIndex, out CommandEntry entry))
-                continue;
+            if (inputSource == null)
+                inputSource = FindObjectOfType<InputIntentSource>();
 
-            if (entry.Type == CommandEntryType.Passive || IsReservedBaseCommand(entry.Id))
-                continue;
-
-            string hotkey = CommandHotkeyUtility.ResolveHotkeyToken(entry, slotIndex);
-            if (!intent.GetCommandPressed(hotkey))
-                continue;
-
-            commandCard.TryExecuteBySlot(slotIndex);
+            if (commandCard == null)
+                commandCard = FindObjectOfType<CommandCardController>();
         }
-    }
 
-    static bool IsReservedBaseCommand(string commandId)
-    {
-        return commandId == CommandEntryIds.Move
-               || commandId == CommandEntryIds.Attack
-               || commandId == CommandEntryIds.Stop;
-    }
+        void Update()
+        {
+            if (inputSource == null || commandCard == null || !commandCard.isActiveAndEnabled)
+                return;
 
+            InputIntent intent = inputSource.Current;
+
+            for (int slotIndex = 0; slotIndex < commandCard.SlotCount; slotIndex++)
+            {
+                if (!commandCard.TryGetEntryAtSlot(slotIndex, out CommandEntry entry))
+                    continue;
+
+                if (entry.Type == CommandEntryType.Passive || IsReservedBaseCommand(entry.Id))
+                    continue;
+
+                string hotkey = CommandHotkeyUtility.ResolveHotkeyToken(entry, slotIndex);
+                if (!intent.GetCommandPressed(hotkey))
+                    continue;
+
+                commandCard.TryExecuteBySlot(slotIndex);
+            }
+        }
+
+        static bool IsReservedBaseCommand(string commandId)
+        {
+            return commandId == CommandEntryIds.Move
+                   || commandId == CommandEntryIds.Attack
+                   || commandId == CommandEntryIds.Stop;
+        }
+
+    }
 }

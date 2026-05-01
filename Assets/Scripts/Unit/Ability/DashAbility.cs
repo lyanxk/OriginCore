@@ -1,4 +1,5 @@
 using System;
+using Input;
 using UnityEngine;
 
 namespace Unit.Ability
@@ -7,7 +8,7 @@ namespace Unit.Ability
     public class DashAbility : ActFpsUnitAbility
     {
         [Header("Ability")]
-        [SerializeField] string abilityId = "ability.dash";
+        [SerializeField] string abilityId = "ability.act.dash";
         [SerializeField] string displayName = "Dash";
         [SerializeField] Sprite icon;
         [SerializeField] string hotkeyText = "Mouse5";

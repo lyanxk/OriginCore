@@ -1,96 +1,102 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Gameplay;
+using Unit.Command;
+using Unit.Selection;
 using UnityEngine;
 
-public static class RtsOrderDispatcher
+namespace Modes
 {
-    public static bool TryIssueMove(
-        IReadOnlyList<Selectable> selected,
-        Vector3 destination,
-        bool append,
-        List<CommandExecutor> executorBuffer)
+    public static class RtsOrderDispatcher
     {
-        if (selected == null || executorBuffer == null)
-            return false;
-
-        bool issued = false;
-        executorBuffer.Clear();
-        for (int i = 0; i < selected.Count; i++)
+        public static bool TryIssueMove(
+            IReadOnlyList<Selectable> selected,
+            Vector3 destination,
+            bool append,
+            List<CommandExecutor> executorBuffer)
         {
-            Selectable selectable = selected[i];
-            if (!CanControlSelectable(selectable))
-                continue;
+            if (selected == null || executorBuffer == null)
+                return false;
 
-            if (selectable.CommandExecutor == null || selectable.Motor == null)
+            bool issued = false;
+            executorBuffer.Clear();
+            for (int i = 0; i < selected.Count; i++)
             {
-                if (selectable.GroundCommandReceiver != null)
-                    issued |= selectable.GroundCommandReceiver.TryIssueGroundCommand(destination, append);
+                Selectable selectable = selected[i];
+                if (!CanControlSelectable(selectable))
+                    continue;
 
-                continue;
+                if (selectable.CommandExecutor == null || selectable.Motor == null)
+                {
+                    if (selectable.GroundCommandReceiver != null)
+                        issued |= selectable.GroundCommandReceiver.TryIssueGroundCommand(destination, append);
+
+                    continue;
+                }
+
+                executorBuffer.Add(selectable.CommandExecutor);
             }
 
-            executorBuffer.Add(selectable.CommandExecutor);
+            int count = executorBuffer.Count;
+            if (count == 0)
+                return issued;
+
+            for (int i = 0; i < count; i++)
+                executorBuffer[i].Enqueue(new MoveCommand(destination), append);
+
+            return true;
         }
 
-        int count = executorBuffer.Count;
-        if (count == 0)
+        public static bool TryIssueAttack(IReadOnlyList<Selectable> selected, Vector3 orderPoint, bool append)
+        {
+            if (selected == null)
+                return false;
+
+            bool issued = false;
+            for (int i = 0; i < selected.Count; i++)
+            {
+                Selectable selectable = selected[i];
+                if (!CanControlSelectable(selectable))
+                    continue;
+
+                if (selectable.CommandExecutor == null || selectable.Combat == null)
+                    continue;
+
+                selectable.CommandExecutor.Enqueue(new AttackCommand(orderPoint), append);
+                issued = true;
+            }
+
             return issued;
-
-        for (int i = 0; i < count; i++)
-            executorBuffer[i].Enqueue(new MoveCommand(destination), append);
-
-        return true;
-    }
-
-    public static bool TryIssueAttack(IReadOnlyList<Selectable> selected, Vector3 orderPoint, bool append)
-    {
-        if (selected == null)
-            return false;
-
-        bool issued = false;
-        for (int i = 0; i < selected.Count; i++)
-        {
-            Selectable selectable = selected[i];
-            if (!CanControlSelectable(selectable))
-                continue;
-
-            if (selectable.CommandExecutor == null || selectable.Combat == null)
-                continue;
-
-            selectable.CommandExecutor.Enqueue(new AttackCommand(orderPoint), append);
-            issued = true;
         }
 
-        return issued;
-    }
-
-    public static bool TryIssueStop(IReadOnlyList<Selectable> selected)
-    {
-        if (selected == null)
-            return false;
-
-        bool issued = false;
-        for (int i = 0; i < selected.Count; i++)
+        public static bool TryIssueStop(IReadOnlyList<Selectable> selected)
         {
-            Selectable selectable = selected[i];
-            if (!CanControlSelectable(selectable))
-                continue;
+            if (selected == null)
+                return false;
 
-            if (selectable.CommandExecutor == null)
-                continue;
+            bool issued = false;
+            for (int i = 0; i < selected.Count; i++)
+            {
+                Selectable selectable = selected[i];
+                if (!CanControlSelectable(selectable))
+                    continue;
 
-            selectable.CommandExecutor.Enqueue(new StopCommand(), append: false);
-            issued = true;
+                if (selectable.CommandExecutor == null)
+                    continue;
+
+                selectable.CommandExecutor.Enqueue(new StopCommand(), append: false);
+                issued = true;
+            }
+
+            return issued;
         }
 
-        return issued;
-    }
+        public static bool CanControlSelectable(Selectable selectable)
+        {
+            if (selectable == null)
+                return false;
 
-    public static bool CanControlSelectable(Selectable selectable)
-    {
-        if (selectable == null)
-            return false;
-
-        TeamAffiliation team = selectable.TeamAffiliation;
-        return team == null || team.IsPlayerControllable;
+            TeamAffiliation team = selectable.TeamAffiliation;
+            return team == null || team.IsPlayerControllable;
+        }
     }
 }

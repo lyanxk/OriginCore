@@ -1,4 +1,6 @@
-﻿namespace Unit.Ability
+﻿using Input;
+
+namespace Unit.Ability
 {
     public interface IAbilityInput
     {

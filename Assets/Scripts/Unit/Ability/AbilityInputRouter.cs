@@ -1,218 +1,222 @@
 using System;
 using System.Collections.Generic;
-using Unit.Ability;
+using Input;
+using Modes;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-[DisallowMultipleComponent]
-public class AbilityInputRouter : MonoBehaviour
+namespace Unit.Ability
 {
-    const int RtsAbilitySlotCount = 8;
-
-    [FormerlySerializedAs("commonAbilities")]
-    [FormerlySerializedAs("abilities")]
-    [SerializeReference]
-    UnitAbility[] rtsAbilities = new UnitAbility[RtsAbilitySlotCount];
-
-    [SerializeReference]
-    UnitAbility[] actFpsAbilities = Array.Empty<UnitAbility>();
-
-    [SerializeField, HideInInspector]
-    bool actFpsAbilitiesInitialized;
-
-    readonly List<UnitAbility> _activeAbilities = new List<UnitAbility>(RtsAbilitySlotCount + 8);
-    readonly Dictionary<string, UnitAbility> _abilityMap =
-        new Dictionary<string, UnitAbility>(StringComparer.OrdinalIgnoreCase);
-
-    public IReadOnlyList<UnitAbility> Abilities => _activeAbilities;
-    public IReadOnlyList<UnitAbility> RtsAbilitySlots => rtsAbilities;
-    public IReadOnlyList<UnitAbility> ActFpsAbilitySlots => actFpsAbilities;
-
-    void Awake()
+    [DisallowMultipleComponent]
+    public class AbilityInputRouter : MonoBehaviour
     {
-        Refresh();
-    }
+        const int RtsAbilitySlotCount = 8;
 
-    void OnEnable()
-    {
-        Refresh();
-    }
+        [FormerlySerializedAs("commonAbilities")]
+        [FormerlySerializedAs("abilities")]
+        [SerializeReference]
+        UnitAbility[] rtsAbilities = new UnitAbility[RtsAbilitySlotCount];
 
-    void OnDisable()
-    {
-        ShutdownAbilities();
-        RtsAbilityTargetingState.Clear(this);
-    }
+        [SerializeReference]
+        UnitAbility[] actFpsAbilities = Array.Empty<UnitAbility>();
 
-    void OnValidate()
-    {
-        EnsureAbilitySlots();
-        InitializeActFpsAbilitiesIfNeeded();
-        Refresh();
-    }
+        [SerializeField, HideInInspector]
+        bool actFpsAbilitiesInitialized;
 
-    void Update()
-    {
-        for (int i = 0; i < _activeAbilities.Count; i++)
-            _activeAbilities[i].Tick(Time.deltaTime);
-    }
+        readonly List<UnitAbility> _activeAbilities = new List<UnitAbility>(RtsAbilitySlotCount + 8);
+        readonly Dictionary<string, UnitAbility> _abilityMap =
+            new Dictionary<string, UnitAbility>(StringComparer.OrdinalIgnoreCase);
 
-    public void Refresh()
-    {
-        EnsureAbilitySlots();
-        InitializeActFpsAbilitiesIfNeeded();
-        ShutdownAbilities();
+        public IReadOnlyList<UnitAbility> Abilities => _activeAbilities;
+        public IReadOnlyList<UnitAbility> RtsAbilitySlots => rtsAbilities;
+        public IReadOnlyList<UnitAbility> ActFpsAbilitySlots => actFpsAbilities;
 
-        _activeAbilities.Clear();
-        _abilityMap.Clear();
-
-        RegisterAbilityGroup(rtsAbilities);
-        RegisterAbilityGroup(actFpsAbilities);
-    }
-
-    public void Process(InputIntent intent)
-    {
-        for (int i = 0; i < actFpsAbilities.Length; i++)
+        void Awake()
         {
-            UnitAbility ability = actFpsAbilities[i];
-            if (ability == null)
-                continue;
-
-            ability.ProcessInput(intent);
-        }
-    }
-
-    public bool TryActivate(string abilityId)
-    {
-        return TryActivate(abilityId, append: false);
-    }
-
-    public bool TryActivate(string abilityId, bool append)
-    {
-        if (string.IsNullOrWhiteSpace(abilityId))
-            return false;
-
-        if (!_abilityMap.TryGetValue(abilityId, out UnitAbility ability))
-            return false;
-
-        if (!ability.IsAvailableInCurrentMode)
-            return false;
-
-        return ability.TryActivate(append);
-    }
-
-    public bool HasAbility(string abilityId)
-    {
-        if (string.IsNullOrWhiteSpace(abilityId))
-            return false;
-
-        return _abilityMap.ContainsKey(abilityId);
-    }
-
-    void EnsureAbilitySlots()
-    {
-        rtsAbilities = EnsureRtsSlotArraySize(rtsAbilities);
-        if (actFpsAbilities == null)
-            actFpsAbilities = Array.Empty<UnitAbility>();
-    }
-
-    void ShutdownAbilities()
-    {
-        for (int i = 0; i < _activeAbilities.Count; i++)
-            _activeAbilities[i].Unbind();
-    }
-
-    void InitializeActFpsAbilitiesIfNeeded()
-    {
-        if (actFpsAbilitiesInitialized)
-        {
-            UpgradeLegacyDefaultActFpsAbilities();
-            return;
+            Refresh();
         }
 
-        bool hasConfiguredAbility = false;
-        for (int i = 0; i < actFpsAbilities.Length; i++)
+        void OnEnable()
         {
-            if (actFpsAbilities[i] == null)
-                continue;
-
-            hasConfiguredAbility = true;
-            break;
+            Refresh();
         }
 
-        actFpsAbilitiesInitialized = true;
-        if (hasConfiguredAbility)
+        void OnDisable()
         {
-            UpgradeLegacyDefaultActFpsAbilities();
-            return;
+            ShutdownAbilities();
+            RtsAbilityTargetingState.Clear(this);
         }
 
-        actFpsAbilities = CreateDefaultActFpsAbilities();
-    }
-
-    void UpgradeLegacyDefaultActFpsAbilities()
-    {
-        if (actFpsAbilities == null || actFpsAbilities.Length != 1)
-            return;
-
-        if (actFpsAbilities[0] is not DashAbility)
-            return;
-
-        actFpsAbilities = CreateDefaultActFpsAbilities();
-    }
-
-    static UnitAbility[] CreateDefaultActFpsAbilities()
-    {
-        return new UnitAbility[]
+        void OnValidate()
         {
-            new DashAbility(),
-            new FlightAbility(),
-            new ChargedShotAbility()
-        };
-    }
+            EnsureAbilitySlots();
+            InitializeActFpsAbilitiesIfNeeded();
+            Refresh();
+        }
 
-    void RegisterAbilityGroup(UnitAbility[] abilityGroup)
-    {
-        if (abilityGroup == null)
-            return;
-
-        for (int i = 0; i < abilityGroup.Length; i++)
+        void Update()
         {
-            UnitAbility ability = abilityGroup[i];
-            if (ability == null)
-                continue;
+            for (int i = 0; i < _activeAbilities.Count; i++)
+                _activeAbilities[i].Tick(Time.deltaTime);
+        }
 
-            ability.Bind(this, i);
-            _activeAbilities.Add(ability);
+        public void Refresh()
+        {
+            EnsureAbilitySlots();
+            InitializeActFpsAbilitiesIfNeeded();
+            ShutdownAbilities();
 
-            if (string.IsNullOrWhiteSpace(ability.AbilityId))
-                continue;
+            _activeAbilities.Clear();
+            _abilityMap.Clear();
 
-            if (_abilityMap.ContainsKey(ability.AbilityId))
+            RegisterAbilityGroup(rtsAbilities);
+            RegisterAbilityGroup(actFpsAbilities);
+        }
+
+        public void Process(InputIntent intent)
+        {
+            for (int i = 0; i < actFpsAbilities.Length; i++)
             {
-                Debug.LogWarning(
-                    $"Duplicate ability id '{ability.AbilityId}' on '{name}'. Keeping first registration.",
-                    this);
-                continue;
+                UnitAbility ability = actFpsAbilities[i];
+                if (ability == null)
+                    continue;
+
+                ability.ProcessInput(intent);
+            }
+        }
+
+        public bool TryActivate(string abilityId)
+        {
+            return TryActivate(abilityId, append: false);
+        }
+
+        public bool TryActivate(string abilityId, bool append)
+        {
+            if (string.IsNullOrWhiteSpace(abilityId))
+                return false;
+
+            if (!_abilityMap.TryGetValue(abilityId, out UnitAbility ability))
+                return false;
+
+            if (!ability.IsAvailableInCurrentMode)
+                return false;
+
+            return ability.TryActivate(append);
+        }
+
+        public bool HasAbility(string abilityId)
+        {
+            if (string.IsNullOrWhiteSpace(abilityId))
+                return false;
+
+            return _abilityMap.ContainsKey(abilityId);
+        }
+
+        void EnsureAbilitySlots()
+        {
+            rtsAbilities = EnsureRtsSlotArraySize(rtsAbilities);
+            if (actFpsAbilities == null)
+                actFpsAbilities = Array.Empty<UnitAbility>();
+        }
+
+        void ShutdownAbilities()
+        {
+            for (int i = 0; i < _activeAbilities.Count; i++)
+                _activeAbilities[i].Unbind();
+        }
+
+        void InitializeActFpsAbilitiesIfNeeded()
+        {
+            if (actFpsAbilitiesInitialized)
+            {
+                UpgradeLegacyDefaultActFpsAbilities();
+                return;
             }
 
-            _abilityMap.Add(ability.AbilityId, ability);
+            bool hasConfiguredAbility = false;
+            for (int i = 0; i < actFpsAbilities.Length; i++)
+            {
+                if (actFpsAbilities[i] == null)
+                    continue;
+
+                hasConfiguredAbility = true;
+                break;
+            }
+
+            actFpsAbilitiesInitialized = true;
+            if (hasConfiguredAbility)
+            {
+                UpgradeLegacyDefaultActFpsAbilities();
+                return;
+            }
+
+            actFpsAbilities = CreateDefaultActFpsAbilities();
         }
-    }
 
-    static UnitAbility[] EnsureRtsSlotArraySize(UnitAbility[] source)
-    {
-        if (source != null && source.Length == RtsAbilitySlotCount)
-            return source;
+        void UpgradeLegacyDefaultActFpsAbilities()
+        {
+            if (actFpsAbilities == null || actFpsAbilities.Length != 1)
+                return;
 
-        UnitAbility[] resized = new UnitAbility[RtsAbilitySlotCount];
-        if (source == null)
+            if (actFpsAbilities[0] is not DashAbility)
+                return;
+
+            actFpsAbilities = CreateDefaultActFpsAbilities();
+        }
+
+        static UnitAbility[] CreateDefaultActFpsAbilities()
+        {
+            return new UnitAbility[]
+            {
+                new DashAbility(),
+                new FlightAbility(),
+                new ChargedShotAbility()
+            };
+        }
+
+        void RegisterAbilityGroup(UnitAbility[] abilityGroup)
+        {
+            if (abilityGroup == null)
+                return;
+
+            for (int i = 0; i < abilityGroup.Length; i++)
+            {
+                UnitAbility ability = abilityGroup[i];
+                if (ability == null)
+                    continue;
+
+                ability.Bind(this, i);
+                _activeAbilities.Add(ability);
+
+                if (string.IsNullOrWhiteSpace(ability.AbilityId))
+                    continue;
+
+                if (_abilityMap.ContainsKey(ability.AbilityId))
+                {
+                    Debug.LogWarning(
+                        $"Duplicate ability id '{ability.AbilityId}' on '{name}'. Keeping first registration.",
+                        this);
+                    continue;
+                }
+
+                _abilityMap.Add(ability.AbilityId, ability);
+            }
+        }
+
+        static UnitAbility[] EnsureRtsSlotArraySize(UnitAbility[] source)
+        {
+            if (source != null && source.Length == RtsAbilitySlotCount)
+                return source;
+
+            UnitAbility[] resized = new UnitAbility[RtsAbilitySlotCount];
+            if (source == null)
+                return resized;
+
+            int copyCount = Mathf.Min(source.Length, resized.Length);
+            for (int i = 0; i < copyCount; i++)
+                resized[i] = source[i];
+
             return resized;
-
-        int copyCount = Mathf.Min(source.Length, resized.Length);
-        for (int i = 0; i < copyCount; i++)
-            resized[i] = source[i];
-
-        return resized;
+        }
     }
 }

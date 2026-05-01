@@ -1,9 +1,11 @@
 ﻿using Gameplay;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 using UnityEngine.UI;
 
 namespace UI
 {
+    [MovedFrom(true, sourceNamespace: "", sourceAssembly: "Assembly-CSharp", sourceClassName: "HealthBarUI")]
     public class HealthBarUI : MonoBehaviour
     {
         [SerializeField] Image fill;

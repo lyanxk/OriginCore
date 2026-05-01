@@ -1,13 +1,15 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Input;
 using Modes;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 using UnityEngine.Serialization;
 
 namespace Unit.Ability
 {
     [DisallowMultipleComponent]
+    [MovedFrom(true, sourceNamespace: "", sourceAssembly: "Assembly-CSharp", sourceClassName: "AbilityInputRouter")]
     public class AbilityInputRouter : MonoBehaviour
     {
         const int RtsAbilitySlotCount = 8;

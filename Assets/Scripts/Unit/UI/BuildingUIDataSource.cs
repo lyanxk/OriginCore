@@ -1,10 +1,12 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Building;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace Unit.UI
 {
     [DisallowMultipleComponent]
+    [MovedFrom(true, sourceNamespace: "", sourceAssembly: "Assembly-CSharp", sourceClassName: "BuildingUIDataSource")]
     public class BuildingUIDataSource : CommandCardDataSourceBase
     {
         static readonly string[] ProductionHotkeys = { "Q", "W", "E", "R", "A", "S", "D", "F" };

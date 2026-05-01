@@ -1,14 +1,16 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Input;
 using Modes;
 using Unit.Ability;
 using Unit.Selection;
 using Unit.UI;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 using UnityEngine.InputSystem;
 
 namespace UI.HUD
 {
+    [MovedFrom(true, sourceNamespace: "", sourceAssembly: "Assembly-CSharp", sourceClassName: "CommandCardController")]
     public class CommandCardController : MonoBehaviour
     {
         [Header("UI")]

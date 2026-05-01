@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 namespace Gameplay
@@ -12,7 +12,7 @@ namespace Gameplay
         public float CurrentHp => _currentHp;
         public float MaxHp => maxHp;
         public TeamAffiliation TeamAffiliation => teamAffiliation;
-    
+
         [Range(0f, 1f)]
         public float startHpPercent = 1f;
 

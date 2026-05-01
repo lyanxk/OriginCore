@@ -1,8 +1,10 @@
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 using UnityEngine.InputSystem;
 
 namespace Input
 {
+    [MovedFrom(true, sourceNamespace: "", sourceAssembly: "Assembly-CSharp", sourceClassName: "InputIntentSource")]
     public class InputIntentSource : MonoBehaviour
     {
         public float lookSensitivity = 1.0f;

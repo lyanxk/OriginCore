@@ -62,6 +62,7 @@ MonoBehaviour:
     type: 3}
   shiftAction: {fileID: 1835497332551957006, guid: 4e0c811b83694ae488f5e283d5b49243,
     type: 3}
+  ctrlAction: {fileID: 0}
   cancelAction: {fileID: 4440616591485505995, guid: 4e0c811b83694ae488f5e283d5b49243,
     type: 3}
   spaceAction: {fileID: -5329845342110527033, guid: 4e0c811b83694ae488f5e283d5b49243,

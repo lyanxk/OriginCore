@@ -18,6 +18,9 @@ namespace Unit.Animation
         [SerializeField] string idleStateName = "ARM_Stickman|StandIdle_24f";
         [SerializeField] string moveStateName = "ARM_Stickman|WalkCycle_24f";
         [SerializeField] string runStateName = "ARM_Stickman|RunCycle_16f";
+        [SerializeField] string crouchStateName = "ARM_Stickman|CrouchDown_24f";
+        [SerializeField] string crouchMoveStateName = "ARM_Stickman|CrouchWalk_24f";
+        [SerializeField] string flightStateName = "ARM_Stickman|FlyForward_24f";
 
         [Header("Movement")]
         [Min(0f)] [SerializeField] float movingSpeedThreshold = 0.08f;
@@ -31,6 +34,8 @@ namespace Unit.Animation
         static readonly int SpeedHash = Animator.StringToHash("Speed");
         static readonly int IsMovingHash = Animator.StringToHash("IsMoving");
         static readonly int IsRunningHash = Animator.StringToHash("IsRunning");
+        static readonly int IsCrouchingHash = Animator.StringToHash("IsCrouching");
+        static readonly int IsFlyingHash = Animator.StringToHash("IsFlying");
 
         Vector3 _lastPosition;
         Quaternion _visualRootBaseLocalRotation;
@@ -39,6 +44,8 @@ namespace Unit.Animation
         bool _hasSpeedParameter;
         bool _hasIsMovingParameter;
         bool _hasIsRunningParameter;
+        bool _hasIsCrouchingParameter;
+        bool _hasIsFlyingParameter;
 
         void Reset()
         {
@@ -97,11 +104,13 @@ namespace Unit.Animation
 
             float planarSpeed = ResolvePlanarSpeed();
             bool isMoving = planarSpeed > movingSpeedThreshold;
-            bool isRunning = isMoving && planarSpeed > ResolveRunningSpeedThreshold();
+            bool isFlying = motor != null && motor.IsFlightEnabled;
+            bool isCrouching = motor != null && motor.IsCrouching;
+            bool isRunning = !isFlying && !isCrouching && isMoving && planarSpeed > ResolveRunningSpeedThreshold();
 
-            PlayState(ResolveLocomotionStateName(isMoving, isRunning), crossFadeDuration);
+            PlayState(ResolveLocomotionStateName(isMoving, isRunning, isCrouching, isFlying), crossFadeDuration);
             KeepCurrentStateLooping();
-            SyncParameters(planarSpeed, isMoving, isRunning);
+            SyncParameters(planarSpeed, isMoving, isRunning, isCrouching, isFlying);
             SyncPlaybackSpeed(planarSpeed, isMoving);
             ApplyVisualYawOffset();
         }
@@ -144,6 +153,8 @@ namespace Unit.Animation
             _hasSpeedParameter = false;
             _hasIsMovingParameter = false;
             _hasIsRunningParameter = false;
+            _hasIsCrouchingParameter = false;
+            _hasIsFlyingParameter = false;
 
             if (animator == null || animator.runtimeAnimatorController == null)
                 return;
@@ -158,6 +169,10 @@ namespace Unit.Animation
                     _hasIsMovingParameter = true;
                 else if (parameter.nameHash == IsRunningHash && parameter.type == AnimatorControllerParameterType.Bool)
                     _hasIsRunningParameter = true;
+                else if (parameter.nameHash == IsCrouchingHash && parameter.type == AnimatorControllerParameterType.Bool)
+                    _hasIsCrouchingParameter = true;
+                else if (parameter.nameHash == IsFlyingHash && parameter.type == AnimatorControllerParameterType.Bool)
+                    _hasIsFlyingParameter = true;
             }
         }
 
@@ -182,8 +197,20 @@ namespace Unit.Animation
             return Mathf.Lerp(motor.walkSpeed, motor.runSpeed, 0.5f);
         }
 
-        string ResolveLocomotionStateName(bool isMoving, bool isRunning)
+        string ResolveLocomotionStateName(bool isMoving, bool isRunning, bool isCrouching, bool isFlying)
         {
+            if (isFlying && !string.IsNullOrWhiteSpace(flightStateName))
+                return flightStateName;
+
+            if (isCrouching)
+            {
+                if (isMoving && !string.IsNullOrWhiteSpace(crouchMoveStateName))
+                    return crouchMoveStateName;
+
+                if (!string.IsNullOrWhiteSpace(crouchStateName))
+                    return crouchStateName;
+            }
+
             if (!isMoving)
                 return idleStateName;
 
@@ -215,10 +242,18 @@ namespace Unit.Animation
                 return;
 
             AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+            if (IsHoldPoseState(_currentStateName))
+                return;
+
             if (stateInfo.loop || !stateInfo.IsName(_currentStateName) || stateInfo.normalizedTime < 0.98f)
                 return;
 
             animator.Play(_currentStateName, 0, 0f);
+        }
+
+        bool IsHoldPoseState(string stateName)
+        {
+            return !string.IsNullOrWhiteSpace(crouchStateName) && stateName == crouchStateName;
         }
 
         void ApplyVisualYawOffset()
@@ -230,7 +265,7 @@ namespace Unit.Animation
             visualRoot.localRotation = _visualRootBaseLocalRotation * Quaternion.Euler(0f, modelYawOffset, 0f);
         }
 
-        void SyncParameters(float planarSpeed, bool isMoving, bool isRunning)
+        void SyncParameters(float planarSpeed, bool isMoving, bool isRunning, bool isCrouching, bool isFlying)
         {
             if (_hasSpeedParameter)
                 animator.SetFloat(SpeedHash, planarSpeed);
@@ -240,6 +275,12 @@ namespace Unit.Animation
 
             if (_hasIsRunningParameter)
                 animator.SetBool(IsRunningHash, isRunning);
+
+            if (_hasIsCrouchingParameter)
+                animator.SetBool(IsCrouchingHash, isCrouching);
+
+            if (_hasIsFlyingParameter)
+                animator.SetBool(IsFlyingHash, isFlying);
         }
 
         void SyncPlaybackSpeed(float planarSpeed, bool isMoving)

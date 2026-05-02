@@ -19,6 +19,7 @@ namespace Input
         public InputActionReference zoomAction;
 
         public InputActionReference shiftAction;
+        public InputActionReference ctrlAction;
         public InputActionReference cancelAction;
         public InputActionReference spaceAction;
         public InputActionReference dashAction;
@@ -48,6 +49,7 @@ namespace Input
         InputAction _point;
         InputAction _zoom;
         InputAction _shift;
+        InputAction _ctrl;
         InputAction _cancel;
         InputAction _space;
         InputAction _dash;
@@ -77,6 +79,7 @@ namespace Input
             _zoom = zoomAction?.action;
 
             _shift = shiftAction?.action;
+            _ctrl = ctrlAction?.action;
             _cancel = cancelAction?.action;
             _space = spaceAction?.action;
             _dash = dashAction?.action;
@@ -106,6 +109,7 @@ namespace Input
             _point?.Enable();
             _zoom?.Enable();
             _shift?.Enable();
+            _ctrl?.Enable();
             _cancel?.Enable();
             _space?.Enable();
             _dash?.Enable();
@@ -141,6 +145,7 @@ namespace Input
             _point?.Disable();
             _zoom?.Disable();
             _shift?.Disable();
+            _ctrl?.Disable();
             _cancel?.Disable();
             _space?.Disable();
             _dash?.Disable();
@@ -203,6 +208,11 @@ namespace Input
                                      (Keyboard.current.leftShiftKey.isPressed ||
                                       Keyboard.current.rightShiftKey.isPressed);
             intent.Shift = shiftFromAction || shiftFromKeyboard;
+            bool ctrlFromAction = _ctrl != null && _ctrl.IsPressed();
+            bool ctrlFromKeyboard = Keyboard.current != null &&
+                                    (Keyboard.current.leftCtrlKey.isPressed ||
+                                     Keyboard.current.rightCtrlKey.isPressed);
+            intent.Ctrl = ctrlFromAction || ctrlFromKeyboard;
             intent.Cancel = _cancel != null && _cancel.WasPressedThisFrame();
             intent.SpaceHeld = _space != null && _space.IsPressed();
             if (_space != null && _space.WasPressedThisFrame()) intent.Space = true;

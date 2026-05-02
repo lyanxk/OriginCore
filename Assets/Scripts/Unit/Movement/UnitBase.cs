@@ -13,6 +13,7 @@ namespace Unit.Movement
     {
         public float walkSpeed = 5.0f;
         public float runSpeed = 7.5f;
+        public float crouchMoveSpeed = 2.5f;
         public float clickMoveSpeed = 4.5f;
         public float gravity = -12f;
         public float arriveDistance = 0.15f;
@@ -64,6 +65,7 @@ namespace Unit.Movement
         bool _flightEnabled;
         float _flightVerticalInput;
         float _flightVerticalSpeed;
+        bool _isCrouching;
 
         readonly Dictionary<object, float> _moveSpeedMultipliers = new Dictionary<object, float>(4);
         float _cachedMoveSpeedMultiplier = 1f;
@@ -74,6 +76,7 @@ namespace Unit.Movement
         public Vector3 CurrentDestination => _destination;
         public float OccupancyRadius => Mathf.Max(0.1f, occupancyRadius);
         public bool IsFlightEnabled => _flightEnabled;
+        public bool IsCrouching => _isCrouching;
         public Vector3 PlanarVelocity => _lastPlanarVelocity;
         public float PlanarSpeed => _lastPlanarVelocity.magnitude;
 
@@ -82,10 +85,16 @@ namespace Unit.Movement
             return run ? Mathf.Max(walkSpeed, runSpeed) : walkSpeed;
         }
 
+        public float GetDirectMoveSpeed(bool run, bool crouch)
+        {
+            return crouch ? Mathf.Min(walkSpeed, crouchMoveSpeed) : GetDirectMoveSpeed(run);
+        }
+
         void OnValidate()
         {
             walkSpeed = Mathf.Max(0f, walkSpeed);
             runSpeed = Mathf.Max(walkSpeed, runSpeed);
+            crouchMoveSpeed = Mathf.Clamp(crouchMoveSpeed, 0f, walkSpeed);
             clickMoveSpeed = Mathf.Max(0f, clickMoveSpeed);
         }
 
@@ -153,9 +162,16 @@ namespace Unit.Movement
                 return;
 
             _flightEnabled = enabled;
+            if (_flightEnabled)
+                _isCrouching = false;
             _flightVerticalInput = 0f;
             _flightVerticalSpeed = 0f;
             _verticalVel = Vector3.zero;
+        }
+
+        public void SetCrouching(bool crouching)
+        {
+            _isCrouching = crouching && !_flightEnabled;
         }
 
         public void SetFlightVerticalInput(float input, float verticalSpeed)

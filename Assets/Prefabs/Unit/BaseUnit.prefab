@@ -129,6 +129,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   walkSpeed: 5
   runSpeed: 7.5
+  crouchMoveSpeed: 2.5
   clickMoveSpeed: 4.5
   gravity: -12
   arriveDistance: 0.15
@@ -175,6 +176,9 @@ MonoBehaviour:
   idleStateName: ARM_Stickman|StandIdle_24f
   moveStateName: ARM_Stickman|WalkCycle_24f
   runStateName: ARM_Stickman|RunCycle_16f
+  crouchStateName: ARM_Stickman|CrouchDown_24f
+  crouchMoveStateName: ARM_Stickman|CrouchWalk_24f
+  flightStateName: ARM_Stickman|FlyForward_24f
   movingSpeedThreshold: 0.08
   runningSpeedThreshold: 6.25
   crossFadeDuration: 0.12

@@ -13,6 +13,7 @@ namespace Input
         public Vector2 PointerScreenPos;
         public float Zoom;
         public bool Shift;
+        public bool Ctrl;
         public bool Cancel;
         public bool Space;
         public bool SpaceHeld;

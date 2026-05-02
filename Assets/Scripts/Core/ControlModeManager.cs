@@ -36,6 +36,7 @@ namespace Core
         public Transform fpsPivot;
         public Transform actPivot;
         [SerializeField] GameObject rtsCommandPanel;
+        [SerializeField] CrosshairReticle fpsCrosshair;
 
         [Header("RTS")] public LayerMask groundMask = ~0; // 默认全选；建议只勾Ground（地面）
         public float rtsCamHeight = 24f;
@@ -79,6 +80,8 @@ namespace Core
             _mainCam = cameraRig != null ? cameraRig.GetComponent<UnityEngine.Camera>() : null;
             RebuildModes(unit, ResolveHero(unit));
             TryCacheRtsCommandPanel();
+            TryCacheFpsCrosshair();
+            SetFpsCrosshairActive(false);
         
             _switchRts = switchRtsAction?.action;
             _switchAct = switchActAction?.action;
@@ -158,6 +161,7 @@ namespace Core
 
             cameraRig.SetTarget(_current.GetCameraTarget());
             SetRtsCommandPanelActive(_current.Name == "RTS");
+            SetFpsCrosshairActive(_current.Name == "FPS");
         }
 
         //启用GUI 右下角指令
@@ -169,6 +173,24 @@ namespace Core
             if (rtsCommandPanel != null && rtsCommandPanel.activeSelf != isRtsMode)
                 rtsCommandPanel.SetActive(isRtsMode);
         }
+
+        void SetFpsCrosshairActive(bool isFpsMode)
+        {
+            if (fpsCrosshair == null)
+                TryCacheFpsCrosshair();
+
+            if (fpsCrosshair != null && fpsCrosshair.gameObject.activeSelf != isFpsMode)
+                fpsCrosshair.gameObject.SetActive(isFpsMode);
+        }
+
+        void TryCacheFpsCrosshair()
+        {
+            if (fpsCrosshair != null)
+                return;
+
+            fpsCrosshair = FindObjectOfType<CrosshairReticle>(true);
+        }
+
         //缓存GUI对象
         void TryCacheRtsCommandPanel()
         {
@@ -192,6 +214,7 @@ namespace Core
                    intent.Space ||
                    intent.SpaceHeld ||
                    intent.Dash ||
+                   intent.Ctrl ||
                    intent.AttackPressed ||
                    intent.Cancel;
         }
@@ -206,6 +229,7 @@ namespace Core
             source.Space = false;
             source.SpaceHeld = false;
             source.Dash = false;
+            source.Ctrl = false;
             source.AttackPressed = false;
             source.Cancel = false;
             source.CommandQ = false;

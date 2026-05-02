@@ -59,7 +59,10 @@
          }
 
 
-         public void Exit() { }
+         public void Exit()
+         {
+             _unit.SetCrouching(false);
+         }
 
          public void Tick(float dt, InputIntent intent)
          {
@@ -77,8 +80,10 @@
              //移动按视角yaw方向
              Quaternion yawRot = Quaternion.Euler(0f, _yaw, 0f);
              Vector3 moveWorld = yawRot * new Vector3(intent.Move.x, 0f, intent.Move.y);
-             bool wantsRun = intent.Shift && !_unit.IsFlightEnabled;
-             _unit.MoveImmediate(moveWorld, _unit.GetDirectMoveSpeed(wantsRun));
+             bool wantsCrouch = intent.Ctrl && !_unit.IsFlightEnabled;
+             bool wantsRun = intent.Shift && !wantsCrouch && !_unit.IsFlightEnabled;
+             _unit.SetCrouching(wantsCrouch);
+             _unit.MoveImmediate(moveWorld, _unit.GetDirectMoveSpeed(wantsRun, wantsCrouch));
         
              //跳跃
              if (intent.Space)

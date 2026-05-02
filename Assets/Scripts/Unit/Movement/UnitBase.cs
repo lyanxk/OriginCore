@@ -12,6 +12,7 @@ namespace Unit.Movement
     public class UnitBase : MonoBehaviour
     {
         public float walkSpeed = 5.0f;
+        public float runSpeed = 7.5f;
         public float clickMoveSpeed = 4.5f;
         public float gravity = -12f;
         public float arriveDistance = 0.15f;
@@ -75,6 +76,18 @@ namespace Unit.Movement
         public bool IsFlightEnabled => _flightEnabled;
         public Vector3 PlanarVelocity => _lastPlanarVelocity;
         public float PlanarSpeed => _lastPlanarVelocity.magnitude;
+
+        public float GetDirectMoveSpeed(bool run)
+        {
+            return run ? Mathf.Max(walkSpeed, runSpeed) : walkSpeed;
+        }
+
+        void OnValidate()
+        {
+            walkSpeed = Mathf.Max(0f, walkSpeed);
+            runSpeed = Mathf.Max(walkSpeed, runSpeed);
+            clickMoveSpeed = Mathf.Max(0f, clickMoveSpeed);
+        }
 
         public void OverridePlanarVelocity(Vector3 planarVel, float duration)
         {

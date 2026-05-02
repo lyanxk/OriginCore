@@ -11,13 +11,17 @@ namespace Unit.Animation
         [SerializeField] Animator animator;
         [SerializeField] RuntimeAnimatorController animatorController;
         [SerializeField] bool disableRootMotion = true;
+        [SerializeField] Transform visualRoot;
+        [SerializeField] float modelYawOffset = 180f;
 
         [Header("States")]
         [SerializeField] string idleStateName = "ARM_Stickman|StandIdle_24f";
         [SerializeField] string moveStateName = "ARM_Stickman|WalkCycle_24f";
+        [SerializeField] string runStateName = "ARM_Stickman|RunCycle_16f";
 
         [Header("Movement")]
         [Min(0f)] [SerializeField] float movingSpeedThreshold = 0.08f;
+        [Min(0f)] [SerializeField] float runningSpeedThreshold = 3f;
         [Min(0f)] [SerializeField] float crossFadeDuration = 0.12f;
         [SerializeField] bool scaleMovePlaybackSpeed = true;
         [Min(0.01f)] [SerializeField] float referenceMoveSpeed = 4.5f;
@@ -26,11 +30,15 @@ namespace Unit.Animation
 
         static readonly int SpeedHash = Animator.StringToHash("Speed");
         static readonly int IsMovingHash = Animator.StringToHash("IsMoving");
+        static readonly int IsRunningHash = Animator.StringToHash("IsRunning");
 
         Vector3 _lastPosition;
+        Quaternion _visualRootBaseLocalRotation;
         string _currentStateName;
+        bool _hasVisualRootBaseLocalRotation;
         bool _hasSpeedParameter;
         bool _hasIsMovingParameter;
+        bool _hasIsRunningParameter;
 
         void Reset()
         {
@@ -41,6 +49,8 @@ namespace Unit.Animation
         {
             CacheReferences();
             ApplyAnimatorController();
+            CacheVisualRootBaseRotation();
+            ApplyVisualYawOffset();
             CacheAnimatorParameters();
             _lastPosition = transform.position;
         }
@@ -49,6 +59,8 @@ namespace Unit.Animation
         {
             _lastPosition = transform.position;
             _currentStateName = null;
+            CacheVisualRootBaseRotation();
+            ApplyVisualYawOffset();
             PlayState(idleStateName, 0f);
         }
 
@@ -62,6 +74,9 @@ namespace Unit.Animation
         {
             if (maxMovePlaybackSpeed < minMovePlaybackSpeed)
                 maxMovePlaybackSpeed = minMovePlaybackSpeed;
+
+            if (runningSpeedThreshold < movingSpeedThreshold)
+                runningSpeedThreshold = movingSpeedThreshold;
         }
 
         void LateUpdate()
@@ -70,6 +85,7 @@ namespace Unit.Animation
             {
                 CacheReferences();
                 ApplyAnimatorController();
+                CacheVisualRootBaseRotation();
                 CacheAnimatorParameters();
             }
 
@@ -81,11 +97,13 @@ namespace Unit.Animation
 
             float planarSpeed = ResolvePlanarSpeed();
             bool isMoving = planarSpeed > movingSpeedThreshold;
+            bool isRunning = isMoving && planarSpeed > ResolveRunningSpeedThreshold();
 
-            PlayState(isMoving ? moveStateName : idleStateName, crossFadeDuration);
+            PlayState(ResolveLocomotionStateName(isMoving, isRunning), crossFadeDuration);
             KeepCurrentStateLooping();
-            SyncParameters(planarSpeed, isMoving);
+            SyncParameters(planarSpeed, isMoving, isRunning);
             SyncPlaybackSpeed(planarSpeed, isMoving);
+            ApplyVisualYawOffset();
         }
 
         void CacheReferences()
@@ -95,6 +113,9 @@ namespace Unit.Animation
 
             if (animator == null)
                 animator = GetComponentInChildren<Animator>(true);
+
+            if (visualRoot == null && animator != null)
+                visualRoot = animator.transform;
         }
 
         void ApplyAnimatorController()
@@ -109,10 +130,20 @@ namespace Unit.Animation
                 animator.applyRootMotion = false;
         }
 
+        void CacheVisualRootBaseRotation()
+        {
+            if (visualRoot == null || _hasVisualRootBaseLocalRotation)
+                return;
+
+            _visualRootBaseLocalRotation = visualRoot.localRotation;
+            _hasVisualRootBaseLocalRotation = true;
+        }
+
         void CacheAnimatorParameters()
         {
             _hasSpeedParameter = false;
             _hasIsMovingParameter = false;
+            _hasIsRunningParameter = false;
 
             if (animator == null || animator.runtimeAnimatorController == null)
                 return;
@@ -125,6 +156,8 @@ namespace Unit.Animation
                     _hasSpeedParameter = true;
                 else if (parameter.nameHash == IsMovingHash && parameter.type == AnimatorControllerParameterType.Bool)
                     _hasIsMovingParameter = true;
+                else if (parameter.nameHash == IsRunningHash && parameter.type == AnimatorControllerParameterType.Bool)
+                    _hasIsRunningParameter = true;
             }
         }
 
@@ -139,6 +172,25 @@ namespace Unit.Animation
             float measuredSpeed = dt > 0f ? delta.magnitude / dt : 0f;
             float motorSpeed = motor != null ? motor.PlanarSpeed : 0f;
             return Mathf.Max(measuredSpeed, motorSpeed);
+        }
+
+        float ResolveRunningSpeedThreshold()
+        {
+            if (motor == null || motor.runSpeed <= motor.walkSpeed)
+                return runningSpeedThreshold;
+
+            return Mathf.Lerp(motor.walkSpeed, motor.runSpeed, 0.5f);
+        }
+
+        string ResolveLocomotionStateName(bool isMoving, bool isRunning)
+        {
+            if (!isMoving)
+                return idleStateName;
+
+            if (isRunning && !string.IsNullOrWhiteSpace(runStateName))
+                return runStateName;
+
+            return moveStateName;
         }
 
         void PlayState(string stateName, float fadeDuration)
@@ -169,13 +221,25 @@ namespace Unit.Animation
             animator.Play(_currentStateName, 0, 0f);
         }
 
-        void SyncParameters(float planarSpeed, bool isMoving)
+        void ApplyVisualYawOffset()
+        {
+            if (visualRoot == null)
+                return;
+
+            CacheVisualRootBaseRotation();
+            visualRoot.localRotation = _visualRootBaseLocalRotation * Quaternion.Euler(0f, modelYawOffset, 0f);
+        }
+
+        void SyncParameters(float planarSpeed, bool isMoving, bool isRunning)
         {
             if (_hasSpeedParameter)
                 animator.SetFloat(SpeedHash, planarSpeed);
 
             if (_hasIsMovingParameter)
                 animator.SetBool(IsMovingHash, isMoving);
+
+            if (_hasIsRunningParameter)
+                animator.SetBool(IsRunningHash, isRunning);
         }
 
         void SyncPlaybackSpeed(float planarSpeed, bool isMoving)

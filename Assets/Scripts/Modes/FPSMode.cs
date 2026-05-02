@@ -78,7 +78,8 @@
         
               Quaternion yawRot = Quaternion.Euler(0f, _yaw, 0f);
               Vector3 moveWorld = yawRot * new Vector3(intent.Move.x, 0f, intent.Move.y);
-              _unit.MoveImmediate(moveWorld, _unit.walkSpeed);
+              bool wantsRun = intent.Shift && !_unit.IsFlightEnabled;
+              _unit.MoveImmediate(moveWorld, _unit.GetDirectMoveSpeed(wantsRun));
           }
 
           public CameraState GetCameraTarget()

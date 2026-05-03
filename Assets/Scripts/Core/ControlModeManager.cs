@@ -7,13 +7,11 @@ using Unit.Command;
 using Unit.Movement;
 using Unit.Selection;
 using UnityEngine;
-using UnityEngine.Scripting.APIUpdating;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 
 namespace Core
 {
-    [MovedFrom(true, sourceNamespace: "", sourceAssembly: "Assembly-CSharp", sourceClassName: "ControlModeManager")]
     public class ControlModeManager : MonoBehaviour
     {
         public static ControlModeManager Instance { get; private set; }

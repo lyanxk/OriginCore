@@ -4,12 +4,9 @@ using System.Collections.Generic;
 using Unit.Command;
 using Unit.Movement;
 using UnityEngine;
-using UnityEngine.Scripting.APIUpdating;
-
 namespace Unit.Combat
 {
     [DisallowMultipleComponent]
-    [MovedFrom(true, sourceNamespace: "", sourceAssembly: "Assembly-CSharp", sourceClassName: "UnitCombat")]
     public class UnitCombat : MonoBehaviour
     {
         public enum AttackPattern

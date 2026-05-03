@@ -2,14 +2,11 @@
 using Unit.Command;
 using Unit.Movement;
 using UnityEngine;
-using UnityEngine.Scripting.APIUpdating;
-
 namespace Unit.Combat.Hero
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(UnitBase))]
     [RequireComponent(typeof(UnitCombat))]
-    [MovedFrom(true, sourceNamespace: "", sourceAssembly: "Assembly-CSharp", sourceClassName: "HeroBase")]
     public sealed class HeroBase : MonoBehaviour
     {
         public enum PerspectiveOption

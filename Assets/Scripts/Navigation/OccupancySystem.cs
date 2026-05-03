@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
 using Unit.Movement;
 using UnityEngine;
-using UnityEngine.Scripting.APIUpdating;
 using UnityEngine.AI;
 
 namespace Navigation
 {
     [DisallowMultipleComponent]
-    [MovedFrom(true, sourceNamespace: "", sourceAssembly: "Assembly-CSharp", sourceClassName: "OccupancySystem")]
     public sealed class OccupancySystem : MonoBehaviour
     {
         struct UnitEntry

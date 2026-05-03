@@ -4,12 +4,9 @@ using Unit.Combat;
 using Unit.Command;
 using Unit.Movement;
 using UnityEngine;
-using UnityEngine.Scripting.APIUpdating;
-
 namespace Unit.UI
 {
     [DisallowMultipleComponent]
-    [MovedFrom(true, sourceNamespace: "", sourceAssembly: "Assembly-CSharp", sourceClassName: "UnitUIDataSource")]
     public class UnitUIDataSource : CommandCardDataSourceBase
     {
         static readonly int[] AbilitySlotOrder = { 8, 9, 10, 11, 4, 5, 6, 7 };

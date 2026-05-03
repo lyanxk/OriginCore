@@ -1,11 +1,8 @@
 ﻿using UI.HUD;
 using Unit.UI;
 using UnityEngine;
-using UnityEngine.Scripting.APIUpdating;
-
 namespace Input
 {
-    [MovedFrom(true, sourceNamespace: "", sourceAssembly: "Assembly-CSharp", sourceClassName: "HotkeyDispatcher")]
     public class HotkeyDispatcher : MonoBehaviour
     {
         [SerializeField] InputIntentSource inputSource;

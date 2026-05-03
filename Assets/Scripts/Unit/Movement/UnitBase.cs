@@ -4,11 +4,9 @@ using Unit.Ability;
 using Unit.Combat;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.Scripting.APIUpdating;
 
 namespace Unit.Movement
 {
-    [MovedFrom(true, sourceNamespace: "", sourceAssembly: "Assembly-CSharp", sourceClassName: "UnitBase")]
     public class UnitBase : MonoBehaviour
     {
         public float walkSpeed = 5.0f;
@@ -20,6 +18,11 @@ namespace Unit.Movement
         public float jumpHeight = 1.4f;
         public float groundedStick = -2f;
         public float terminalVel = -30f;
+
+        [Header("Ground Check")]
+        public LayerMask groundMask;
+        [Min(0.01f)] public float jumpGroundProbeDistance = 0.45f;
+        [Range(0.1f, 1f)] public float groundProbeRadiusScale = 0.9f;
 
         CharacterController _cc;
         Vector3 _verticalVel;
@@ -68,6 +71,7 @@ namespace Unit.Movement
         bool _isCrouching;
         bool _isRunning;
 
+        readonly RaycastHit[] _groundHits = new RaycastHit[8];
         readonly Dictionary<object, float> _moveSpeedMultipliers = new Dictionary<object, float>(4);
         float _cachedMoveSpeedMultiplier = 1f;
 
@@ -98,6 +102,8 @@ namespace Unit.Movement
             runSpeed = Mathf.Max(walkSpeed, runSpeed);
             crouchMoveSpeed = Mathf.Clamp(crouchMoveSpeed, 0f, walkSpeed);
             clickMoveSpeed = Mathf.Max(0f, clickMoveSpeed);
+            jumpGroundProbeDistance = Mathf.Max(0.01f, jumpGroundProbeDistance);
+            groundProbeRadiusScale = Mathf.Clamp(groundProbeRadiusScale, 0.1f, 1f);
         }
 
         public void OverridePlanarVelocity(Vector3 planarVel, float duration)
@@ -135,7 +141,6 @@ namespace Unit.Movement
 
         public void TeleportTo(Vector3 worldPosition)
         {
-            CancelPathing();
             _hasPlanarOverride = false;
             _planarOverrideVel = Vector3.zero;
             _planarOverrideTimer = 0f;
@@ -266,7 +271,7 @@ namespace Unit.Movement
             if (_flightEnabled)
                 return;
 
-            if (_cc == null || !_cc.isGrounded)
+            if (!CheckGround(jumpGroundProbeDistance))
                 return;
 
             _verticalVel.y = Mathf.Sqrt(2f * jumpHeight * -gravity);
@@ -613,6 +618,72 @@ namespace Unit.Movement
                 return;
 
             occupancyRadius = Mathf.Max(occupancyRadius, _cc.radius);
+        }
+        
+        bool CheckGround(float probeDistance)
+        {
+            if (_cc == null || !_cc.enabled)
+                return false;
+
+            Vector3 controllerCenter = transform.TransformPoint(_cc.center);
+            float halfHeight = Mathf.Max(_cc.height * 0.5f, _cc.radius);
+            float radius = Mathf.Max(0.01f, _cc.radius * groundProbeRadiusScale);
+            float castOffset = Mathf.Max(_cc.skinWidth, 0.02f) + 0.02f;
+            Vector3 bottomSphereCenter = controllerCenter + Vector3.down * (halfHeight - _cc.radius);
+            Vector3 castOrigin = bottomSphereCenter + Vector3.up * castOffset;
+            float castDistance = castOffset + Mathf.Max(0.01f, probeDistance);
+            int mask = ResolveGroundMask();
+
+            int hitCount = Physics.SphereCastNonAlloc(
+                castOrigin,
+                radius,
+                Vector3.down,
+                _groundHits,
+                castDistance,
+                mask,
+                QueryTriggerInteraction.Ignore);
+
+            if (hitCount <= 0)
+                return false;
+
+            float minGroundDot = Mathf.Cos(Mathf.Min(_cc.slopeLimit, 89f) * Mathf.Deg2Rad);
+            for (int i = 0; i < hitCount; i++)
+            {
+                Collider hitCollider = _groundHits[i].collider;
+                if (hitCollider == null || IsOwnCollider(hitCollider))
+                    continue;
+
+                if (_groundHits[i].normal.y >= minGroundDot)
+                    return true;
+            }
+
+            return false;
+        }
+
+        int ResolveGroundMask()
+        {
+            if (groundMask.value != 0)
+                return groundMask.value;
+
+            int mask = 0;
+            int groundLayer = LayerMask.NameToLayer("Ground");
+            if (groundLayer >= 0)
+                mask |= 1 << groundLayer;
+
+            int legacyGroundLayer = LayerMask.NameToLayer("Groud");
+            if (legacyGroundLayer >= 0)
+                mask |= 1 << legacyGroundLayer;
+
+            if (mask == 0)
+                mask = Physics.DefaultRaycastLayers;
+
+            groundMask = mask;
+            return mask;
+        }
+
+        bool IsOwnCollider(Collider target)
+        {
+            return target.transform == transform || target.transform.IsChildOf(transform);
         }
     }
 }

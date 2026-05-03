@@ -1,10 +1,7 @@
 ﻿using UnityEngine;
-using UnityEngine.Scripting.APIUpdating;
-
 namespace Camera
 {
     [RequireComponent(typeof(UnityEngine.Camera))]
-    [MovedFrom(true, sourceNamespace: "", sourceAssembly: "Assembly-CSharp", sourceClassName: "CameraRig")]
     public class CameraRig : MonoBehaviour
     {
         public float smoothTimePosition = 0.18f;

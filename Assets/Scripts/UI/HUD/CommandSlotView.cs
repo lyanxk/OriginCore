@@ -2,13 +2,11 @@
 using TMPro;
 using Unit.UI;
 using UnityEngine;
-using UnityEngine.Scripting.APIUpdating;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace UI.HUD
 {
-    [MovedFrom(true, sourceNamespace: "", sourceAssembly: "Assembly-CSharp", sourceClassName: "CommandSlotView")]
     public class CommandSlotView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         [SerializeField] Button button;

@@ -24,12 +24,7 @@ namespace Unit.Animation
 
         [Header("Movement")]
         [Min(0f)] [SerializeField] float movingSpeedThreshold = 0.08f;
-        [Min(0f)] [SerializeField] float runningSpeedThreshold = 3f;
         [Min(0f)] [SerializeField] float crossFadeDuration = 0.12f;
-        [SerializeField] bool scaleMovePlaybackSpeed = true;
-        [Min(0.01f)] [SerializeField] float referenceMoveSpeed = 4.5f;
-        [Min(0.01f)] [SerializeField] float minMovePlaybackSpeed = 0.85f;
-        [Min(0.01f)] [SerializeField] float maxMovePlaybackSpeed = 1.35f;
 
         static readonly int SpeedHash = Animator.StringToHash("Speed");
         static readonly int IsMovingHash = Animator.StringToHash("IsMoving");
@@ -77,15 +72,6 @@ namespace Unit.Animation
                 animator.speed = 1f;
         }
 
-        void OnValidate()
-        {
-            if (maxMovePlaybackSpeed < minMovePlaybackSpeed)
-                maxMovePlaybackSpeed = minMovePlaybackSpeed;
-
-            if (runningSpeedThreshold < movingSpeedThreshold)
-                runningSpeedThreshold = movingSpeedThreshold;
-        }
-
         void LateUpdate()
         {
             if (animator == null)
@@ -106,12 +92,11 @@ namespace Unit.Animation
             bool isMoving = planarSpeed > movingSpeedThreshold;
             bool isFlying = motor != null && motor.IsFlightEnabled;
             bool isCrouching = motor != null && motor.IsCrouching;
-            bool isRunning = !isFlying && !isCrouching && isMoving && planarSpeed > ResolveRunningSpeedThreshold();
+            bool isRunning = !isFlying && !isCrouching && isMoving && motor != null && motor.IsRunning;
 
             PlayState(ResolveLocomotionStateName(isMoving, isRunning, isCrouching, isFlying), crossFadeDuration);
             KeepCurrentStateLooping();
             SyncParameters(planarSpeed, isMoving, isRunning, isCrouching, isFlying);
-            SyncPlaybackSpeed(planarSpeed, isMoving);
             ApplyVisualYawOffset();
         }
 
@@ -187,14 +172,6 @@ namespace Unit.Animation
             float measuredSpeed = dt > 0f ? delta.magnitude / dt : 0f;
             float motorSpeed = motor != null ? motor.PlanarSpeed : 0f;
             return Mathf.Max(measuredSpeed, motorSpeed);
-        }
-
-        float ResolveRunningSpeedThreshold()
-        {
-            if (motor == null || motor.runSpeed <= motor.walkSpeed)
-                return runningSpeedThreshold;
-
-            return Mathf.Lerp(motor.walkSpeed, motor.runSpeed, 0.5f);
         }
 
         string ResolveLocomotionStateName(bool isMoving, bool isRunning, bool isCrouching, bool isFlying)
@@ -283,16 +260,5 @@ namespace Unit.Animation
                 animator.SetBool(IsFlyingHash, isFlying);
         }
 
-        void SyncPlaybackSpeed(float planarSpeed, bool isMoving)
-        {
-            if (!scaleMovePlaybackSpeed || !isMoving)
-            {
-                animator.speed = 1f;
-                return;
-            }
-
-            float normalizedSpeed = planarSpeed / Mathf.Max(0.01f, referenceMoveSpeed);
-            animator.speed = Mathf.Clamp(normalizedSpeed, minMovePlaybackSpeed, maxMovePlaybackSpeed);
-        }
     }
 }

@@ -47,6 +47,7 @@
           public void Exit()
           {
               _unit.SetCrouching(false);
+              _unit.SetRunning(false);
               Cursor.lockState = CursorLockMode.None;
               Cursor.visible = true;
           }

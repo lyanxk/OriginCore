@@ -180,12 +180,7 @@ MonoBehaviour:
   crouchMoveStateName: ARM_Stickman|CrouchWalk_24f
   flightStateName: ARM_Stickman|FlyForward_24f
   movingSpeedThreshold: 0.08
-  runningSpeedThreshold: 6.25
   crossFadeDuration: 0.12
-  scaleMovePlaybackSpeed: 1
-  referenceMoveSpeed: 4.5
-  minMovePlaybackSpeed: 0.85
-  maxMovePlaybackSpeed: 1.35
 --- !u!143 &320958382295078791
 CharacterController:
   m_ObjectHideFlags: 0

@@ -62,6 +62,7 @@
          public void Exit()
          {
              _unit.SetCrouching(false);
+             _unit.SetRunning(false);
          }
 
          public void Tick(float dt, InputIntent intent)

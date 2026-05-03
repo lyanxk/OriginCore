@@ -165,7 +165,10 @@ namespace Unit.Movement
 
             _flightEnabled = enabled;
             if (_flightEnabled)
+            {
                 _isCrouching = false;
+                _isRunning = false;
+            }
             _flightVerticalInput = 0f;
             _flightVerticalSpeed = 0f;
             _verticalVel = Vector3.zero;

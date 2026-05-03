@@ -1306,7 +1306,7 @@ Transform:
   m_GameObject: {fileID: 637539841}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.6, z: 0}
+  m_LocalPosition: {x: 0, y: 1.6, z: 0.184}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2027,6 +2027,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   motor: {fileID: 883050542}
+  hero: {fileID: 0}
   animator: {fileID: 0}
   animatorController: {fileID: 9100000, guid: 61570b7a88ce60e48bc07938d22788d6, type: 2}
   disableRootMotion: 1
@@ -2038,6 +2039,12 @@ MonoBehaviour:
   crouchStateName: ARM_Stickman|CrouchDown_24f
   crouchMoveStateName: ARM_Stickman|CrouchWalk_24f
   flightStateName: ARM_Stickman|FlyForward_24f
+  holdingIdleStateName: ARM_Stickman|AimGun_24f
+  holdingMoveStateName: ARM_Stickman|AimWalk_24f
+  holdingRunStateName: ARM_Stickman|AimRun_16f
+  holdingCrouchStateName: ARM_Stickman|AimCrouchDown_24f
+  holdingCrouchMoveStateName: ARM_Stickman|AimCrouchWalk_24f
+  holdingFlightStateName: ARM_Stickman|AimFlyForward_24f
   movingSpeedThreshold: 0.08
   crossFadeDuration: 0.12
 --- !u!114 &883050559
@@ -2757,7 +2764,7 @@ MonoBehaviour:
     Tooltip: 
   _hasRallyPoint: 1
   _usesDefaultRallyPoint: 1
-  _rallyPoint: {x: -10, y: 0.8, z: 3}
+  _rallyPoint: {x: -10, y: 0.19288416, z: 3}
 --- !u!114 &1386892657
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3020,13 +3027,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2061553916}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0.6543924, y: -0.74202144, z: 0.14477104, w: -0.014703535}
+  m_LocalPosition: {x: -0.000014, y: 0.00075, z: -0.00008}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 999884714}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 166.462, y: 9.93, z: 264}
 --- !u!1 &2121461277
 GameObject:
   m_ObjectHideFlags: 0
@@ -3509,6 +3516,16 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 320958382295078791, guid: 76494353aeec76946905ca31358ad48a,
         type: 3}
+      propertyPath: m_Height
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 320958382295078791, guid: 76494353aeec76946905ca31358ad48a,
+        type: 3}
+      propertyPath: m_Center.y
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 320958382295078791, guid: 76494353aeec76946905ca31358ad48a,
+        type: 3}
       propertyPath: m_Material
       value: 
       objectReference: {fileID: 2016505195}
@@ -3525,7 +3542,7 @@ PrefabInstance:
     - target: {fileID: 2059788603337828485, guid: 76494353aeec76946905ca31358ad48a,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 0.319
       objectReference: {fileID: 0}
     - target: {fileID: 2059788603337828485, guid: 76494353aeec76946905ca31358ad48a,
         type: 3}
@@ -3592,8 +3609,11 @@ PrefabInstance:
       propertyPath: teamAffiliation
       value: 
       objectReference: {fileID: 754671252}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedComponents:
+    - {fileID: 6667585677049585692, guid: 76494353aeec76946905ca31358ad48a, type: 3}
+    m_RemovedGameObjects:
+    - {fileID: 3534145273667743435, guid: 76494353aeec76946905ca31358ad48a, type: 3}
+    - {fileID: 8383138585589652087, guid: 76494353aeec76946905ca31358ad48a, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 4198138853953822667, guid: 76494353aeec76946905ca31358ad48a,

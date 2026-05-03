@@ -66,6 +66,7 @@ namespace Unit.Movement
         float _flightVerticalInput;
         float _flightVerticalSpeed;
         bool _isCrouching;
+        bool _isRunning;
 
         readonly Dictionary<object, float> _moveSpeedMultipliers = new Dictionary<object, float>(4);
         float _cachedMoveSpeedMultiplier = 1f;
@@ -77,6 +78,7 @@ namespace Unit.Movement
         public float OccupancyRadius => Mathf.Max(0.1f, occupancyRadius);
         public bool IsFlightEnabled => _flightEnabled;
         public bool IsCrouching => _isCrouching;
+        public bool IsRunning => _isRunning;
         public Vector3 PlanarVelocity => _lastPlanarVelocity;
         public float PlanarSpeed => _lastPlanarVelocity.magnitude;
 
@@ -172,6 +174,13 @@ namespace Unit.Movement
         public void SetCrouching(bool crouching)
         {
             _isCrouching = crouching && !_flightEnabled;
+            if (_isCrouching)
+                _isRunning = false;
+        }
+
+        public void SetRunning(bool running)
+        {
+            _isRunning = running && !_isCrouching && !_flightEnabled;
         }
 
         public void SetFlightVerticalInput(float input, float verticalSpeed)

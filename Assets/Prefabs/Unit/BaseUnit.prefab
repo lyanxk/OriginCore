@@ -172,7 +172,7 @@ MonoBehaviour:
     type: 2}
   disableRootMotion: 1
   visualRoot: {fileID: 0}
-  modelYawOffset: 180
+  modelYawOffset: 0
   idleStateName: ARM_Stickman|StandIdle_24f
   moveStateName: ARM_Stickman|WalkCycle_24f
   runStateName: ARM_Stickman|RunCycle_16f

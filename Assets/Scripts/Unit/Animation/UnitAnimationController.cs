@@ -12,7 +12,7 @@ namespace Unit.Animation
         [SerializeField] RuntimeAnimatorController animatorController;
         [SerializeField] bool disableRootMotion = true;
         [SerializeField] Transform visualRoot;
-        [SerializeField] float modelYawOffset = 180f;
+        [SerializeField] float modelYawOffset = 0f;
 
         [Header("States")]
         [SerializeField] string idleStateName = "ARM_Stickman|StandIdle_24f";

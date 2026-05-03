@@ -82,6 +82,7 @@
               bool wantsCrouch = intent.Ctrl && !_unit.IsFlightEnabled;
               bool wantsRun = intent.Shift && !wantsCrouch && !_unit.IsFlightEnabled;
               _unit.SetCrouching(wantsCrouch);
+              _unit.SetRunning(wantsRun && moveWorld.sqrMagnitude > 0.0001f);
               _unit.MoveImmediate(moveWorld, _unit.GetDirectMoveSpeed(wantsRun, wantsCrouch));
           }
 

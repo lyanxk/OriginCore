@@ -7,6 +7,7 @@ using UnityEngine.AI;
 
 namespace Unit.Movement
 {
+    [RequireComponent(typeof(CharacterController))]
     public class UnitBase : MonoBehaviour
     {
         public float walkSpeed = 5.0f;
@@ -51,8 +52,6 @@ namespace Unit.Movement
         [Min(0f)] public float navMeshRecoverSpeed = 3f;
         [Min(0.1f)] public float navMeshCheckRadius = 0.4f;
         [Min(0.1f)] public float navMeshRecoverSampleRadius = 2.5f;
-        [Min(0.1f)] public float navMeshHardSnapDistance = 1.25f;
-        [Min(0f)] public float navMeshHardSnapCooldown = 0.25f;
 
         NavMeshPath _path;
         Vector3[] _corners = System.Array.Empty<Vector3>();
@@ -287,7 +286,6 @@ namespace Unit.Movement
                 return;
 
             TryRecoverToLegalPosition();
-            TrySnapBackToNavMesh();
         }
 
         Vector3 GetPlannedVelocity(float dt)
@@ -567,26 +565,6 @@ namespace Unit.Movement
                     0.18f);
 
             _illegalRecoverTimer = illegalRecoverCooldown;
-        }
-
-        void TrySnapBackToNavMesh()
-        {
-            if (_navMeshHardSnapTimer > 0f)
-                return;
-
-            if (NavMeshRoadNetwork.TrySample(transform.position, navMeshCheckRadius, out _, NavMesh.AllAreas))
-                return;
-
-            if (!NavMeshRoadNetwork.TrySample(transform.position, navMeshRecoverSampleRadius, out Vector3 nearestNav, NavMesh.AllAreas))
-                return;
-
-            Vector3 delta = nearestNav - transform.position;
-            delta.y = 0f;
-            if (delta.sqrMagnitude < navMeshHardSnapDistance * navMeshHardSnapDistance)
-                return;
-
-            RepositionWithoutPathReset(nearestNav);
-            _navMeshHardSnapTimer = navMeshHardSnapCooldown;
         }
 
         void RepositionWithoutPathReset(Vector3 worldPosition)

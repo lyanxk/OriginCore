@@ -1668,6 +1668,11 @@ MonoBehaviour:
   jumpHeight: 2
   groundedStick: -2
   terminalVel: -30
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 0
+  jumpGroundProbeDistance: 0.45
+  groundProbeRadiusScale: 0.9
   sampleRadius: 2
   cornerReachDist: 0.25
   repathInterval: 0.25
@@ -1684,8 +1689,6 @@ MonoBehaviour:
   navMeshRecoverSpeed: 3
   navMeshCheckRadius: 0.4
   navMeshRecoverSampleRadius: 2.5
-  navMeshHardSnapDistance: 1.25
-  navMeshHardSnapCooldown: 0.25
 --- !u!114 &883050543
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1699,7 +1702,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outline: {fileID: 883050548}
-  teamAffiliation: {fileID: 0}
+  teamAffiliation: {fileID: 883050559}
   commandExecutor: {fileID: 883050551}
   combat: {fileID: 883050554}
   motor: {fileID: 883050542}
@@ -1861,7 +1864,16 @@ MonoBehaviour:
         secondsPerChargeLevel: 2
         range: 18
         baseDamage: 20
-        bonusDamagePerExtraCharge: 20
+        projectilePrefab: {fileID: 8275730910550496895, guid: f8569e0a6c357e04d8a93f63d9c3e461,
+          type: 3}
+        projectileHitMask:
+          serializedVersion: 2
+          m_Bits: 4294967295
+        projectileSpeed: 28
+        spawnForwardOffset: 0.25
+        projectileSpreadAngle: 6
+        hitEffectPrefab: {fileID: 6735494077588279373, guid: a23fa06e0ab2ab54ebbf6f0dee1cf059,
+          type: 3}
 --- !u!114 &883050551
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1902,7 +1914,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHp: 10000
   _currentHp: 0
-  teamAffiliation: {fileID: 0}
+  teamAffiliation: {fileID: 883050559}
   startHpPercent: 1
 --- !u!114 &883050554
 MonoBehaviour:
@@ -1928,7 +1940,7 @@ MonoBehaviour:
   meleeRadius: 0.9
   attackOrigin: {fileID: 0}
   defaultOriginHeight: 1
-  teamAffiliation: {fileID: 0}
+  teamAffiliation: {fileID: 883050559}
   autoChaseTargets: 0
   loseTargetRangeMultiplier: 2
   targetScanInterval: 0.15
@@ -1983,6 +1995,25 @@ MonoBehaviour:
   motor: {fileID: 883050542}
   commandExecutor: {fileID: 883050551}
   scanInterval: 0.15
+  weaponSocket: {fileID: 2061553917}
+  spawnWeaponVisuals: 1
+  weaponQueue:
+  - rid: 6215832553266388992
+  activeWeaponSlot: 0
+  references:
+    version: 2
+    RefIds:
+    - rid: 6215832553266388992
+      type: {class: RevolverWeapon, ns: Unit.Combat.Hero, asm: Assembly-CSharp}
+      data:
+        baseDamage: 20
+        weaponPrefab: {fileID: 7804973455978176058, guid: c18bbfd2efdd641429226f53e0f569be,
+          type: 3}
+        projectilePrefab: {fileID: 8275730910550496895, guid: f8569e0a6c357e04d8a93f63d9c3e461,
+          type: 3}
+        hitEffectPrefab: {fileID: 6735494077588279373, guid: a23fa06e0ab2ab54ebbf6f0dee1cf059,
+          type: 3}
+        initialized: 1
 --- !u!114 &883050558
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2164,12 +2195,22 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 8519091955946682165, guid: 8882ccaabcc6d7842b85829d7c6e6545,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2061553917}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8882ccaabcc6d7842b85829d7c6e6545, type: 3}
 --- !u!4 &999884713 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 8882ccaabcc6d7842b85829d7c6e6545,
+    type: 3}
+  m_PrefabInstance: {fileID: 999884712}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &999884714 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8519091955946682165, guid: 8882ccaabcc6d7842b85829d7c6e6545,
     type: 3}
   m_PrefabInstance: {fileID: 999884712}
   m_PrefabAsset: {fileID: 0}
@@ -2955,6 +2996,37 @@ PhysicMaterial:
   bounciness: 0
   frictionCombine: 0
   bounceCombine: 0
+--- !u!1 &2061553916
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2061553917}
+  m_Layer: 0
+  m_Name: WeaponSocket
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2061553917
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2061553916}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 999884714}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2121461277
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,6 +1,7 @@
-﻿using Gameplay;
+using Gameplay;
 using System;
 using Input;
+using Unit.Combat;
 using UnityEngine;
 
 namespace Unit.Ability
@@ -15,7 +16,7 @@ namespace Unit.Ability
         [SerializeField] string hotkeyText = "Hold RMB";
         [TextArea]
         [SerializeField] string tooltip =
-            "Hold right mouse to charge. Release to fire. Locks the nearest target once when charging starts.";
+            "Hold right mouse to charge. Release to fire projectiles. Locks the nearest target once when charging starts.";
 
         [Header("Charge")]
         [Min(1)]
@@ -28,13 +29,19 @@ namespace Unit.Ability
         [SerializeField] float range = 18f;
         [Min(0f)]
         [SerializeField] float baseDamage = 20f;
-        [Min(0f)]
-        [SerializeField] float bonusDamagePerExtraCharge = 20f;
 
-        readonly RaycastHit[] _raycastBuffer = new RaycastHit[16];
+        [Header("Projectile")]
+        [SerializeField] GameObject projectilePrefab;
+        [SerializeField] LayerMask projectileHitMask = ~0;
+        [Min(0.01f)]
+        [SerializeField] float projectileSpeed = 28f;
+        [Min(0f)]
+        [SerializeField] float spawnForwardOffset = 0.25f;
+        [Min(0f)]
+        [SerializeField] float projectileSpreadAngle = 6f;
+        [SerializeField] GameObject hitEffectPrefab;
 
         bool _isCharging;
-        bool _wasRightHeld;
         float _chargeStartTime;
         Transform _lockedTarget;
 
@@ -49,24 +56,20 @@ namespace Unit.Ability
             if (Combat == null || CachedTransform == null)
             {
                 ResetCharging();
-                _wasRightHeld = intent.RightHeld;
                 return;
             }
 
             if (!IsAvailableInCurrentMode)
             {
                 ResetCharging();
-                _wasRightHeld = false;
                 return;
             }
 
-            if (intent.RightClick)
+            if (intent.RightHeld && !_isCharging)
                 BeginCharge();
 
-            if (_isCharging && _wasRightHeld && !intent.RightHeld)
+            if (_isCharging && !intent.RightHeld)
                 FireChargedShot();
-
-            _wasRightHeld = intent.RightHeld;
         }
 
         public override void Tick(float deltaTime)
@@ -74,59 +77,127 @@ namespace Unit.Ability
             if (!IsAvailableInCurrentMode)
             {
                 ResetCharging();
-                _wasRightHeld = false;
+                return;
             }
+
+            if (_isCharging && IsActMode && ResolveHostileHealth(_lockedTarget) == null)
+                AcquireLockedTarget();
         }
 
         protected override void OnUnbound()
         {
             ResetCharging();
-            _wasRightHeld = false;
         }
 
         void BeginCharge()
         {
             _isCharging = true;
             _chargeStartTime = Time.time;
-            _lockedTarget = Combat.FindNearestTargetInDetectionRange();
+            AcquireLockedTarget();
         }
 
         void FireChargedShot()
         {
-            float damage = baseDamage + bonusDamagePerExtraCharge * (GetCurrentChargeLevel() - 1);
             Vector3 origin = GetShotOrigin();
+            Vector3 direction = GetShotDirection(origin);
+            int projectileCount = GetCurrentChargeLevel();
 
-            Health lockedHealth = ResolveHostileHealth(_lockedTarget);
-            if (lockedHealth != null)
+            for (int i = 0; i < projectileCount; i++)
             {
-                Vector3 toTarget = lockedHealth.transform.position - origin;
-                if (toTarget.sqrMagnitude <= range * range)
-                {
-                    Combat.TryApplyDamage(lockedHealth, damage);
-                    ResetCharging();
-                    return;
-                }
+                Vector3 projectileDirection = GetSpreadDirection(direction, i, projectileCount);
+                SpawnProjectile(origin + projectileDirection * spawnForwardOffset, projectileDirection, baseDamage);
             }
+
+            ResetCharging();
+        }
+
+        Vector3 GetSpreadDirection(Vector3 direction, int projectileIndex, int projectileCount)
+        {
+            if (projectileCount <= 1 || projectileSpreadAngle <= 0f)
+                return direction;
+
+            float centerOffset = (projectileCount - 1) * 0.5f;
+            float angle = (projectileIndex - centerOffset) * projectileSpreadAngle;
+            return Quaternion.AngleAxis(angle, Vector3.up) * direction;
+        }
+
+        Vector3 GetShotDirection(Vector3 origin)
+        {
+            if (IsActMode && TryGetLockedTargetDirection(origin, out Vector3 lockedDirection))
+                return lockedDirection;
+
+            if (Router != null && Router.TryGetActFpsAimDirection(out Vector3 aimDirection))
+                return aimDirection;
+
+            if (TryGetLockedTargetDirection(origin, out lockedDirection))
+                return lockedDirection;
 
             Vector3 direction = CachedTransform.forward;
             direction.y = 0f;
             if (direction.sqrMagnitude <= 1e-6f)
                 direction = Vector3.forward;
 
-            direction.Normalize();
-            int hitCount = Physics.RaycastNonAlloc(
-                origin,
+            return direction.normalized;
+        }
+
+        void AcquireLockedTarget()
+        {
+            _lockedTarget = Combat != null ? Combat.FindNearestTargetInDetectionRange() : null;
+        }
+
+        bool TryGetLockedTargetDirection(Vector3 origin, out Vector3 direction)
+        {
+            direction = Vector3.zero;
+
+            Health lockedHealth = ResolveHostileHealth(_lockedTarget);
+            if (lockedHealth == null)
+                return false;
+
+            Vector3 toTarget = lockedHealth.transform.position - origin;
+            if (toTarget.sqrMagnitude > range * range || toTarget.sqrMagnitude <= 1e-6f)
+                return false;
+
+            direction = toTarget.normalized;
+            return true;
+        }
+
+        void SpawnProjectile(Vector3 origin, Vector3 direction, float damage)
+        {
+            GameObject projectileObject = projectilePrefab != null
+                ? UnityEngine.Object.Instantiate(projectilePrefab, origin, Quaternion.LookRotation(direction, Vector3.up))
+                : CreateFallbackProjectile(origin, direction);
+
+            if (!projectileObject.TryGetComponent(out BulletProjectile projectile))
+                projectile = projectileObject.AddComponent<BulletProjectile>();
+
+            projectile.Initialize(
+                Combat,
                 direction,
-                _raycastBuffer,
-                range,
-                Combat.targetMask,
-                QueryTriggerInteraction.Ignore);
+                damage,
+                projectileHitMask,
+                hitEffectPrefab,
+                projectileSpeed,
+                range);
+        }
 
-            Health hit = FindBestHealthFromRaycast(hitCount);
-            if (hit != null)
-                Combat.TryApplyDamage(hit, damage);
+        GameObject CreateFallbackProjectile(Vector3 origin, Vector3 direction)
+        {
+            GameObject projectileObject = new GameObject("ChargedShotProjectile");
+            projectileObject.transform.SetPositionAndRotation(
+                origin,
+                Quaternion.LookRotation(direction, Vector3.up));
 
-            ResetCharging();
+            SphereCollider collider = projectileObject.AddComponent<SphereCollider>();
+            collider.radius = 0.09f;
+            collider.isTrigger = true;
+
+            Rigidbody rb = projectileObject.AddComponent<Rigidbody>();
+            rb.useGravity = false;
+            rb.isKinematic = true;
+            rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+
+            projectileObject.AddComponent<BulletProjectile>();
+            return projectileObject;
         }
 
         int GetCurrentChargeLevel()
@@ -139,28 +210,6 @@ namespace Unit.Ability
                 level += Mathf.FloorToInt((Time.time - _chargeStartTime) / secondsPerChargeLevel);
 
             return Mathf.Clamp(level, 1, Mathf.Max(1, maxChargeLevel));
-        }
-
-        Health FindBestHealthFromRaycast(int hitCount)
-        {
-            Health best = null;
-            float bestDistance = float.MaxValue;
-
-            for (int i = 0; i < hitCount; i++)
-            {
-                RaycastHit hit = _raycastBuffer[i];
-                Health health = ResolveHostileHealth(hit.collider);
-                if (health == null)
-                    continue;
-
-                if (hit.distance < bestDistance)
-                {
-                    best = health;
-                    bestDistance = hit.distance;
-                }
-            }
-
-            return best;
         }
 
         Health ResolveHostileHealth(Component targetComponent)
@@ -182,6 +231,9 @@ namespace Unit.Ability
 
         Vector3 GetShotOrigin()
         {
+            if (Router != null && Router.TryGetActFpsAimOrigin(out Vector3 aimOrigin))
+                return aimOrigin;
+
             if (Combat.attackOrigin != null)
                 return Combat.attackOrigin.position;
 
@@ -194,5 +246,8 @@ namespace Unit.Ability
             _chargeStartTime = 0f;
             _lockedTarget = null;
         }
+
+        bool IsActMode => string.Equals(CurrentModeName, "ACT", StringComparison.OrdinalIgnoreCase);
+
     }
 }

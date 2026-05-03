@@ -76,7 +76,7 @@ namespace Core
             if (input == null) input = FindObjectOfType<InputIntentSource>();
 
             _mainCam = cameraRig != null ? cameraRig.GetComponent<UnityEngine.Camera>() : null;
-            RebuildModes(unit, ResolveHero(unit));
+            RebuildModes(unit, unit != null ? unit.GetComponent<HeroBase>() : null);
             TryCacheRtsCommandPanel();
             TryCacheFpsCrosshair();
             SetFpsCrosshairActive(false);
@@ -214,6 +214,8 @@ namespace Core
                    intent.Dash ||
                    intent.Ctrl ||
                    intent.AttackPressed ||
+                   intent.CommandQ ||
+                   intent.CommandE ||
                    intent.Cancel;
         }
         //处理RTS模式切换后 其他输入前的视角移动输入
@@ -271,7 +273,7 @@ namespace Core
             if (selectedUnit == null)
                 return false;
 
-            HeroBase selectedHero = ResolveHero(selectedUnit);
+            HeroBase selectedHero = selectedUnit.GetComponent<HeroBase>();
             if (selectedHero == null)
                 return false;
 
@@ -298,18 +300,6 @@ namespace Core
             _act = new ActMode(unit, actPivot);
             _fps = new FpsMode(unit, fpsPivot);
             _unitCommandExecutor = unit.GetComponent<CommandExecutor>();
-        }
-
-        static HeroBase ResolveHero(UnitBase targetUnit)
-        {
-            if (targetUnit == null)
-                return null;
-
-            HeroBase hero = targetUnit.GetComponent<HeroBase>();
-            if (hero != null)
-                return hero;
-
-            return targetUnit.GetComponentInParent<HeroBase>();
         }
 
     }

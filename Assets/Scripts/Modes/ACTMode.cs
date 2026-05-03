@@ -1,6 +1,7 @@
 ﻿﻿using Camera;
  using Core;
  using Input;
+ using Unit.Combat.Hero;
  using Unit.Movement;
  using UnityEngine;
 
@@ -12,6 +13,7 @@
 
          readonly UnitBase _unit;
          readonly Transform _tpsPivot;
+         readonly HeroBase _hero;
 
          float _yaw;
          float _pitch;
@@ -38,6 +40,7 @@
          {
              _unit = unit;
              _tpsPivot = tpsPivot;
+             _hero = unit != null ? unit.GetComponent<HeroBase>() : null;
              _yaw = _unit.GetYaw();
              _pitch = 15f;
 
@@ -92,9 +95,11 @@
              {
                  _unit.Jump();
              }
-        
+
+             _hero?.ProcessWeaponInput(intent);
+
              //技能执行
-             _unit.AbilityRouter?.Process(intent);
+             _unit.AbilityRouter?.Process(intent, _unit.transform.forward);
 
              //角色朝向：跟随移动方向
              Vector3 planar = new Vector3(moveWorld.x, 0f, moveWorld.z);
@@ -106,8 +111,14 @@
 
              // 按住左键：沿单位面朝方向攻击
              if (intent.LeftHeld)
-                 _unit.Combat?.TryUsePrimaryInDirection(_unit.transform.forward);
+             {
+                 if (_hero != null)
+                     _hero.TryUseCurrentWeaponPrimary(_unit.transform.forward);
+                 else
+                     _unit.Combat?.TryUsePrimaryInDirection(_unit.transform.forward);
+             }
          }
+
          public CameraState GetCameraTarget()
          {
              Quaternion rot = Quaternion.Euler(_pitch, _yaw, 0f);

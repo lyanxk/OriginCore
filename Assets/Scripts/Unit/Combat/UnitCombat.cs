@@ -11,8 +11,7 @@ namespace Unit.Combat
     {
         public enum AttackPattern
         {
-            MeleeSphere = 0,
-            Hitscan = 1
+            MeleeSphere = 0
         }
 
         [Header("Primary Attack")]
@@ -44,7 +43,6 @@ namespace Unit.Combat
         [Min(0.05f)] public float chaseRepathDistance = 0.5f;
 
         readonly Collider[] _overlapBuffer = new Collider[32];
-        readonly RaycastHit[] _raycastBuffer = new RaycastHit[32];
         readonly List<ICombatSkill> _skills = new List<ICombatSkill>(8);
         readonly Dictionary<string, ICombatSkill> _skillMap =
             new Dictionary<string, ICombatSkill>(StringComparer.OrdinalIgnoreCase);
@@ -84,6 +82,9 @@ namespace Unit.Combat
 
         void OnValidate()
         {
+            if (!Enum.IsDefined(typeof(AttackPattern), pattern))
+                pattern = AttackPattern.MeleeSphere;
+
             CacheReferences();
         }
 
@@ -148,6 +149,15 @@ namespace Unit.Combat
         public bool TryUsePrimaryInDirection(Vector3 direction)
         {
             return TryAttackDirection(direction);
+        }
+
+        public bool TryConsumePrimaryCooldown()
+        {
+            if (!IsReady)
+                return false;
+
+            _nextAttackTime = Time.time + attackCooldown;
+            return true;
         }
 
         public void SetDamageMultiplier(object source, float multiplier)
@@ -262,9 +272,7 @@ namespace Unit.Combat
             if (!IsReady)
                 return false;
 
-            Health hit = pattern == AttackPattern.Hitscan
-                ? DoHitscan(direction, preferredTarget)
-                : DoMeleeSphere(direction, preferredTarget);
+            Health hit = DoMeleeSphere(direction, preferredTarget);
 
             bool didHit = hit != null;
             if (didHit)
@@ -292,21 +300,6 @@ namespace Unit.Combat
             return FindBestHealthFromOverlap(count, center, preferredTarget);
         }
 
-        Health DoHitscan(Vector3 direction, Transform preferredTarget)
-        {
-            Vector3 origin = GetAttackOrigin();
-            Ray ray = new Ray(origin, direction);
-
-            int count = Physics.RaycastNonAlloc(
-                ray,
-                _raycastBuffer,
-                attackRange,
-                targetMask,
-                QueryTriggerInteraction.Ignore);
-
-            return FindBestHealthFromRaycast(count, preferredTarget);
-        }
-
         Health FindBestHealthFromOverlap(int count, Vector3 center, Transform preferredTarget)
         {
             Health best = null;
@@ -326,30 +319,6 @@ namespace Unit.Combat
                 {
                     best = h;
                     bestSqr = sqr;
-                }
-            }
-
-            return best;
-        }
-
-        Health FindBestHealthFromRaycast(int count, Transform preferredTarget)
-        {
-            Health best = null;
-            float bestDist = float.MaxValue;
-
-            for (int i = 0; i < count; i++)
-            {
-                RaycastHit hit = _raycastBuffer[i];
-                Health h = ResolveHealth(hit.collider);
-                if (h == null) continue;
-
-                if (preferredTarget != null && h.transform == preferredTarget)
-                    return h;
-
-                if (hit.distance < bestDist)
-                {
-                    best = h;
-                    bestDist = hit.distance;
                 }
             }
 

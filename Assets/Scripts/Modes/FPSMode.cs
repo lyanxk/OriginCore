@@ -1,6 +1,7 @@
-﻿﻿﻿using Camera;
+﻿using Camera;
   using Core;
   using Input;
+  using Unit.Combat.Hero;
   using Unit.Movement;
   using UnityEngine;
 
@@ -12,9 +13,11 @@
 
           readonly UnitBase _unit;
           readonly Transform _fpsPivot;
+          readonly HeroBase _hero;
 
           float _yaw;
           float _pitch;
+          bool _isZooming;
 
           readonly float _pitchMin = -85f;
           readonly float _pitchMax = 85f;
@@ -25,14 +28,17 @@
           public bool invertY = false;
 
           public float fov = 110f;
+          public float zoomFov = 55f;
 
           public FpsMode(UnitBase unit, Transform fpsPivot)
           {
               _unit = unit;
               _fpsPivot = fpsPivot;
+              _hero = unit != null ? unit.GetComponent<HeroBase>() : null;
 
               _yaw = _unit.GetYaw();
               _pitch = 0f;
+              _isZooming = false;
           }
 
           public void Enter()
@@ -48,6 +54,7 @@
           {
               _unit.SetCrouching(false);
               _unit.SetRunning(false);
+              _isZooming = false;
               Cursor.lockState = CursorLockMode.None;
               Cursor.visible = true;
           }
@@ -61,22 +68,36 @@
               _yaw += lookX;
               _pitch -= lookY;
               _pitch = Mathf.Clamp(_pitch, _pitchMin, _pitchMax);
+              _isZooming = intent.RightHeld;
         
               //跳跃
               if (intent.Space)
               {
                   _unit.Jump();
               }
-        
-              //技能执行
-              _unit.AbilityRouter?.Process(intent);
-        
+
               _unit.SetYaw(_yaw);
 
-              // 按住左键：沿屏幕中心（相机 forward）攻击
+              //调用当前武器攻击
               Vector3 fireDir = Quaternion.Euler(_pitch, _yaw, 0f) * Vector3.forward;
+              Transform firePivot = _fpsPivot != null ? _fpsPivot : _unit.transform;
+              Vector3 fireOrigin = firePivot.position;
+
+              _hero?.ProcessWeaponInput(intent);
+
+              //技能执行
+              InputIntent abilityIntent = intent;
+              abilityIntent.RightClick = false;
+              abilityIntent.RightHeld = false;
+              _unit.AbilityRouter?.Process(abilityIntent, fireDir, fireOrigin);
+
               if (intent.LeftHeld)
-                  _unit.Combat?.TryUsePrimaryInDirection(fireDir);
+              {
+                  if (_hero != null)
+                      _hero.TryUseCurrentWeaponPrimary(fireDir, fireOrigin);
+                  else
+                      _unit.Combat?.TryUsePrimaryInDirection(fireDir);
+              }
         
               Quaternion yawRot = Quaternion.Euler(0f, _yaw, 0f);
               Vector3 moveWorld = yawRot * new Vector3(intent.Move.x, 0f, intent.Move.y);
@@ -96,7 +117,7 @@
               {
                   Position = pivot.position, 
                   Rotation = camRot,
-                  Fov = fov
+                  Fov = _isZooming ? zoomFov : fov
               };
           }
       }

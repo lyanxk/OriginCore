@@ -27,6 +27,11 @@ namespace Unit.Ability
         readonly Dictionary<string, UnitAbility> _abilityMap =
             new Dictionary<string, UnitAbility>(StringComparer.OrdinalIgnoreCase);
 
+        Vector3 _actFpsAimDirection = Vector3.forward;
+        Vector3 _actFpsAimOrigin;
+        bool _hasActFpsAimDirection;
+        bool _hasActFpsAimOrigin;
+
         public IReadOnlyList<UnitAbility> Abilities => _activeAbilities;
         public IReadOnlyList<UnitAbility> RtsAbilitySlots => rtsAbilities;
         public IReadOnlyList<UnitAbility> ActFpsAbilitySlots => actFpsAbilities;
@@ -83,6 +88,43 @@ namespace Unit.Ability
 
                 ability.ProcessInput(intent);
             }
+        }
+
+        public void Process(InputIntent intent, Vector3 aimDirection)
+        {
+            if (aimDirection.sqrMagnitude > 1e-6f)
+            {
+                _actFpsAimDirection = aimDirection.normalized;
+                _hasActFpsAimDirection = true;
+            }
+
+            Process(intent);
+        }
+
+        public void Process(InputIntent intent, Vector3 aimDirection, Vector3 aimOrigin)
+        {
+            if (aimDirection.sqrMagnitude > 1e-6f)
+            {
+                _actFpsAimDirection = aimDirection.normalized;
+                _hasActFpsAimDirection = true;
+            }
+
+            _actFpsAimOrigin = aimOrigin;
+            _hasActFpsAimOrigin = true;
+
+            Process(intent);
+        }
+
+        public bool TryGetActFpsAimDirection(out Vector3 aimDirection)
+        {
+            aimDirection = _actFpsAimDirection;
+            return _hasActFpsAimDirection;
+        }
+
+        public bool TryGetActFpsAimOrigin(out Vector3 aimOrigin)
+        {
+            aimOrigin = _actFpsAimOrigin;
+            return _hasActFpsAimOrigin;
         }
 
         public bool TryActivate(string abilityId)

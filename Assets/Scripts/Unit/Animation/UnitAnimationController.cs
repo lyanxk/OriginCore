@@ -1,3 +1,4 @@
+using Unit.Combat.Hero;
 using Unit.Movement;
 using UnityEngine;
 
@@ -8,6 +9,7 @@ namespace Unit.Animation
     {
         [Header("References")]
         [SerializeField] UnitBase motor;
+        [SerializeField] HeroBase hero;
         [SerializeField] Animator animator;
         [SerializeField] RuntimeAnimatorController animatorController;
         [SerializeField] bool disableRootMotion = true;
@@ -21,6 +23,12 @@ namespace Unit.Animation
         [SerializeField] string crouchStateName = "ARM_Stickman|CrouchDown_24f";
         [SerializeField] string crouchMoveStateName = "ARM_Stickman|CrouchWalk_24f";
         [SerializeField] string flightStateName = "ARM_Stickman|FlyForward_24f";
+        [SerializeField] string holdingIdleStateName = "ARM_Stickman|AimGun_24f";
+        [SerializeField] string holdingMoveStateName = "ARM_Stickman|AimWalk_24f";
+        [SerializeField] string holdingRunStateName = "ARM_Stickman|AimRun_16f";
+        [SerializeField] string holdingCrouchStateName = "ARM_Stickman|AimCrouchDown_24f";
+        [SerializeField] string holdingCrouchMoveStateName = "ARM_Stickman|AimCrouchWalk_24f";
+        [SerializeField] string holdingFlightStateName = "ARM_Stickman|AimFlyForward_24f";
 
         [Header("Movement")]
         [Min(0f)] [SerializeField] float movingSpeedThreshold = 0.08f;
@@ -31,6 +39,7 @@ namespace Unit.Animation
         static readonly int IsRunningHash = Animator.StringToHash("IsRunning");
         static readonly int IsCrouchingHash = Animator.StringToHash("IsCrouching");
         static readonly int IsFlyingHash = Animator.StringToHash("IsFlying");
+        static readonly int IsHoldingGunHash = Animator.StringToHash("IsHoldingGun");
 
         Vector3 _lastPosition;
         Quaternion _visualRootBaseLocalRotation;
@@ -41,6 +50,7 @@ namespace Unit.Animation
         bool _hasIsRunningParameter;
         bool _hasIsCrouchingParameter;
         bool _hasIsFlyingParameter;
+        bool _hasIsHoldingGunParameter;
 
         void Reset()
         {
@@ -93,10 +103,13 @@ namespace Unit.Animation
             bool isFlying = motor != null && motor.IsFlightEnabled;
             bool isCrouching = motor != null && motor.IsCrouching;
             bool isRunning = !isFlying && !isCrouching && isMoving && motor != null && motor.IsRunning;
+            bool isHoldingGun = hero != null &&
+                                hero.CurrentWeapon != null &&
+                                hero.CurrentWeapon.RangeType == HeroWeaponRangeType.Ranged;
 
-            PlayState(ResolveLocomotionStateName(isMoving, isRunning, isCrouching, isFlying), crossFadeDuration);
+            PlayState(ResolveLocomotionStateName(isMoving, isRunning, isCrouching, isFlying, isHoldingGun), crossFadeDuration);
             KeepCurrentStateLooping();
-            SyncParameters(planarSpeed, isMoving, isRunning, isCrouching, isFlying);
+            SyncParameters(planarSpeed, isMoving, isRunning, isCrouching, isFlying, isHoldingGun);
             ApplyVisualYawOffset();
         }
 
@@ -104,6 +117,9 @@ namespace Unit.Animation
         {
             if (motor == null)
                 motor = GetComponent<UnitBase>();
+
+            if (hero == null)
+                hero = GetComponent<HeroBase>();
 
             if (animator == null)
                 animator = GetComponentInChildren<Animator>(true);
@@ -140,6 +156,7 @@ namespace Unit.Animation
             _hasIsRunningParameter = false;
             _hasIsCrouchingParameter = false;
             _hasIsFlyingParameter = false;
+            _hasIsHoldingGunParameter = false;
 
             if (animator == null || animator.runtimeAnimatorController == null)
                 return;
@@ -158,6 +175,8 @@ namespace Unit.Animation
                     _hasIsCrouchingParameter = true;
                 else if (parameter.nameHash == IsFlyingHash && parameter.type == AnimatorControllerParameterType.Bool)
                     _hasIsFlyingParameter = true;
+                else if (parameter.nameHash == IsHoldingGunHash && parameter.type == AnimatorControllerParameterType.Bool)
+                    _hasIsHoldingGunParameter = true;
             }
         }
 
@@ -174,8 +193,11 @@ namespace Unit.Animation
             return Mathf.Max(measuredSpeed, motorSpeed);
         }
 
-        string ResolveLocomotionStateName(bool isMoving, bool isRunning, bool isCrouching, bool isFlying)
+        string ResolveLocomotionStateName(bool isMoving, bool isRunning, bool isCrouching, bool isFlying, bool isHoldingGun)
         {
+            if (isHoldingGun)
+                return ResolveHoldingLocomotionStateName(isMoving, isRunning, isCrouching, isFlying);
+
             if (isFlying && !string.IsNullOrWhiteSpace(flightStateName))
                 return flightStateName;
 
@@ -195,6 +217,32 @@ namespace Unit.Animation
                 return runStateName;
 
             return moveStateName;
+        }
+
+        string ResolveHoldingLocomotionStateName(bool isMoving, bool isRunning, bool isCrouching, bool isFlying)
+        {
+            if (isFlying && !string.IsNullOrWhiteSpace(holdingFlightStateName))
+                return holdingFlightStateName;
+
+            if (isCrouching)
+            {
+                if (isMoving && !string.IsNullOrWhiteSpace(holdingCrouchMoveStateName))
+                    return holdingCrouchMoveStateName;
+
+                if (!string.IsNullOrWhiteSpace(holdingCrouchStateName))
+                    return holdingCrouchStateName;
+            }
+
+            if (!isMoving && !string.IsNullOrWhiteSpace(holdingIdleStateName))
+                return holdingIdleStateName;
+
+            if (isRunning && !string.IsNullOrWhiteSpace(holdingRunStateName))
+                return holdingRunStateName;
+
+            if (!string.IsNullOrWhiteSpace(holdingMoveStateName))
+                return holdingMoveStateName;
+
+            return ResolveLocomotionStateName(isMoving, isRunning, isCrouching, isFlying, false);
         }
 
         void PlayState(string stateName, float fadeDuration)
@@ -230,7 +278,8 @@ namespace Unit.Animation
 
         bool IsHoldPoseState(string stateName)
         {
-            return !string.IsNullOrWhiteSpace(crouchStateName) && stateName == crouchStateName;
+            return (!string.IsNullOrWhiteSpace(crouchStateName) && stateName == crouchStateName) ||
+                   (!string.IsNullOrWhiteSpace(holdingCrouchStateName) && stateName == holdingCrouchStateName);
         }
 
         void ApplyVisualYawOffset()
@@ -242,7 +291,7 @@ namespace Unit.Animation
             visualRoot.localRotation = _visualRootBaseLocalRotation * Quaternion.Euler(0f, modelYawOffset, 0f);
         }
 
-        void SyncParameters(float planarSpeed, bool isMoving, bool isRunning, bool isCrouching, bool isFlying)
+        void SyncParameters(float planarSpeed, bool isMoving, bool isRunning, bool isCrouching, bool isFlying, bool isHoldingGun)
         {
             if (_hasSpeedParameter)
                 animator.SetFloat(SpeedHash, planarSpeed);
@@ -258,6 +307,9 @@ namespace Unit.Animation
 
             if (_hasIsFlyingParameter)
                 animator.SetBool(IsFlyingHash, isFlying);
+
+            if (_hasIsHoldingGunParameter)
+                animator.SetBool(IsHoldingGunHash, isHoldingGun);
         }
 
     }

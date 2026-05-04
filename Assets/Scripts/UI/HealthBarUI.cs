@@ -1,4 +1,5 @@
 ﻿using Gameplay;
+using Core;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,14 +11,15 @@ namespace UI
         [SerializeField] Color hostileFillColor = Color.red;
 
         Health _health;
+        Canvas _canvas;
         Transform _camTr;
         Color _defaultFillColor;
 
         void Awake()
         {
-            Canvas canvas = GetComponent<Canvas>();
-            if (canvas != null && canvas.renderMode == RenderMode.WorldSpace)
-                canvas.worldCamera = UnityEngine.Camera.main;
+            _canvas = GetComponent<Canvas>();
+            if (_canvas != null && _canvas.renderMode == RenderMode.WorldSpace)
+                _canvas.worldCamera = UnityEngine.Camera.main;
 
             if (fill != null)
                 _defaultFillColor = fill.color;
@@ -48,6 +50,8 @@ namespace UI
 
         void LateUpdate()
         {
+            ApplyModeVisibility();
+
             if (_camTr == null)
                 return;
 
@@ -71,6 +75,36 @@ namespace UI
             bool isHostile = teamAffiliation != null
                              && TeamAffiliation.IsHostile(teamAffiliation.Team, TeamType.Friendly);
             fill.color = isHostile ? hostileFillColor : _defaultFillColor;
+        }
+
+        void ApplyModeVisibility()
+        {
+            if (_canvas == null)
+                return;
+
+            bool shouldShow = !ShouldHideForCurrentMode();
+            if (_canvas.enabled != shouldShow)
+                _canvas.enabled = shouldShow;
+        }
+
+        bool ShouldHideForCurrentMode()
+        {
+            if (_health == null)
+                return false;
+
+            ControlModeManager manager = ControlModeManager.Instance;
+            if (manager == null || manager.unit == null)
+                return false;
+
+            string modeName = manager.CurrentModeName;
+            if (modeName != "ACT" && modeName != "FPS")
+                return false;
+
+            Transform healthTransform = _health.transform;
+            Transform controlledTransform = manager.unit.transform;
+            return healthTransform == controlledTransform ||
+                   healthTransform.IsChildOf(controlledTransform) ||
+                   controlledTransform.IsChildOf(healthTransform);
         }
 
         void DisableRaycastTargets()

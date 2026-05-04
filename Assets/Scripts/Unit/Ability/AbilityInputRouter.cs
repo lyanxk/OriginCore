@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using Core;
+using Gameplay;
 using Input;
 using Modes;
+using Unit.Combat;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -23,26 +26,38 @@ namespace Unit.Ability
         [SerializeField, HideInInspector]
         bool actFpsAbilitiesInitialized;
 
+        [Header("ACT Target Lock")]
+        [SerializeField, Min(0.1f)] float actTargetLockRange = 28f;
+        [SerializeField, Range(1f, 180f)] float actTargetLockAngle = 70f;
+
         readonly List<UnitAbility> _activeAbilities = new List<UnitAbility>(RtsAbilitySlotCount + 8);
         readonly Dictionary<string, UnitAbility> _abilityMap =
             new Dictionary<string, UnitAbility>(StringComparer.OrdinalIgnoreCase);
+        readonly Collider[] _actTargetLockBuffer = new Collider[48];
 
         Vector3 _actFpsAimDirection = Vector3.forward;
         Vector3 _actFpsAimOrigin;
         bool _hasActFpsAimDirection;
         bool _hasActFpsAimOrigin;
+        Transform _actLockedTarget;
+        UnitCombat _combat;
+        TeamAffiliation _teamAffiliation;
 
         public IReadOnlyList<UnitAbility> Abilities => _activeAbilities;
         public IReadOnlyList<UnitAbility> RtsAbilitySlots => rtsAbilities;
         public IReadOnlyList<UnitAbility> ActFpsAbilitySlots => actFpsAbilities;
+        public float ActTargetLockRange => actTargetLockRange;
+        public float ActTargetLockAngle => actTargetLockAngle;
 
         void Awake()
         {
+            CacheTargetingReferences();
             Refresh();
         }
 
         void OnEnable()
         {
+            CacheTargetingReferences();
             Refresh();
         }
 
@@ -50,10 +65,14 @@ namespace Unit.Ability
         {
             ShutdownAbilities();
             RtsAbilityTargetingState.Clear(this);
+            ClearActTargetLock();
         }
 
         void OnValidate()
         {
+            actTargetLockRange = Mathf.Max(0.1f, actTargetLockRange);
+            actTargetLockAngle = Mathf.Clamp(actTargetLockAngle, 1f, 180f);
+            CacheTargetingReferences();
             EnsureAbilitySlots();
             InitializeActFpsAbilitiesIfNeeded();
             Refresh();
@@ -98,6 +117,7 @@ namespace Unit.Ability
                 _hasActFpsAimDirection = true;
             }
 
+            RefreshActTargetLock();
             Process(intent);
         }
 
@@ -112,6 +132,7 @@ namespace Unit.Ability
             _actFpsAimOrigin = aimOrigin;
             _hasActFpsAimOrigin = true;
 
+            RefreshActTargetLock();
             Process(intent);
         }
 
@@ -125,6 +146,15 @@ namespace Unit.Ability
         {
             aimOrigin = _actFpsAimOrigin;
             return _hasActFpsAimOrigin;
+        }
+
+        public bool TryGetActLockedTarget(out Transform target)
+        {
+            if (!IsActMode() || !IsValidActLockedTarget(_actLockedTarget))
+                ClearActTargetLock();
+
+            target = _actLockedTarget;
+            return target != null;
         }
 
         public bool TryActivate(string abilityId)
@@ -159,6 +189,130 @@ namespace Unit.Ability
             rtsAbilities = EnsureRtsSlotArraySize(rtsAbilities);
             if (actFpsAbilities == null)
                 actFpsAbilities = Array.Empty<UnitAbility>();
+        }
+
+        void RefreshActTargetLock()
+        {
+            if (!IsActMode() || !_hasActFpsAimDirection)
+            {
+                ClearActTargetLock();
+                return;
+            }
+
+            CacheTargetingReferences();
+
+            LayerMask targetMask = _combat != null ? _combat.targetMask : ~0;
+            Vector3 origin = ResolveActTargetLockOrigin();
+            Vector3 aimDirection = _actFpsAimDirection;
+            if (aimDirection.sqrMagnitude <= 1e-6f)
+            {
+                ClearActTargetLock();
+                return;
+            }
+
+            aimDirection.Normalize();
+
+            int count = Physics.OverlapSphereNonAlloc(
+                origin,
+                actTargetLockRange,
+                _actTargetLockBuffer,
+                targetMask,
+                QueryTriggerInteraction.Ignore);
+
+            Health best = null;
+            float bestScore = float.MaxValue;
+            float halfAngle = Mathf.Max(0.5f, actTargetLockAngle * 0.5f);
+
+            for (int i = 0; i < count; i++)
+            {
+                Health health = ResolveActLockHealth(_actTargetLockBuffer[i]);
+                if (health == null)
+                    continue;
+
+                Vector3 toTarget = health.transform.position - origin;
+                float distance = toTarget.magnitude;
+                if (distance <= 1e-6f)
+                    continue;
+
+                float angle = Vector3.Angle(aimDirection, toTarget / distance);
+                if (angle > halfAngle)
+                    continue;
+
+                float score = angle / halfAngle + distance / actTargetLockRange * 0.25f;
+                if (score >= bestScore)
+                    continue;
+
+                bestScore = score;
+                best = health;
+            }
+
+            _actLockedTarget = best != null ? best.transform : null;
+        }
+
+        Vector3 ResolveActTargetLockOrigin()
+        {
+            if (_combat != null && _combat.attackOrigin != null)
+                return _combat.attackOrigin.position;
+
+            float height = _combat != null ? _combat.defaultOriginHeight : 1f;
+            return transform.position + Vector3.up * height;
+        }
+
+        Health ResolveActLockHealth(Component hitComponent)
+        {
+            if (hitComponent == null)
+                return null;
+
+            if (!Health.TryResolve(hitComponent, out Health health) || health == null)
+                return null;
+
+            if (health.transform.root == transform.root)
+                return null;
+
+            TeamAffiliation ownerTeam = _teamAffiliation != null
+                ? _teamAffiliation
+                : (_combat != null ? _combat.TeamAffiliation : null);
+            TeamAffiliation targetTeam = health.TeamAffiliation;
+            if (ownerTeam == null || targetTeam == null)
+                return null;
+
+            return ownerTeam.IsHostileTo(targetTeam) ? health : null;
+        }
+
+        bool IsValidActLockedTarget(Transform target)
+        {
+            if (target == null)
+                return false;
+
+            return ResolveActLockHealth(target) != null;
+        }
+
+        void ClearActTargetLock()
+        {
+            _actLockedTarget = null;
+        }
+
+        void CacheTargetingReferences()
+        {
+            if (_combat == null)
+                _combat = GetComponent<UnitCombat>();
+            if (_combat == null)
+                _combat = GetComponentInParent<UnitCombat>();
+            if (_combat == null)
+                _combat = GetComponentInChildren<UnitCombat>(true);
+
+            if (_teamAffiliation == null)
+                _teamAffiliation = GetComponent<TeamAffiliation>();
+            if (_teamAffiliation == null)
+                _teamAffiliation = GetComponentInParent<TeamAffiliation>();
+            if (_teamAffiliation == null)
+                _teamAffiliation = GetComponentInChildren<TeamAffiliation>(true);
+        }
+
+        static bool IsActMode()
+        {
+            ControlModeManager manager = ControlModeManager.Instance;
+            return manager != null && string.Equals(manager.CurrentModeName, "ACT", StringComparison.OrdinalIgnoreCase);
         }
 
         void ShutdownAbilities()

@@ -337,6 +337,7 @@ RectTransform:
   m_Children:
   - {fileID: 2121461278}
   - {fileID: 1001259257}
+  - {fileID: 410781449}
   m_Father: {fileID: 93050586}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -792,6 +793,130 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ebee340de387f334f9ac44e044abd8fb, type: 3}
+--- !u!1001 &410781448
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 196564053}
+    m_Modifications:
+    - target: {fileID: 1465142190384099208, guid: 0dd7547d35932f84c996f89b445fc773,
+        type: 3}
+      propertyPath: m_Pivot.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1465142190384099208, guid: 0dd7547d35932f84c996f89b445fc773,
+        type: 3}
+      propertyPath: m_Pivot.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1465142190384099208, guid: 0dd7547d35932f84c996f89b445fc773,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1465142190384099208, guid: 0dd7547d35932f84c996f89b445fc773,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1465142190384099208, guid: 0dd7547d35932f84c996f89b445fc773,
+        type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1465142190384099208, guid: 0dd7547d35932f84c996f89b445fc773,
+        type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1465142190384099208, guid: 0dd7547d35932f84c996f89b445fc773,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 560
+      objectReference: {fileID: 0}
+    - target: {fileID: 1465142190384099208, guid: 0dd7547d35932f84c996f89b445fc773,
+        type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 52
+      objectReference: {fileID: 0}
+    - target: {fileID: 1465142190384099208, guid: 0dd7547d35932f84c996f89b445fc773,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1465142190384099208, guid: 0dd7547d35932f84c996f89b445fc773,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1465142190384099208, guid: 0dd7547d35932f84c996f89b445fc773,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1465142190384099208, guid: 0dd7547d35932f84c996f89b445fc773,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1465142190384099208, guid: 0dd7547d35932f84c996f89b445fc773,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1465142190384099208, guid: 0dd7547d35932f84c996f89b445fc773,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1465142190384099208, guid: 0dd7547d35932f84c996f89b445fc773,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1465142190384099208, guid: 0dd7547d35932f84c996f89b445fc773,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1465142190384099208, guid: 0dd7547d35932f84c996f89b445fc773,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 54
+      objectReference: {fileID: 0}
+    - target: {fileID: 1465142190384099208, guid: 0dd7547d35932f84c996f89b445fc773,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1465142190384099208, guid: 0dd7547d35932f84c996f89b445fc773,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1465142190384099208, guid: 0dd7547d35932f84c996f89b445fc773,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7275951736681197301, guid: 0dd7547d35932f84c996f89b445fc773,
+        type: 3}
+      propertyPath: m_Name
+      value: ActHealthBar
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 0dd7547d35932f84c996f89b445fc773, type: 3}
+--- !u!224 &410781449 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 1465142190384099208, guid: 0dd7547d35932f84c996f89b445fc773,
+    type: 3}
+  m_PrefabInstance: {fileID: 410781448}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &439809845
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1858,11 +1983,11 @@ MonoBehaviour:
         displayName: Charged Shot
         icon: {fileID: 0}
         hotkeyText: Hold RMB
-        tooltip: Hold right mouse to charge. Release to fire. Locks the nearest target
-          once when charging starts.
+        tooltip: Hold right mouse to charge. Release to fire. Uses the ACT lock-on target
+          when available.
         maxChargeLevel: 3
         secondsPerChargeLevel: 2
-        range: 18
+        range: 28
         baseDamage: 20
         projectilePrefab: {fileID: 8275730910550496895, guid: f8569e0a6c357e04d8a93f63d9c3e461,
           type: 3}

@@ -16,7 +16,7 @@ namespace Unit.Ability
         [SerializeField] string hotkeyText = "Hold RMB";
         [TextArea]
         [SerializeField] string tooltip =
-            "Hold right mouse to charge. Release to fire projectiles. Locks the nearest target once when charging starts.";
+            "Hold right mouse to charge. Release to fire projectiles. Uses the ACT lock-on target when available.";
 
         [Header("Charge")]
         [Min(1)]
@@ -26,7 +26,7 @@ namespace Unit.Ability
 
         [Header("Shot")]
         [Min(0.1f)]
-        [SerializeField] float range = 18f;
+        [SerializeField] float range = 28f;
         [Min(0f)]
         [SerializeField] float baseDamage = 20f;
 
@@ -142,6 +142,12 @@ namespace Unit.Ability
 
         void AcquireLockedTarget()
         {
+            if (IsActMode && Router != null && Router.TryGetActLockedTarget(out Transform actLockedTarget))
+            {
+                _lockedTarget = actLockedTarget;
+                return;
+            }
+
             _lockedTarget = Combat != null ? Combat.FindNearestTargetInDetectionRange() : null;
         }
 

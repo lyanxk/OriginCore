@@ -99,7 +99,8 @@
              _hero?.ProcessWeaponInput(intent);
 
              //技能执行
-             _unit.AbilityRouter?.Process(intent, _unit.transform.forward);
+             Vector3 cameraForward = Quaternion.Euler(_pitch, _yaw, 0f) * Vector3.forward;
+             _unit.AbilityRouter?.Process(intent, cameraForward);
 
              //角色朝向：跟随移动方向
              Vector3 planar = new Vector3(moveWorld.x, 0f, moveWorld.z);

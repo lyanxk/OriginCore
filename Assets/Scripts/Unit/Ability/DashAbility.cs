@@ -1,4 +1,5 @@
 using System;
+using Input;
 using UnityEngine;
 
 namespace Unit.Ability
@@ -7,7 +8,7 @@ namespace Unit.Ability
     public class DashAbility : ActFpsUnitAbility
     {
         [Header("Ability")]
-        [SerializeField] string abilityId = "ability.dash";
+        [SerializeField] string abilityId = "ability.act.dash";
         [SerializeField] string displayName = "Dash";
         [SerializeField] Sprite icon;
         [SerializeField] string hotkeyText = "Mouse5";
@@ -21,6 +22,8 @@ namespace Unit.Ability
         [SerializeField] float dashDuration = 0.2f;
 
         float _nextReadyTime;
+        Vector2 _activationMove;
+        bool _hasActivationMove;
 
         public override string AbilityId => abilityId;
         public override string DisplayName => string.IsNullOrWhiteSpace(displayName) ? "Dash" : displayName;
@@ -42,8 +45,13 @@ namespace Unit.Ability
 
         public override void ProcessInput(InputIntent intent)
         {
-            if (intent.Dash)
-                TryActivate();
+            if (!intent.Dash)
+                return;
+
+            _activationMove = intent.Move;
+            _hasActivationMove = true;
+            TryActivate();
+            _hasActivationMove = false;
         }
 
         public override bool TryActivate()
@@ -51,18 +59,51 @@ namespace Unit.Ability
             if (Motor == null || !IsAvailableInCurrentMode || !IsEnabled)
                 return false;
 
-            Vector3 dashDirection = CachedTransform != null ? CachedTransform.forward : Vector3.forward;
-            dashDirection.y = 0f;
+            Vector3 dashDirection = ResolveDashDirection();
             if (dashDirection.sqrMagnitude < 1e-6f)
                 return false;
 
-            dashDirection.Normalize();
             Motor.OverridePlanarVelocity(dashDirection * dashSpeed, dashDuration);
 
             if (cooldown > 0f)
                 _nextReadyTime = Time.time + cooldown;
 
             return true;
+        }
+
+        Vector3 ResolveDashDirection()
+        {
+            Vector3 forward = ResolvePlanarCameraForward();
+            Vector2 move = _hasActivationMove ? _activationMove : Vector2.zero;
+
+            if (move.sqrMagnitude > 0.0001f)
+            {
+                Vector3 right = Vector3.Cross(Vector3.up, forward);
+                Vector3 moveDirection = right * move.x + forward * move.y;
+                moveDirection.y = 0f;
+
+                if (moveDirection.sqrMagnitude > 1e-6f)
+                    return moveDirection.normalized;
+            }
+
+            return forward;
+        }
+
+        Vector3 ResolvePlanarCameraForward()
+        {
+            Vector3 forward = Vector3.zero;
+            if (Router != null && Router.TryGetActFpsAimDirection(out Vector3 aimDirection))
+                forward = aimDirection;
+            else if (CachedTransform != null)
+                forward = CachedTransform.forward;
+            else
+                forward = Vector3.forward;
+
+            forward.y = 0f;
+            if (forward.sqrMagnitude < 1e-6f)
+                return Vector3.forward;
+
+            return forward.normalized;
         }
     }
 }

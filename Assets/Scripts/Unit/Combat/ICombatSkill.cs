@@ -1,5 +1,8 @@
-public interface ICombatSkill
+namespace Unit.Combat
 {
-    string SkillId { get; }
-    bool TryUseSkill(UnitCombat combat, CombatSkillRequest request);
+    public interface ICombatSkill
+    {
+        string SkillId { get; }
+        bool TryUseSkill(UnitCombat combat, CombatSkillRequest request);
+    }
 }

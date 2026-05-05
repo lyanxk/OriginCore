@@ -1,15 +1,18 @@
 using UnityEngine;
 
-public struct CombatSkillRequest
+namespace Unit.Combat
 {
-    public Vector3 Direction;
-    public Transform Target;
-    public Vector3 Origin;
-
-    public CombatSkillRequest(Vector3 direction, Transform target, Vector3 origin)
+    public struct CombatSkillRequest
     {
-        Direction = direction;
-        Target = target;
-        Origin = origin;
+        public Vector3 Direction;
+        public Transform Target;
+        public Vector3 Origin;
+
+        public CombatSkillRequest(Vector3 direction, Transform target, Vector3 origin)
+        {
+            Direction = direction;
+            Target = target;
+            Origin = origin;
+        }
     }
 }

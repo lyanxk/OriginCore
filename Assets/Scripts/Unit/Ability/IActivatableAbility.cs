@@ -13,5 +13,6 @@ namespace Unit.Ability
         float Cooldown01 { get; }
 
         bool TryActivate();
+        bool TryActivate(bool append);
     }
 }

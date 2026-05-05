@@ -1,388 +1,534 @@
+﻿using Gameplay;
 using System;
 using System.Collections.Generic;
+using Unit.Command;
+using Unit.Movement;
 using UnityEngine;
-
-[DisallowMultipleComponent]
-public class UnitCombat : MonoBehaviour
+namespace Unit.Combat
 {
-    public enum AttackPattern
+    [DisallowMultipleComponent]
+    public class UnitCombat : MonoBehaviour
     {
-        MeleeSphere = 0,
-        Hitscan = 1
-    }
+        const float HitFallReductionDuration = 0.45f;
+        const float HitFallReductionMaxFallSpeed = 2f;
+        const float HitFallReductionGravityMultiplier = 0.15f;
 
-    [Header("Primary Attack")]
-    public AttackPattern pattern = AttackPattern.MeleeSphere;
-    [Min(0f)] public float damage = 10f;
-    [Min(0.05f)] public float attackCooldown = 0.4f;
-    [Min(0.1f)] public float attackRange = 2f;
-    public LayerMask targetMask = ~0;
-    public bool consumeCooldownOnMiss = true;
-
-    [Header("Targeting")]
-    [Min(0.1f)] public float detectionRange = 8f;
-
-    [Header("Melee Sphere")]
-    [Min(0.1f)] public float meleeRadius = 0.9f;
-
-    [Header("Origin")]
-    public Transform attackOrigin;
-    public float defaultOriginHeight = 1.0f;
-
-    [Header("Team")]
-    [SerializeField] TeamAffiliation teamAffiliation;
-
-    readonly Collider[] _overlapBuffer = new Collider[32];
-    readonly RaycastHit[] _raycastBuffer = new RaycastHit[32];
-    readonly List<ICombatSkill> _skills = new List<ICombatSkill>(8);
-    readonly Dictionary<string, ICombatSkill> _skillMap =
-        new Dictionary<string, ICombatSkill>(StringComparer.OrdinalIgnoreCase);
-    readonly Dictionary<object, float> _damageMultipliers = new Dictionary<object, float>(4);
-
-    float _nextAttackTime;
-    float _cachedDamageMultiplier = 1f;
-
-    public float AttackRange => attackRange;
-    public float DetectionRange => detectionRange;
-    public bool IsReady => Time.time >= _nextAttackTime;
-    public IReadOnlyList<ICombatSkill> Skills => _skills;
-    public TeamAffiliation TeamAffiliation => teamAffiliation;
-
-    public event Action<Health, float> OnDamageApplied;
-    public event Action<string> OnSkillUsed;
-
-    void Awake()
-    {
-        CacheTeamAffiliation();
-        RefreshSkills();
-    }
-
-    void OnEnable()
-    {
-        CacheTeamAffiliation();
-        RefreshSkills();
-    }
-
-    void OnValidate()
-    {
-        CacheTeamAffiliation();
-    }
-
-    public void RefreshSkills()
-    {
-        _skills.Clear();
-        _skillMap.Clear();
-
-        var mbs = GetComponents<MonoBehaviour>();
-        for (int i = 0; i < mbs.Length; i++)
+        public enum AttackPattern
         {
-            if (mbs[i] is not ICombatSkill skill)
-                continue;
-
-            if (string.IsNullOrWhiteSpace(skill.SkillId))
-                continue;
-
-            if (_skillMap.ContainsKey(skill.SkillId))
-            {
-                Debug.LogWarning(
-                    $"Duplicate combat skill id '{skill.SkillId}' on '{name}'. Keeping first registration.",
-                    this);
-                continue;
-            }
-
-            _skills.Add(skill);
-            _skillMap.Add(skill.SkillId, skill);
-        }
-    }
-
-    public bool HasSkill(string skillId)
-    {
-        if (string.IsNullOrWhiteSpace(skillId)) return false;
-        return _skillMap.ContainsKey(skillId);
-    }
-
-    public bool TryUseSkill(string skillId, CombatSkillRequest request)
-    {
-        if (string.IsNullOrWhiteSpace(skillId))
-            return false;
-
-        if (!_skillMap.TryGetValue(skillId, out ICombatSkill skill))
-            return false;
-
-        bool used = skill.TryUseSkill(this, request);
-        if (used)
-            OnSkillUsed?.Invoke(skillId);
-
-        return used;
-    }
-
-    public bool TryUsePrimaryOnTarget(Transform target)
-    {
-        return TryAttackTarget(target);
-    }
-
-    public bool TryUsePrimaryInDirection(Vector3 direction)
-    {
-        return TryAttackDirection(direction);
-    }
-
-    public void SetDamageMultiplier(object source, float multiplier)
-    {
-        if (source == null)
-            return;
-
-        if (multiplier <= 1f)
-        {
-            ClearDamageMultiplier(source);
-            return;
+            MeleeSphere = 0
         }
 
-        _damageMultipliers[source] = multiplier;
-        RecalculateDamageMultiplier();
-    }
+        [Header("Primary Attack")]
+        public AttackPattern pattern = AttackPattern.MeleeSphere;
+        [Min(0f)] public float damage = 10f;
+        [Min(0.05f)] public float attackCooldown = 0.4f;
+        [Min(0.1f)] public float attackRange = 2f;
+        public LayerMask targetMask = ~0;
+        public bool consumeCooldownOnMiss = true;
 
-    public void ClearDamageMultiplier(object source)
-    {
-        if (source == null || !_damageMultipliers.Remove(source))
-            return;
+        [Header("Targeting")]
+        [Min(0.1f)] public float detectionRange = 8f;
 
-        RecalculateDamageMultiplier();
-    }
+        [Header("Melee Sphere")]
+        [Min(0.1f)] public float meleeRadius = 0.9f;
 
-    public bool IsTargetInRange(Transform target, float extraRange = 0f)
-    {
-        if (target == null) return false;
+        [Header("Origin")]
+        public Transform attackOrigin;
+        public float defaultOriginHeight = 1.0f;
 
-        Vector3 a = transform.position;
-        Vector3 b = target.position;
-        a.y = 0f;
-        b.y = 0f;
+        [Header("Team")]
+        [SerializeField] TeamAffiliation teamAffiliation;
 
-        return Vector3.Distance(a, b) <= attackRange + Mathf.Max(0f, extraRange);
-    }
+        [Header("Auto Targeting")]
+        public bool autoChaseTargets = true;
+        [Min(1f)] public float loseTargetRangeMultiplier = 2f;
+        [Min(0.05f)] public float targetScanInterval = 0.15f;
+        [Min(0.05f)] public float chaseRepathInterval = 0.2f;
+        [Min(0.05f)] public float chaseRepathDistance = 0.5f;
 
-    public bool IsTargetInDetectionRange(Transform target, float extraRange = 0f)
-    {
-        if (target == null) return false;
+        readonly Collider[] _overlapBuffer = new Collider[32];
+        readonly List<ICombatSkill> _skills = new List<ICombatSkill>(8);
+        readonly Dictionary<string, ICombatSkill> _skillMap =
+            new Dictionary<string, ICombatSkill>(StringComparer.OrdinalIgnoreCase);
+        readonly Dictionary<object, float> _damageMultipliers = new Dictionary<object, float>(4);
 
-        Vector3 a = transform.position;
-        Vector3 b = target.position;
-        a.y = 0f;
-        b.y = 0f;
+        float _nextAttackTime;
+        float _cachedDamageMultiplier = 1f;
+        UnitBase _motor;
+        CommandExecutor _commandExecutor;
+        Transform _lockedTarget;
+        Vector3 _lastChasePosition;
+        float _scanTimer;
+        float _chaseTimer;
+        bool _hasChasePosition;
+        bool _isAutoChasing;
 
-        return Vector3.Distance(a, b) <= detectionRange + Mathf.Max(0f, extraRange);
-    }
+        public float AttackRange => attackRange;
+        public float DetectionRange => detectionRange;
+        public bool IsReady => Time.time >= _nextAttackTime;
+        public IReadOnlyList<ICombatSkill> Skills => _skills;
+        public TeamAffiliation TeamAffiliation => teamAffiliation;
 
-    public Transform FindNearestTargetInDetectionRange()
-    {
-        Vector3 origin = transform.position;
-        int count = Physics.OverlapSphereNonAlloc(
-            origin,
-            detectionRange,
-            _overlapBuffer,
-            targetMask,
-            QueryTriggerInteraction.Ignore);
+        public event Action<Health, float> OnDamageApplied;
+        public event Action<string> OnSkillUsed;
 
-        Health best = null;
-        float bestSqr = float.MaxValue;
-        for (int i = 0; i < count; i++)
+        void Awake()
         {
-            Health h = ResolveHealth(_overlapBuffer[i]);
-            if (h == null) continue;
+            CacheReferences();
+            RefreshSkills();
+        }
 
-            Vector3 d = h.transform.position - origin;
-            d.y = 0f;
-            float sqr = d.sqrMagnitude;
-            if (sqr < bestSqr)
+        void OnEnable()
+        {
+            CacheReferences();
+            RefreshSkills();
+        }
+
+        void OnValidate()
+        {
+            if (!Enum.IsDefined(typeof(AttackPattern), pattern))
+                pattern = AttackPattern.MeleeSphere;
+
+            CacheReferences();
+        }
+
+        void Update()
+        {
+            TickAutoCombat(Time.deltaTime);
+        }
+
+        public void RefreshSkills()
+        {
+            _skills.Clear();
+            _skillMap.Clear();
+
+            var mbs = GetComponents<MonoBehaviour>();
+            for (int i = 0; i < mbs.Length; i++)
             {
-                bestSqr = sqr;
-                best = h;
+                if (mbs[i] is not ICombatSkill skill)
+                    continue;
+
+                if (string.IsNullOrWhiteSpace(skill.SkillId))
+                    continue;
+
+                if (_skillMap.ContainsKey(skill.SkillId))
+                {
+                    Debug.LogWarning(
+                        $"Duplicate combat skill id '{skill.SkillId}' on '{name}'. Keeping first registration.",
+                        this);
+                    continue;
+                }
+
+                _skills.Add(skill);
+                _skillMap.Add(skill.SkillId, skill);
             }
         }
 
-        return best != null ? best.transform : null;
-    }
+        public bool HasSkill(string skillId)
+        {
+            if (string.IsNullOrWhiteSpace(skillId)) return false;
+            return _skillMap.ContainsKey(skillId);
+        }
 
-    public bool TryAttackTarget(Transform target)
-    {
-        if (target == null) return false;
+        public bool TryUseSkill(string skillId, CombatSkillRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(skillId))
+                return false;
 
-        Vector3 dir = target.position - GetAttackOrigin();
-        if (dir.sqrMagnitude < 1e-6f)
-            dir = transform.forward;
+            if (!_skillMap.TryGetValue(skillId, out ICombatSkill skill))
+                return false;
 
-        return TryAttackInternal(dir.normalized, target);
-    }
+            bool used = skill.TryUseSkill(this, request);
+            if (used)
+                OnSkillUsed?.Invoke(skillId);
 
-    public bool TryAttackDirection(Vector3 direction)
-    {
-        if (direction.sqrMagnitude < 1e-6f)
-            direction = transform.forward;
+            return used;
+        }
 
-        return TryAttackInternal(direction.normalized, null);
-    }
+        public bool TryUsePrimaryOnTarget(Transform target)
+        {
+            return TryAttackTarget(target, null);
+        }
 
-    public bool TryApplyDamage(Health targetHealth, float amount)
-    {
-        if (targetHealth == null) return false;
-        if (amount <= 0f) return false;
+        public bool TryUsePrimaryOnTarget(Transform target, float damageOverride)
+        {
+            return TryAttackTarget(target, Mathf.Max(0f, damageOverride));
+        }
 
-        targetHealth.TakeDamage(amount);
-        OnDamageApplied?.Invoke(targetHealth, amount);
-        return true;
-    }
+        public bool TryUsePrimaryInDirection(Vector3 direction)
+        {
+            return TryAttackDirection(direction, null);
+        }
 
-    bool TryAttackInternal(Vector3 direction, Transform preferredTarget)
-    {
-        if (!IsReady)
-            return false;
+        public bool TryUsePrimaryInDirection(Vector3 direction, float damageOverride)
+        {
+            return TryAttackDirection(direction, Mathf.Max(0f, damageOverride));
+        }
 
-        Health hit = pattern == AttackPattern.Hitscan
-            ? DoHitscan(direction, preferredTarget)
-            : DoMeleeSphere(direction, preferredTarget);
+        public bool TryConsumePrimaryCooldown()
+        {
+            if (!IsReady)
+                return false;
 
-        bool didHit = hit != null;
-        if (didHit)
-            TryApplyDamage(hit, damage * _cachedDamageMultiplier);
-
-        if (didHit || consumeCooldownOnMiss)
             _nextAttackTime = Time.time + attackCooldown;
-
-        return didHit;
-    }
-
-    Health DoMeleeSphere(Vector3 direction, Transform preferredTarget)
-    {
-        Vector3 origin = GetAttackOrigin();
-        float centerOffset = Mathf.Max(0f, attackRange - meleeRadius * 0.5f);
-        Vector3 center = origin + direction * centerOffset;
-
-        int count = Physics.OverlapSphereNonAlloc(
-            center,
-            meleeRadius,
-            _overlapBuffer,
-            targetMask,
-            QueryTriggerInteraction.Ignore);
-
-        return FindBestHealthFromOverlap(count, center, preferredTarget);
-    }
-
-    Health DoHitscan(Vector3 direction, Transform preferredTarget)
-    {
-        Vector3 origin = GetAttackOrigin();
-        Ray ray = new Ray(origin, direction);
-
-        int count = Physics.RaycastNonAlloc(
-            ray,
-            _raycastBuffer,
-            attackRange,
-            targetMask,
-            QueryTriggerInteraction.Ignore);
-
-        return FindBestHealthFromRaycast(count, preferredTarget);
-    }
-
-    Health FindBestHealthFromOverlap(int count, Vector3 center, Transform preferredTarget)
-    {
-        Health best = null;
-        float bestSqr = float.MaxValue;
-
-        for (int i = 0; i < count; i++)
-        {
-            Collider c = _overlapBuffer[i];
-            Health h = ResolveHealth(c);
-            if (h == null) continue;
-
-            if (preferredTarget != null && h.transform == preferredTarget)
-                return h;
-
-            float sqr = (h.transform.position - center).sqrMagnitude;
-            if (sqr < bestSqr)
-            {
-                best = h;
-                bestSqr = sqr;
-            }
+            return true;
         }
 
-        return best;
-    }
-
-    Health FindBestHealthFromRaycast(int count, Transform preferredTarget)
-    {
-        Health best = null;
-        float bestDist = float.MaxValue;
-
-        for (int i = 0; i < count; i++)
+        public void SetDamageMultiplier(object source, float multiplier)
         {
-            RaycastHit hit = _raycastBuffer[i];
-            Health h = ResolveHealth(hit.collider);
-            if (h == null) continue;
+            if (source == null)
+                return;
 
-            if (preferredTarget != null && h.transform == preferredTarget)
-                return h;
-
-            if (hit.distance < bestDist)
+            if (multiplier <= 1f)
             {
-                best = h;
-                bestDist = hit.distance;
+                ClearDamageMultiplier(source);
+                return;
             }
+
+            _damageMultipliers[source] = multiplier;
+            RecalculateDamageMultiplier();
         }
 
-        return best;
-    }
+        public void ClearDamageMultiplier(object source)
+        {
+            if (source == null || !_damageMultipliers.Remove(source))
+                return;
 
-    Health ResolveHealth(Component hitComponent)
-    {
-        if (hitComponent == null) return null;
+            RecalculateDamageMultiplier();
+        }
 
-        if (!Health.TryResolve(hitComponent, out Health h))
-            return null;
+        public bool IsTargetInRange(Transform target, float extraRange = 0f)
+        {
+            return IsTargetWithinRange(target, attackRange + Mathf.Max(0f, extraRange));
+        }
 
-        if (h == null) return null;
-        if (h.transform.root == transform.root) return null;
-        if (!CanAttackHealth(h)) return null;
+        public bool IsTargetInDetectionRange(Transform target, float extraRange = 0f)
+        {
+            return IsTargetWithinRange(target, detectionRange + Mathf.Max(0f, extraRange));
+        }
 
-        return h;
-    }
+        public bool CanKeepTargetLocked(Transform target)
+        {
+            return IsTargetWithinRange(target, detectionRange * Mathf.Max(1f, loseTargetRangeMultiplier));
+        }
 
-    Vector3 GetAttackOrigin()
-    {
-        if (attackOrigin != null)
-            return attackOrigin.position;
+        public Transform FindNearestTargetInDetectionRange()
+        {
+            return FindNearestTarget(detectionRange);
+        }
 
-        return transform.position + Vector3.up * defaultOriginHeight;
-    }
+        public Transform FindNearestTargetInAttackRange()
+        {
+            return FindNearestTarget(attackRange);
+        }
 
-    void CacheTeamAffiliation()
-    {
-        if (teamAffiliation == null)
-            teamAffiliation = GetComponent<TeamAffiliation>();
+        Transform FindNearestTarget(float searchRange)
+        {
+            Vector3 origin = transform.position;
+            int count = Physics.OverlapSphereNonAlloc(
+                origin,
+                Mathf.Max(0.1f, searchRange),
+                _overlapBuffer,
+                targetMask,
+                QueryTriggerInteraction.Ignore);
 
-        if (teamAffiliation == null)
-            teamAffiliation = GetComponentInParent<TeamAffiliation>();
-    }
+            Health best = null;
+            float bestSqr = float.MaxValue;
+            for (int i = 0; i < count; i++)
+            {
+                Health h = ResolveHealth(_overlapBuffer[i]);
+                if (h == null) continue;
 
-    bool CanAttackHealth(Health targetHealth)
-    {
-        if (targetHealth == null)
-            return false;
+                Vector3 d = h.transform.position - origin;
+                d.y = 0f;
+                float sqr = d.sqrMagnitude;
+                if (sqr < bestSqr)
+                {
+                    bestSqr = sqr;
+                    best = h;
+                }
+            }
 
-        if (teamAffiliation == null)
-            return false;
+            return best != null ? best.transform : null;
+        }
 
-        TeamAffiliation targetTeam = targetHealth.TeamAffiliation;
+        public bool TryAttackTarget(Transform target)
+        {
+            return TryAttackTarget(target, null);
+        }
 
-        if (targetTeam == null)
-            return false;
+        bool TryAttackTarget(Transform target, float? damageOverride)
+        {
+            if (target == null) return false;
 
-        return teamAffiliation.IsHostileTo(targetTeam);
-    }
+            Vector3 dir = target.position - GetAttackOrigin();
+            if (dir.sqrMagnitude < 1e-6f)
+                dir = transform.forward;
 
-    void RecalculateDamageMultiplier()
-    {
-        // Damage buffs also use the strongest source to avoid runaway scaling from overlapping support units.
-        _cachedDamageMultiplier = 1f;
-        foreach (KeyValuePair<object, float> modifier in _damageMultipliers)
-            _cachedDamageMultiplier = Mathf.Max(_cachedDamageMultiplier, modifier.Value);
+            return TryAttackInternal(dir.normalized, target, damageOverride);
+        }
+
+        public bool TryAttackDirection(Vector3 direction)
+        {
+            return TryAttackDirection(direction, null);
+        }
+
+        bool TryAttackDirection(Vector3 direction, float? damageOverride)
+        {
+            if (direction.sqrMagnitude < 1e-6f)
+                direction = transform.forward;
+
+            return TryAttackInternal(direction.normalized, null, damageOverride);
+        }
+
+        public bool TryApplyDamage(Health targetHealth, float amount)
+        {
+            if (targetHealth == null) return false;
+            if (amount <= 0f) return false;
+            if (targetHealth.transform.root == transform.root) return false;
+            if (!CanAttackHealth(targetHealth)) return false;
+
+            targetHealth.TakeDamage(amount);
+            OnDamageApplied?.Invoke(targetHealth, amount);
+            ApplyHitFallReduction(targetHealth);
+            return true;
+        }
+
+        void ApplyHitFallReduction(Health targetHealth)
+        {
+            if (!CanAttackHealth(targetHealth))
+                return;
+
+            UnitBase targetUnit = targetHealth.GetComponent<UnitBase>() ?? targetHealth.GetComponentInParent<UnitBase>();
+            if (targetUnit == null)
+                return;
+
+            targetUnit.ApplyFallSpeedReduction(
+                HitFallReductionDuration,
+                HitFallReductionMaxFallSpeed,
+                HitFallReductionGravityMultiplier);
+        }
+
+        bool TryAttackInternal(Vector3 direction, Transform preferredTarget, float? damageOverride)
+        {
+            if (!IsReady)
+                return false;
+
+            Health hit = DoMeleeSphere(direction, preferredTarget);
+
+            bool didHit = hit != null;
+            if (didHit)
+            {
+                float baseDamage = damageOverride ?? damage;
+                TryApplyDamage(hit, baseDamage * _cachedDamageMultiplier);
+            }
+
+            if (didHit || consumeCooldownOnMiss)
+                _nextAttackTime = Time.time + attackCooldown;
+
+            return didHit;
+        }
+
+        Health DoMeleeSphere(Vector3 direction, Transform preferredTarget)
+        {
+            Vector3 origin = GetAttackOrigin();
+            float centerOffset = Mathf.Max(0f, attackRange - meleeRadius * 0.5f);
+            Vector3 center = origin + direction * centerOffset;
+
+            int count = Physics.OverlapSphereNonAlloc(
+                center,
+                meleeRadius,
+                _overlapBuffer,
+                targetMask,
+                QueryTriggerInteraction.Ignore);
+
+            return FindBestHealthFromOverlap(count, center, preferredTarget);
+        }
+
+        Health FindBestHealthFromOverlap(int count, Vector3 center, Transform preferredTarget)
+        {
+            Health best = null;
+            float bestSqr = float.MaxValue;
+
+            for (int i = 0; i < count; i++)
+            {
+                Collider c = _overlapBuffer[i];
+                Health h = ResolveHealth(c);
+                if (h == null) continue;
+
+                if (preferredTarget != null && h.transform == preferredTarget)
+                    return h;
+
+                float sqr = (h.transform.position - center).sqrMagnitude;
+                if (sqr < bestSqr)
+                {
+                    best = h;
+                    bestSqr = sqr;
+                }
+            }
+
+            return best;
+        }
+
+        Health ResolveHealth(Component hitComponent)
+        {
+            if (!Health.TryResolve(hitComponent, out Health h))
+                return null;
+
+            if (h.transform.root == transform.root) return null;
+            if (!CanAttackHealth(h)) return null;
+
+            return h;
+        }
+
+        Vector3 GetAttackOrigin()
+        {
+            if (attackOrigin != null)
+                return attackOrigin.position;
+
+            return transform.position + Vector3.up * defaultOriginHeight;
+        }
+
+        void CacheReferences()
+        {
+            teamAffiliation = ResolveNearbyComponent(teamAffiliation);
+            _motor = ResolveNearbyComponent(_motor);
+            _commandExecutor = ResolveNearbyComponent(_commandExecutor);
+        }
+
+        bool CanAttackHealth(Health targetHealth)
+        {
+            TeamAffiliation targetTeam = targetHealth != null ? targetHealth.TeamAffiliation : null;
+            return teamAffiliation != null && targetTeam != null && teamAffiliation.IsHostileTo(targetTeam);
+        }
+
+        void RecalculateDamageMultiplier()
+        {
+            // Damage buffs also use the strongest source to avoid runaway scaling from overlapping support units.
+            _cachedDamageMultiplier = 1f;
+            foreach (KeyValuePair<object, float> modifier in _damageMultipliers)
+                _cachedDamageMultiplier = Mathf.Max(_cachedDamageMultiplier, modifier.Value);
+        }
+
+        void TickAutoCombat(float dt)
+        {
+            if (!CanRunAutoCombat())
+            {
+                ClearLockedTarget();
+                StopAutoChase();
+                return;
+            }
+
+            if (!CanKeepTargetLocked(_lockedTarget))
+                ClearLockedTarget();
+
+            TryAcquireTarget(dt);
+            if (_lockedTarget == null)
+            {
+                StopAutoChase();
+                return;
+            }
+
+            FaceTarget(_lockedTarget.position);
+            if (IsTargetInRange(_lockedTarget))
+            {
+                StopAutoChase();
+                TryUsePrimaryOnTarget(_lockedTarget);
+                return;
+            }
+
+            _chaseTimer -= dt;
+            Vector3 chasePosition = _lockedTarget.position;
+            bool targetMoved = !_hasChasePosition
+                               || FlattenedSqr(chasePosition - _lastChasePosition)
+                               >= chaseRepathDistance * chaseRepathDistance;
+            if (_chaseTimer > 0f && !targetMoved)
+                return;
+
+            _motor.SetDestination(chasePosition);
+            _lastChasePosition = chasePosition;
+            _chaseTimer = chaseRepathInterval;
+            _hasChasePosition = true;
+            _isAutoChasing = true;
+        }
+
+        bool CanRunAutoCombat()
+        {
+            return autoChaseTargets
+                   && teamAffiliation != null
+                   && _motor != null
+                   && (_commandExecutor == null || _commandExecutor.IsIdle);
+        }
+
+        void TryAcquireTarget(float dt)
+        {
+            if (_lockedTarget != null)
+                return;
+
+            _scanTimer -= dt;
+            if (_scanTimer > 0f)
+                return;
+
+            _scanTimer = targetScanInterval;
+            _lockedTarget = FindNearestTargetInDetectionRange();
+            if (_lockedTarget == null)
+                return;
+
+            _chaseTimer = 0f;
+            _hasChasePosition = false;
+        }
+
+        void ClearLockedTarget()
+        {
+            _lockedTarget = null;
+            _scanTimer = 0f;
+        }
+
+        void StopAutoChase()
+        {
+            if (_isAutoChasing && _motor != null && (_commandExecutor == null || _commandExecutor.IsIdle))
+                _motor.CancelPathing();
+
+            _isAutoChasing = false;
+            _hasChasePosition = false;
+        }
+
+        void FaceTarget(Vector3 targetPosition)
+        {
+            if (_motor == null)
+                return;
+
+            Vector3 direction = targetPosition - transform.position;
+            direction.y = 0f;
+            if (direction.sqrMagnitude <= 1e-6f)
+                return;
+
+            float yaw = Quaternion.LookRotation(direction, Vector3.up).eulerAngles.y;
+            _motor.SetYaw(yaw);
+        }
+
+        bool IsTargetWithinRange(Transform target, float range)
+        {
+            if (target == null)
+                return false;
+
+            Vector3 delta = target.position - transform.position;
+            delta.y = 0f;
+            return delta.sqrMagnitude <= range * range;
+        }
+
+        T ResolveNearbyComponent<T>(T current) where T : Component
+        {
+            if (current != null)
+                return current;
+
+            return GetComponent<T>() ?? GetComponentInParent<T>();
+        }
+
+        static float FlattenedSqr(Vector3 delta)
+        {
+            delta.y = 0f;
+            return delta.sqrMagnitude;
+        }
     }
 }

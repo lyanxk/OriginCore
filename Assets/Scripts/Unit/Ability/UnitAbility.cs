@@ -1,4 +1,13 @@
+﻿using Gameplay;
 using System;
+using Core;
+using Input;
+using Modes;
+using Unit.Combat;
+using Unit.Command;
+using Unit.Movement;
+using Unit.Selection;
+using Unit.UI;
 using UnityEngine;
 
 namespace Unit.Ability
@@ -25,6 +34,7 @@ namespace Unit.Ability
         [NonSerialized] UnitCombat _combat;
         [NonSerialized] TeamAffiliation _teamAffiliation;
         [NonSerialized] Selectable _selectable;
+        [NonSerialized] CommandExecutor _commandExecutor;
         [NonSerialized] Transform _transform;
         [NonSerialized] int _slotIndex = -1;
 
@@ -46,6 +56,7 @@ namespace Unit.Ability
         protected UnitCombat Combat => _combat;
         protected TeamAffiliation TeamAffiliation => _teamAffiliation;
         protected Selectable Selectable => _selectable;
+        protected CommandExecutor CommandExecutor => _commandExecutor;
         protected Transform CachedTransform => _transform;
         protected string CurrentModeName => ControlModeManager.Instance != null
             ? ControlModeManager.Instance.CurrentModeName
@@ -59,10 +70,11 @@ namespace Unit.Ability
             if (router != null)
             {
                 _transform = router.transform;
-                _motor = ResolveNearbyComponent<UnitBase>(router.transform);
-                _combat = ResolveNearbyComponent<UnitCombat>(router.transform);
-                _teamAffiliation = ResolveNearbyComponent<TeamAffiliation>(router.transform);
-                _selectable = ResolveNearbyComponent<Selectable>(router.transform);
+                _motor = ResolveNearbyComponent<UnitBase>(router);
+                _combat = ResolveNearbyComponent<UnitCombat>(router);
+                _teamAffiliation = ResolveNearbyComponent<TeamAffiliation>(router);
+                _selectable = ResolveNearbyComponent<Selectable>(router);
+                _commandExecutor = ResolveNearbyComponent<CommandExecutor>(router);
             }
             else
             {
@@ -71,6 +83,7 @@ namespace Unit.Ability
                 _combat = null;
                 _teamAffiliation = null;
                 _selectable = null;
+                _commandExecutor = null;
             }
 
             OnBound();
@@ -87,6 +100,7 @@ namespace Unit.Ability
             _combat = null;
             _teamAffiliation = null;
             _selectable = null;
+            _commandExecutor = null;
         }
 
         public virtual void ProcessInput(InputIntent intent)
@@ -96,6 +110,11 @@ namespace Unit.Ability
         public virtual bool TryActivate()
         {
             return false;
+        }
+
+        public virtual bool TryActivate(bool append)
+        {
+            return TryActivate();
         }
 
         public virtual void Tick(float deltaTime)
@@ -112,20 +131,12 @@ namespace Unit.Ability
 
         protected abstract bool IsAvailableInMode(string modeName);
 
-        static T ResolveNearbyComponent<T>(Transform origin) where T : Component
+        static T ResolveNearbyComponent<T>(Component origin) where T : Component
         {
             if (origin == null)
                 return null;
 
-            T resolved = origin.GetComponent<T>();
-            if (resolved != null)
-                return resolved;
-
-            resolved = origin.GetComponentInParent<T>();
-            if (resolved != null)
-                return resolved;
-
-            return origin.GetComponentInChildren<T>(true);
+            return origin.GetComponent<T>() ?? origin.GetComponentInParent<T>() ?? origin.GetComponentInChildren<T>(true);
         }
     }
 
@@ -143,6 +154,11 @@ namespace Unit.Ability
 
         public sealed override bool TryActivate()
         {
+            return TryActivate(false);
+        }
+
+        public override bool TryActivate(bool append)
+        {
             if (!IsAvailableInCurrentMode || !IsEnabled)
                 return false;
 
@@ -154,6 +170,9 @@ namespace Unit.Ability
                 case RtsAbilityTargetingMode.Self:
                     RtsQueuedOrderState.Clear();
                     RtsAbilityTargetingState.Clear();
+                    if (TryEnqueueCommand(CreateQueuedSelfCommand(), append))
+                        return true;
+
                     return TryActivateSelf();
 
                 case RtsAbilityTargetingMode.Unit:
@@ -181,20 +200,66 @@ namespace Unit.Ability
             return string.Equals(modeName, "RTS", StringComparison.OrdinalIgnoreCase);
         }
 
-        internal bool TryActivatePendingUnit(Selectable target, Vector3 worldPoint)
+        internal bool TryActivatePendingUnit(Selectable target, Vector3 worldPoint, bool append)
         {
             if (TargetingMode != RtsAbilityTargetingMode.Unit)
                 return false;
 
+            if (TryEnqueueCommand(CreateQueuedUnitCommand(target, worldPoint), append))
+                return true;
+
             return TryActivateOnUnit(target, worldPoint);
         }
 
-        internal bool TryActivatePendingPoint(Vector3 worldPoint)
+        internal bool TryActivatePendingPoint(Vector3 worldPoint, bool append)
         {
             if (TargetingMode != RtsAbilityTargetingMode.Point)
                 return false;
 
+            if (TryEnqueueCommand(CreateQueuedPointCommand(worldPoint), append))
+                return true;
+
             return TryActivateOnPoint(worldPoint);
+        }
+
+        internal bool TryExecuteQueuedSelf()
+        {
+            return TryActivateSelf();
+        }
+
+        internal bool TryExecuteQueuedUnit(Selectable target, Vector3 worldPoint)
+        {
+            return TryActivateOnUnit(target, worldPoint);
+        }
+
+        internal bool TryExecuteQueuedPoint(Vector3 worldPoint)
+        {
+            return TryActivateOnPoint(worldPoint);
+        }
+
+        internal bool ShouldWaitForQueuedExecution()
+        {
+            return ShouldWaitForQueuedActivation();
+        }
+
+        protected virtual bool ShouldWaitForQueuedActivation()
+        {
+            return !IsEnabled;
+        }
+
+        protected virtual IUnitCommand CreateQueuedSelfCommand()
+        {
+            return new RtsAbilityCommand(this);
+        }
+
+        protected virtual IUnitCommand CreateQueuedUnitCommand(Selectable target, Vector3 worldPoint)
+        {
+            return new RtsAbilityCommand(this, target, worldPoint);
+        }
+
+        protected virtual IUnitCommand CreateQueuedPointCommand(Vector3 worldPoint)
+        {
+            return new RtsAbilityCommand(this, worldPoint);
         }
 
         protected virtual bool TryActivateSelf()
@@ -211,6 +276,15 @@ namespace Unit.Ability
         {
             return false;
         }
+
+        bool TryEnqueueCommand(IUnitCommand command, bool append)
+        {
+            if (command == null || CommandExecutor == null)
+                return false;
+
+            CommandExecutor.Enqueue(command, append);
+            return true;
+        }
     }
 
     [Serializable]
@@ -220,6 +294,15 @@ namespace Unit.Ability
         {
             return string.Equals(modeName, "ACT", StringComparison.OrdinalIgnoreCase)
                    || string.Equals(modeName, "FPS", StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    [Serializable]
+    public abstract class ActUnitAbility : UnitAbility
+    {
+        protected override bool IsAvailableInMode(string modeName)
+        {
+            return string.Equals(modeName, "ACT", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

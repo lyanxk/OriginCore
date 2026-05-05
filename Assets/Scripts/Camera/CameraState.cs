@@ -1,18 +1,21 @@
 ﻿using UnityEngine;
 
-public struct CameraState
+namespace Camera
 {
-    public Vector3 Position;
-    public Quaternion Rotation;
-    public float Fov;
-
-    public static CameraState From(Transform cam)
+    public struct CameraState
     {
-        return new CameraState
+        public Vector3 Position;
+        public Quaternion Rotation;
+        public float Fov;
+
+        public static CameraState From(Transform cam)
         {
-            Position = cam.position,
-            Rotation = cam.rotation,
-            Fov = cam.GetComponent<Camera>() ? cam.GetComponent<Camera>().fieldOfView : 60f
-        };
+            return new CameraState
+            {
+                Position = cam.position,
+                Rotation = cam.rotation,
+                Fov = cam.GetComponent<UnityEngine.Camera>() ? cam.GetComponent<UnityEngine.Camera>().fieldOfView : 60f
+            };
+        }
     }
 }

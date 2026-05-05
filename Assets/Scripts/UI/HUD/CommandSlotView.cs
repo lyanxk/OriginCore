@@ -1,142 +1,146 @@
-using System;
+﻿using System;
 using TMPro;
+using Unit.UI;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class CommandSlotView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+namespace UI.HUD
 {
-    [SerializeField] Button button;
-    [SerializeField] Graphic backgroundGraphic;
-    [SerializeField] Image iconImage;
-    [SerializeField] TMP_Text nameText;
-    [SerializeField] TMP_Text hotkeyText;
-    [SerializeField] GameObject disabledMask;
-    [SerializeField] Image cooldownFill;
-
-    int _slotIndex;
-    bool _hasEntry;
-    CommandEntry _entry;
-
-    Action<int> _onClick;
-    Action<CommandEntry> _onHoverEnter;
-    Action _onHoverExit;
-
-    void Awake()
+    public class CommandSlotView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
-        if (button == null)
-            button = GetComponent<Button>();
+        [SerializeField] Button button;
+        [SerializeField] Graphic backgroundGraphic;
+        [SerializeField] Image iconImage;
+        [SerializeField] TMP_Text nameText;
+        [SerializeField] TMP_Text hotkeyText;
+        [SerializeField] GameObject disabledMask;
+        [SerializeField] Image cooldownFill;
 
-        if (backgroundGraphic == null && button != null)
-            backgroundGraphic = button.targetGraphic as Graphic;
+        int _slotIndex;
+        bool _hasEntry;
+        CommandEntry _entry;
 
-        if (button != null)
-            button.onClick.AddListener(HandleClicked);
-    }
+        Action<int> _onClick;
+        Action<CommandEntry> _onHoverEnter;
+        Action _onHoverExit;
 
-    void OnDestroy()
-    {
-        if (button != null)
-            button.onClick.RemoveListener(HandleClicked);
-    }
-
-    public void Bind(
-        int slotIndex,
-        bool hasEntry,
-        CommandEntry entry,
-        Action<int> onClick,
-        Action<CommandEntry> onHoverEnter,
-        Action onHoverExit)
-    {
-        _slotIndex = slotIndex;
-        _hasEntry = hasEntry;
-        _entry = entry;
-
-        _onClick = onClick;
-        _onHoverEnter = onHoverEnter;
-        _onHoverExit = onHoverExit;
-
-        ApplyVisual();
-    }
-
-    public void OnPointerEnter(PointerEventData eventData)
-    {
-        if (!_hasEntry) return;
-        _onHoverEnter?.Invoke(_entry);
-    }
-
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        if (!_hasEntry) return;
-        _onHoverExit?.Invoke();
-    }
-
-    void HandleClicked()
-    {
-        if (!_hasEntry) return;
-        _onClick?.Invoke(_slotIndex);
-    }
-
-    void ApplyVisual()
-    {
-        if (!_hasEntry)
+        void Awake()
         {
+            if (button == null)
+                button = GetComponent<Button>();
+
+            if (backgroundGraphic == null && button != null)
+                backgroundGraphic = button.targetGraphic as Graphic;
+
+            if (button != null)
+                button.onClick.AddListener(HandleClicked);
+        }
+
+        void OnDestroy()
+        {
+            if (button != null)
+                button.onClick.RemoveListener(HandleClicked);
+        }
+
+        public void Bind(
+            int slotIndex,
+            bool hasEntry,
+            CommandEntry entry,
+            Action<int> onClick,
+            Action<CommandEntry> onHoverEnter,
+            Action onHoverExit)
+        {
+            _slotIndex = slotIndex;
+            _hasEntry = hasEntry;
+            _entry = entry;
+
+            _onClick = onClick;
+            _onHoverEnter = onHoverEnter;
+            _onHoverExit = onHoverExit;
+
+            ApplyVisual();
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            if (!_hasEntry) return;
+            _onHoverEnter?.Invoke(_entry);
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            if (!_hasEntry) return;
+            _onHoverExit?.Invoke();
+        }
+
+        void HandleClicked()
+        {
+            if (!_hasEntry) return;
+            _onClick?.Invoke(_slotIndex);
+        }
+
+        void ApplyVisual()
+        {
+            if (!_hasEntry)
+            {
+                if (backgroundGraphic != null)
+                    backgroundGraphic.enabled = false;
+
+                if (iconImage != null)
+                {
+                    iconImage.sprite = null;
+                    iconImage.enabled = false;
+                }
+
+                if (nameText != null)
+                    nameText.text = string.Empty;
+
+                if (hotkeyText != null)
+                    hotkeyText.text = string.Empty;
+
+                if (disabledMask != null)
+                    disabledMask.SetActive(false);
+
+                if (cooldownFill != null)
+                {
+                    cooldownFill.gameObject.SetActive(false);
+                    cooldownFill.fillAmount = 0f;
+                }
+
+                if (button != null)
+                    button.interactable = false;
+
+                return;
+            }
+
             if (backgroundGraphic != null)
-                backgroundGraphic.enabled = false;
+                backgroundGraphic.enabled = true;
 
             if (iconImage != null)
             {
-                iconImage.sprite = null;
-                iconImage.enabled = false;
+                iconImage.sprite = _entry.Icon;
+                iconImage.enabled = _entry.Icon != null;
             }
 
             if (nameText != null)
-                nameText.text = string.Empty;
+                nameText.text = _entry.Name ?? string.Empty;
 
             if (hotkeyText != null)
-                hotkeyText.text = string.Empty;
+                hotkeyText.text = _entry.HotkeyText ?? string.Empty;
 
             if (disabledMask != null)
-                disabledMask.SetActive(false);
+                disabledMask.SetActive(!_entry.Enabled);
 
             if (cooldownFill != null)
             {
-                cooldownFill.gameObject.SetActive(false);
-                cooldownFill.fillAmount = 0f;
+                bool showCooldown = _entry.Cooldown01 > 0.001f;
+                cooldownFill.gameObject.SetActive(showCooldown);
+                cooldownFill.fillAmount = Mathf.Clamp01(_entry.Cooldown01);
             }
 
             if (button != null)
-                button.interactable = false;
-
-            return;
+                button.interactable = _entry.Enabled && _entry.Type != CommandEntryType.Passive;
         }
-
-        if (backgroundGraphic != null)
-            backgroundGraphic.enabled = true;
-
-        if (iconImage != null)
-        {
-            iconImage.sprite = _entry.Icon;
-            iconImage.enabled = _entry.Icon != null;
-        }
-
-        if (nameText != null)
-            nameText.text = _entry.Name ?? string.Empty;
-
-        if (hotkeyText != null)
-            hotkeyText.text = _entry.HotkeyText ?? string.Empty;
-
-        if (disabledMask != null)
-            disabledMask.SetActive(!_entry.Enabled);
-
-        if (cooldownFill != null)
-        {
-            bool showCooldown = _entry.Cooldown01 > 0.001f;
-            cooldownFill.gameObject.SetActive(showCooldown);
-            cooldownFill.fillAmount = Mathf.Clamp01(_entry.Cooldown01);
-        }
-
-        if (button != null)
-            button.interactable = _entry.Enabled && _entry.Type != CommandEntryType.Passive;
     }
 }

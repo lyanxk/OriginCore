@@ -316,6 +316,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 196564053}
+  - component: {fileID: 196564054}
   m_Layer: 5
   m_Name: HUD
   m_TagString: Untagged
@@ -338,6 +339,7 @@ RectTransform:
   - {fileID: 2121461278}
   - {fileID: 1001259257}
   - {fileID: 410781449}
+  - {fileID: 726789451}
   m_Father: {fileID: 93050586}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -345,6 +347,24 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &196564054
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 196564052}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41885fa2b8a799841a6a9276f8244271, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  anchoredPosition: {x: 16, y: -16}
+  fontSize: 20
+  lineSpacing: -8
+  textColor: {r: 1, g: 1, b: 1, a: 0.92}
+  backgroundColor: {r: 0, g: 0, b: 0, a: 0.48}
+  chineseFontAsset: {fileID: 0}
 --- !u!1 &250416761
 GameObject:
   m_ObjectHideFlags: 0
@@ -1590,6 +1610,85 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &726789450
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 726789451}
+  - component: {fileID: 726789453}
+  - component: {fileID: 726789452}
+  m_Layer: 5
+  m_Name: TestSceneTitle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &726789451
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 726789450}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 196564053}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 1}
+  m_AnchorMax: {x: 0.5, y: 1}
+  m_AnchoredPosition: {x: 0, y: -18}
+  m_SizeDelta: {x: 360, y: 56}
+  m_Pivot: {x: 0.5, y: 1}
+--- !u!114 &726789452
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 726789450}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.95}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_FontData:
+    m_Font: {fileID: 12800000, guid: d0dd01cb2f6351e4da3b325b29b97d0a, type: 3}
+    m_FontSize: 34
+    m_FontStyle: 0
+    m_BestFit: 0
+    m_MinSize: 10
+    m_MaxSize: 40
+    m_Alignment: 4
+    m_AlignByGeometry: 0
+    m_RichText: 1
+    m_HorizontalOverflow: 1
+    m_VerticalOverflow: 1
+    m_LineSpacing: 1
+  m_Text: "\u6D4B\u8BD5\u573A\u666F"
+--- !u!222 &726789453
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 726789450}
+  m_CullTransparentMesh: 1
 --- !u!1 &744958082
 GameObject:
   m_ObjectHideFlags: 0
@@ -1904,6 +2003,7 @@ MonoBehaviour:
   - rid: 7344946864006889472
   - rid: 7344946864006889473
   actFpsAbilitiesInitialized: 1
+  actTargetLockRange: 28
   references:
     version: 2
     RefIds:
@@ -1943,6 +2043,9 @@ MonoBehaviour:
         cooldown: 0
         damage: 50
         radius: 1
+        effectPrefab: {fileID: 608948225337376756, guid: 9490369af37b63543b805d465aedec62,
+          type: 3}
+        effectGroundOffset: 0.05
     - rid: 5414467457835597827
       type: {class: RtsCelestialSentenceAbility, ns: Unit.Ability, asm: Assembly-CSharp}
       data:
@@ -2121,6 +2224,8 @@ MonoBehaviour:
       data:
         baseDamage: 40
         weaponPrefab: {fileID: 1964992123789682074, guid: ae26cf103690daf4ebe0099a18825bbe,
+          type: 3}
+        uppercutPrefab: {fileID: 4108141837154674601, guid: 2fdab19773cf78746a0ba37430c13e7b,
           type: 3}
         initialized: 1
 --- !u!114 &883050558
@@ -3707,6 +3812,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: BaseUnit
+      objectReference: {fileID: 0}
+    - target: {fileID: 5624234258582364395, guid: 76494353aeec76946905ca31358ad48a,
+        type: 3}
+      propertyPath: maxHp
+      value: 1000
       objectReference: {fileID: 0}
     - target: {fileID: 5624234258582364395, guid: 76494353aeec76946905ca31358ad48a,
         type: 3}

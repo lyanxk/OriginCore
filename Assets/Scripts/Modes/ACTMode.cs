@@ -85,9 +85,23 @@
 
              Vector3 cameraForward = Quaternion.Euler(_pitch, _yaw, 0f) * Vector3.forward;
              Vector3 cameraOrigin = GetCameraPosition();
+             _hero?.SetWeaponAimContext(_unit.transform.position, cameraForward);
+
+             bool blocksModeAbilities = false;
+             bool blocksMovement = false;
+             bool blocksPrimaryAttack = false;
+             if (_hero != null)
+             {
+                 _hero.ProcessPriorityWeaponInput(
+                     intent,
+                     out blocksModeAbilities,
+                     out blocksMovement,
+                     out blocksPrimaryAttack);
+             }
 
              //角色技能先处理，Dash/Fly 需要在本帧移动和跳跃判断前更新角色状态。
-             _unit.AbilityRouter?.Process(intent, cameraForward, cameraOrigin);
+             if (!blocksModeAbilities)
+                 _unit.AbilityRouter?.Process(intent, cameraForward, cameraOrigin);
 
              //移动按视角yaw方向
              Quaternion yawRot = Quaternion.Euler(0f, _yaw, 0f);
@@ -96,17 +110,18 @@
              bool wantsRun = intent.Shift && !wantsCrouch && !_unit.IsFlightEnabled;
              _unit.SetCrouching(wantsCrouch);
              _unit.SetRunning(wantsRun && moveWorld.sqrMagnitude > 0.0001f);
-             _unit.MoveImmediate(moveWorld, _unit.GetDirectMoveSpeed(wantsRun, wantsCrouch));
+             if (!blocksMovement)
+                 _unit.MoveImmediate(moveWorld, _unit.GetDirectMoveSpeed(wantsRun, wantsCrouch));
         
              //跳跃
-             if (intent.Space && !_unit.IsFlightEnabled)
+             if (!blocksMovement && intent.Space && !_unit.IsFlightEnabled)
              {
                  _unit.Jump();
              }
 
              //角色朝向：跟随移动方向
              Vector3 planar = new Vector3(moveWorld.x, 0f, moveWorld.z);
-             if (planar.sqrMagnitude > 0.0001f)
+             if (!blocksMovement && planar.sqrMagnitude > 0.0001f)
              {
                  float facingYaw = Quaternion.LookRotation(planar, Vector3.up).eulerAngles.y;
                  _unit.SetYaw(facingYaw);
@@ -114,10 +129,11 @@
 
              //当前武器自己读取输入，确保 Charge Shot 使用本帧移动后的枪口位置。
              _hero?.SetWeaponAimContext(_unit.transform.position, cameraForward);
-             _hero?.ProcessActiveWeaponInput(intent);
+             if (!blocksMovement)
+                 _hero?.ProcessActiveWeaponInput(intent);
 
              // 按住左键：沿单位面朝方向攻击
-             if (intent.LeftHeld)
+             if (intent.LeftHeld && !blocksPrimaryAttack)
              {
                  if (_hero != null)
                      _hero.TryUseCurrentWeaponPrimary(cameraForward);

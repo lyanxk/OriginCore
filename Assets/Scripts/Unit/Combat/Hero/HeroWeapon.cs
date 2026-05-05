@@ -65,6 +65,42 @@ namespace Unit.Combat.Hero
             }
         }
 
+        public virtual bool ProcessPriorityInput(
+            HeroBase hero,
+            UnitCombat combat,
+            InputIntent intent,
+            out bool blocksModeAbilities,
+            out bool blocksMovement,
+            out bool blocksPrimaryAttack)
+        {
+            blocksModeAbilities = false;
+            blocksMovement = false;
+            blocksPrimaryAttack = false;
+
+            EnsureAbilityInstances();
+            for (int i = 0; i < _abilities.Length; i++)
+            {
+                WeaponAbility ability = _abilities[i];
+                if (ability == null || !ability.IsEnabled)
+                    continue;
+
+                ability.Bind(this, hero, combat);
+                if (!ability.ProcessPriorityInput(
+                        intent,
+                        out bool abilityBlocksModeAbilities,
+                        out bool abilityBlocksMovement,
+                        out bool abilityBlocksPrimaryAttack))
+                    continue;
+
+                blocksModeAbilities |= abilityBlocksModeAbilities;
+                blocksMovement |= abilityBlocksMovement;
+                blocksPrimaryAttack |= abilityBlocksPrimaryAttack;
+                return true;
+            }
+
+            return false;
+        }
+
         public virtual void ResetAbilityState()
         {
             EnsureAbilityInstances();

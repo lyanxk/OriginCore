@@ -9,6 +9,10 @@ namespace Unit.Combat
     [DisallowMultipleComponent]
     public class UnitCombat : MonoBehaviour
     {
+        const float HitFallReductionDuration = 0.45f;
+        const float HitFallReductionMaxFallSpeed = 2f;
+        const float HitFallReductionGravityMultiplier = 0.15f;
+
         public enum AttackPattern
         {
             MeleeSphere = 0
@@ -281,10 +285,28 @@ namespace Unit.Combat
         {
             if (targetHealth == null) return false;
             if (amount <= 0f) return false;
+            if (targetHealth.transform.root == transform.root) return false;
+            if (!CanAttackHealth(targetHealth)) return false;
 
             targetHealth.TakeDamage(amount);
             OnDamageApplied?.Invoke(targetHealth, amount);
+            ApplyHitFallReduction(targetHealth);
             return true;
+        }
+
+        void ApplyHitFallReduction(Health targetHealth)
+        {
+            if (!CanAttackHealth(targetHealth))
+                return;
+
+            UnitBase targetUnit = targetHealth.GetComponent<UnitBase>() ?? targetHealth.GetComponentInParent<UnitBase>();
+            if (targetUnit == null)
+                return;
+
+            targetUnit.ApplyFallSpeedReduction(
+                HitFallReductionDuration,
+                HitFallReductionMaxFallSpeed,
+                HitFallReductionGravityMultiplier);
         }
 
         bool TryAttackInternal(Vector3 direction, Transform preferredTarget, float? damageOverride)

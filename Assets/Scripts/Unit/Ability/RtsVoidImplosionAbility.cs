@@ -21,6 +21,11 @@ namespace Unit.Ability
         [Min(0.1f)]
         [SerializeField] float radius = 1f;
 
+        [Header("VFX")]
+        [SerializeField] GameObject effectPrefab;
+        [Min(0f)]
+        [SerializeField] float effectGroundOffset = 0.05f;
+
         float _nextReadyTime;
 
         public override string AbilityId => abilityId;
@@ -48,10 +53,36 @@ namespace Unit.Ability
                 return false;
 
             DamageHostilesInRadius(worldPoint, radius, damage);
+            SpawnEffect(worldPoint);
             if (cooldown > 0f)
                 _nextReadyTime = Time.time + cooldown;
 
             return true;
+        }
+
+        void SpawnEffect(Vector3 worldPoint)
+        {
+            if (effectPrefab == null)
+                return;
+
+            Vector3 spawnPoint = worldPoint + Vector3.up * effectGroundOffset;
+            GameObject effect = UnityEngine.Object.Instantiate(effectPrefab, spawnPoint, Quaternion.identity);
+            ParticleSystem[] particles = effect.GetComponentsInChildren<ParticleSystem>(true);
+            float lifetime = 0f;
+
+            for (int i = 0; i < particles.Length; i++)
+            {
+                ParticleSystem.MainModule main = particles[i].main;
+                float particleLifetime = main.duration;
+                if (main.startLifetime.mode == ParticleSystemCurveMode.TwoConstants)
+                    particleLifetime += main.startLifetime.constantMax;
+                else
+                    particleLifetime += main.startLifetime.constant;
+
+                lifetime = Mathf.Max(lifetime, particleLifetime);
+            }
+
+            UnityEngine.Object.Destroy(effect, Mathf.Max(1f, lifetime + 0.25f));
         }
     }
 }

@@ -9,6 +9,10 @@
   {
       public class FpsMode : IControlMode
       {
+          const float AimFallReductionDuration = 0.12f;
+          const float AimFallReductionMaxFallSpeed = 2f;
+          const float AimFallReductionGravityMultiplier = 0.15f;
+
           public string Name => "FPS";
 
           readonly UnitBase _unit;
@@ -69,6 +73,13 @@
               _pitch -= lookY;
               _pitch = Mathf.Clamp(_pitch, _pitchMin, _pitchMax);
               _isZooming = intent.RightHeld;
+              if (_isZooming)
+              {
+                  _unit.ApplyFallSpeedReduction(
+                      AimFallReductionDuration,
+                      AimFallReductionMaxFallSpeed,
+                      AimFallReductionGravityMultiplier);
+              }
 
               _unit.SetYaw(_yaw);
 
@@ -109,8 +120,13 @@
               {
                   if (_hero != null)
                       _hero.TryUseCurrentWeaponPrimary(fireDir, fireOrigin);
-                  else
-                      _unit.Combat?.TryUsePrimaryInDirection(fireDir);
+                  else if (_unit.Combat != null && _unit.Combat.TryUsePrimaryInDirection(fireDir))
+                  {
+                      _unit.ApplyFallSpeedReduction(
+                          AimFallReductionDuration,
+                          AimFallReductionMaxFallSpeed,
+                          AimFallReductionGravityMultiplier);
+                  }
               }
           }
 

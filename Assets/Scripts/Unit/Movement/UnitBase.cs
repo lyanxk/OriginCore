@@ -69,6 +69,10 @@ namespace Unit.Movement
         float _flightVerticalSpeed;
         bool _isCrouching;
         bool _isRunning;
+        float _fallSpeedReductionTimer;
+        float _fallSpeedReductionMaxFallSpeed = 2f;
+        float _fallSpeedReductionGravityMultiplier = 0.15f;
+        float _collisionDisabledTimer;
 
         readonly RaycastHit[] _groundHits = new RaycastHit[8];
         readonly Dictionary<object, float> _moveSpeedMultipliers = new Dictionary<object, float>(4);
@@ -113,6 +117,53 @@ namespace Unit.Movement
             _hasPlanarOverride = true;
             _planarOverrideVel = planarVel;
             _planarOverrideTimer = Mathf.Max(_planarOverrideTimer, duration);
+        }
+
+        public void Launch(Vector3 planarVelocity, float verticalSpeed, float planarDuration)
+        {
+            if (_flightEnabled)
+                SetFlightEnabled(false);
+
+            CancelPathing();
+
+            if (planarDuration > 0f && planarVelocity.sqrMagnitude > 1e-6f)
+                OverridePlanarVelocity(planarVelocity, planarDuration);
+
+            if (verticalSpeed > 0f)
+                _verticalVel.y = Mathf.Max(_verticalVel.y, verticalSpeed);
+        }
+
+        public void ApplyFallSpeedReduction(float duration, float maxFallSpeed, float gravityMultiplier)
+        {
+            if (duration <= 0f)
+                return;
+
+            _fallSpeedReductionTimer = Mathf.Max(_fallSpeedReductionTimer, duration);
+            _fallSpeedReductionMaxFallSpeed = Mathf.Max(0.01f, maxFallSpeed);
+            _fallSpeedReductionGravityMultiplier = Mathf.Clamp01(gravityMultiplier);
+
+            float maxDownwardVelocity = -_fallSpeedReductionMaxFallSpeed;
+            if (_verticalVel.y < maxDownwardVelocity)
+                _verticalVel.y = maxDownwardVelocity;
+        }
+
+        public void DisableCharacterCollision(float duration)
+        {
+            if (duration <= 0f)
+                return;
+
+            _collisionDisabledTimer = Mathf.Max(_collisionDisabledTimer, duration);
+            SetCharacterControllerEnabled(false);
+        }
+
+        public void MoveIgnoringCollision(Vector3 worldDelta)
+        {
+            transform.position += worldDelta;
+            if (Time.deltaTime <= 0f)
+                return;
+
+            _lastPlanarVelocity = worldDelta / Time.deltaTime;
+            _lastPlanarVelocity.y = 0f;
         }
 
         public void SetMoveSpeedMultiplier(object source, float multiplier)
@@ -261,6 +312,8 @@ namespace Unit.Movement
             float dt = Time.deltaTime;
             _illegalRecoverTimer = Mathf.Max(0f, _illegalRecoverTimer - dt);
             _navMeshHardSnapTimer = Mathf.Max(0f, _navMeshHardSnapTimer - dt);
+            _fallSpeedReductionTimer = Mathf.Max(0f, _fallSpeedReductionTimer - dt);
+            TickCollisionDisable(dt);
 
             ApplyMovement(GetPlannedVelocity(dt), dt);
         }
@@ -281,8 +334,10 @@ namespace Unit.Movement
             Vector3 localCorrection = _flightEnabled
                 ? Vector3.zero
                 : BuildLocalCorrectionVelocity(dt, plannedVelocity);
-            StepMovement(plannedVelocity + localCorrection, dt);
+            StepMovement(plannedVelocity + localCorrection, plannedVelocity, dt);
             if (_flightEnabled)
+                return;
+            if (_collisionDisabledTimer > 0f)
                 return;
 
             TryRecoverToLegalPosition();
@@ -309,7 +364,7 @@ namespace Unit.Movement
             return GetPathMoveDir() * clickMoveSpeed * _cachedMoveSpeedMultiplier;
         }
 
-        void StepMovement(Vector3 planarVelocity, float dt)
+        void StepMovement(Vector3 planarVelocity, Vector3 facingVelocity, float dt)
         {
             if (_hasPlanarOverride)
             {
@@ -326,9 +381,9 @@ namespace Unit.Movement
             _lastPlanarVelocity = planarVelocity;
             _lastPlanarVelocity.y = 0f;
 
-            FaceMovementDirection(planarVelocity);
+            FaceMovementDirection(facingVelocity);
 
-            if (_cc == null)
+            if (_cc == null || !_cc.enabled)
                 return;
 
             if (_flightEnabled)
@@ -342,9 +397,13 @@ namespace Unit.Movement
             }
             else
             {
-                _verticalVel.y += gravity * dt;
-                if (_verticalVel.y < terminalVel)
-                    _verticalVel.y = terminalVel;
+                bool isFallSpeedReduced = _fallSpeedReductionTimer > 0f;
+                float gravityMultiplier = isFallSpeedReduced ? _fallSpeedReductionGravityMultiplier : 1f;
+                float maxFallSpeed = isFallSpeedReduced ? -_fallSpeedReductionMaxFallSpeed : terminalVel;
+
+                _verticalVel.y += gravity * gravityMultiplier * dt;
+                if (_verticalVel.y < maxFallSpeed)
+                    _verticalVel.y = maxFallSpeed;
             }
 
             Vector3 move = (planarVelocity + _verticalVel) * dt;
@@ -596,6 +655,22 @@ namespace Unit.Movement
                 return;
 
             occupancyRadius = Mathf.Max(occupancyRadius, _cc.radius);
+        }
+
+        void TickCollisionDisable(float dt)
+        {
+            if (_collisionDisabledTimer <= 0f)
+                return;
+
+            _collisionDisabledTimer = Mathf.Max(0f, _collisionDisabledTimer - dt);
+            if (_collisionDisabledTimer <= 0f)
+                SetCharacterControllerEnabled(true);
+        }
+
+        void SetCharacterControllerEnabled(bool enabled)
+        {
+            if (_cc != null && _cc.enabled != enabled)
+                _cc.enabled = enabled;
         }
         
         bool CheckGround(float probeDistance)

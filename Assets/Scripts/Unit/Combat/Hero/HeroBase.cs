@@ -12,6 +12,10 @@ namespace Unit.Combat.Hero
     [RequireComponent(typeof(UnitCombat))]
     public sealed class HeroBase : MonoBehaviour
     {
+        const float AttackFallReductionDuration = 0.45f;
+        const float AttackFallReductionMaxFallSpeed = 2f;
+        const float AttackFallReductionGravityMultiplier = 0.15f;
+
         public enum PerspectiveOption
         {
             None = 0,
@@ -127,6 +131,26 @@ namespace Unit.Combat.Hero
             CurrentWeapon?.ProcessInput(this, combat, intent);
         }
 
+        public bool ProcessPriorityWeaponInput(
+            InputIntent intent,
+            out bool blocksModeAbilities,
+            out bool blocksMovement,
+            out bool blocksPrimaryAttack)
+        {
+            blocksModeAbilities = false;
+            blocksMovement = false;
+            blocksPrimaryAttack = false;
+
+            HeroWeapon weapon = CurrentWeapon;
+            return weapon != null && weapon.ProcessPriorityInput(
+                this,
+                combat,
+                intent,
+                out blocksModeAbilities,
+                out blocksMovement,
+                out blocksPrimaryAttack);
+        }
+
         public void SetWeaponAimContext(Vector3 origin, Vector3 direction)
         {
             _weaponAimOrigin = origin;
@@ -163,13 +187,13 @@ namespace Unit.Combat.Hero
 
             HeroWeapon weapon = CurrentWeapon;
             if (weapon == null)
-                return combat.TryUsePrimaryInDirection(direction);
+                return TryUseCombatPrimaryInDirectionWithFallReduction(direction, null);
 
             if (weapon.RangeType == HeroWeaponRangeType.Melee)
-                return combat.TryUsePrimaryInDirection(direction, weapon.BaseDamage);
+                return TryUseCombatPrimaryInDirectionWithFallReduction(direction, weapon.BaseDamage);
 
             if (weapon is RevolverWeapon revolver)
-                return TryFireRevolver(revolver, direction, origin);
+                return ApplyPrimaryAttackFallReductionIfUsed(TryFireRevolver(revolver, direction, origin));
 
             return false;
         }
@@ -181,10 +205,10 @@ namespace Unit.Combat.Hero
 
             HeroWeapon weapon = CurrentWeapon;
             if (weapon == null)
-                return combat.TryUsePrimaryOnTarget(target);
+                return TryUseCombatPrimaryOnTargetWithFallReduction(target, null);
 
             if (weapon.RangeType == HeroWeaponRangeType.Melee)
-                return combat.TryUsePrimaryOnTarget(target, weapon.BaseDamage);
+                return TryUseCombatPrimaryOnTargetWithFallReduction(target, weapon.BaseDamage);
 
             if (target == null)
                 return false;
@@ -195,7 +219,7 @@ namespace Unit.Combat.Hero
                 direction = transform.forward;
 
             if (weapon is RevolverWeapon revolver)
-                return TryFireRevolver(revolver, direction, origin);
+                return ApplyPrimaryAttackFallReductionIfUsed(TryFireRevolver(revolver, direction, origin));
 
             return false;
         }
@@ -205,6 +229,12 @@ namespace Unit.Combat.Hero
             Vector3 fallbackOrigin = _hasWeaponAimOrigin ? _weaponAimOrigin : GetAttackOrigin();
             Vector3 fallbackDirection = _hasWeaponAimDirection ? _weaponAimDirection : transform.forward;
             ResolveCurrentWeaponShotPose(fallbackOrigin, fallbackDirection, out origin, out direction);
+        }
+
+        public bool TryGetRawWeaponAimDirection(out Vector3 direction)
+        {
+            direction = _hasWeaponAimDirection ? _weaponAimDirection : transform.forward;
+            return direction.sqrMagnitude > 1e-6f;
         }
 
         public bool TryGetActLockedTargetAimPoint(out Vector3 targetPoint)
@@ -325,6 +355,39 @@ namespace Unit.Combat.Hero
                 projectile.Initialize(combat, shotDirection, weapon.BaseDamage);
 
             return true;
+        }
+
+        bool TryUseCombatPrimaryInDirectionWithFallReduction(Vector3 direction, float? damageOverride)
+        {
+            bool wasReady = combat != null && combat.IsReady;
+            bool didHit = damageOverride.HasValue
+                ? combat.TryUsePrimaryInDirection(direction, damageOverride.Value)
+                : combat.TryUsePrimaryInDirection(direction);
+
+            return ApplyPrimaryAttackFallReductionIfUsed(didHit || (wasReady && combat.consumeCooldownOnMiss));
+        }
+
+        bool TryUseCombatPrimaryOnTargetWithFallReduction(Transform target, float? damageOverride)
+        {
+            bool wasReady = combat != null && combat.IsReady;
+            bool didHit = damageOverride.HasValue
+                ? combat.TryUsePrimaryOnTarget(target, damageOverride.Value)
+                : combat.TryUsePrimaryOnTarget(target);
+
+            return ApplyPrimaryAttackFallReductionIfUsed(didHit || (wasReady && combat.consumeCooldownOnMiss));
+        }
+
+        bool ApplyPrimaryAttackFallReductionIfUsed(bool used)
+        {
+            if (used && motor != null)
+            {
+                motor.ApplyFallSpeedReduction(
+                    AttackFallReductionDuration,
+                    AttackFallReductionMaxFallSpeed,
+                    AttackFallReductionGravityMultiplier);
+            }
+
+            return used;
         }
 
         void ResolveCurrentWeaponShotPose(

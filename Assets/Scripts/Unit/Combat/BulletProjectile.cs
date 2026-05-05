@@ -1,4 +1,5 @@
 using Gameplay;
+using Unit.Movement;
 using UnityEngine;
 
 namespace Unit.Combat
@@ -22,6 +23,12 @@ namespace Unit.Combat
         [SerializeField] GameObject hitEffectPrefab;
         [Min(0f)] [SerializeField] float hitEffectSurfaceOffset = 0.02f;
 
+        [Header("Launch")]
+        [SerializeField] bool launchOnHit;
+        [Min(0f)] [SerializeField] float launchVerticalSpeed = 6f;
+        [Min(0f)] [SerializeField] float launchPlanarSpeed = 1.5f;
+        [Min(0f)] [SerializeField] float launchPlanarDuration = 0.18f;
+
         readonly RaycastHit[] _hitBuffer = new RaycastHit[8];
 
         UnitCombat _sourceCombat;
@@ -36,6 +43,19 @@ namespace Unit.Combat
         public float Damage => damage;
         public float Speed => speed;
         public TeamAffiliation SourceTeam => _sourceTeam;
+
+        public void ConfigureCollisionRadius(float radius)
+        {
+            collisionRadius = Mathf.Max(0f, radius);
+        }
+
+        public void ConfigureLaunch(float verticalSpeed, float planarSpeed, float planarDuration)
+        {
+            launchVerticalSpeed = Mathf.Max(0f, verticalSpeed);
+            launchPlanarSpeed = Mathf.Max(0f, planarSpeed);
+            launchPlanarDuration = Mathf.Max(0f, planarDuration);
+            launchOnHit = launchVerticalSpeed > 0f || launchPlanarSpeed > 0f;
+        }
 
         void Awake()
         {
@@ -280,10 +300,45 @@ namespace Unit.Combat
             if (_sourceTeam == null || targetTeam == null || !_sourceTeam.IsHostileTo(targetTeam))
                 return;
 
-            if (_sourceCombat != null)
-                _sourceCombat.TryApplyDamage(health, damage);
-            else
+            bool damaged = _sourceCombat != null
+                ? _sourceCombat.TryApplyDamage(health, damage)
+                : true;
+
+            if (_sourceCombat == null)
                 health.TakeDamage(damage);
+
+            if (damaged)
+                TryLaunch(health);
+        }
+
+        void TryLaunch(Health health)
+        {
+            if (!launchOnHit || health == null)
+                return;
+
+            UnitBase targetUnit = health.GetComponent<UnitBase>() ?? health.GetComponentInParent<UnitBase>();
+            if (targetUnit != null)
+            {
+                Vector3 planarVelocity = _direction;
+                planarVelocity.y = 0f;
+                if (planarVelocity.sqrMagnitude > 1e-6f)
+                    planarVelocity = planarVelocity.normalized * launchPlanarSpeed;
+
+                targetUnit.Launch(planarVelocity, launchVerticalSpeed, launchPlanarDuration);
+                return;
+            }
+
+            Rigidbody rb = health.GetComponent<Rigidbody>() ?? health.GetComponentInParent<Rigidbody>();
+            if (rb == null)
+                return;
+
+            Vector3 impulse = Vector3.up * launchVerticalSpeed;
+            Vector3 planarImpulse = _direction;
+            planarImpulse.y = 0f;
+            if (planarImpulse.sqrMagnitude > 1e-6f)
+                impulse += planarImpulse.normalized * launchPlanarSpeed;
+
+            rb.AddForce(impulse, ForceMode.VelocityChange);
         }
 
         void SpawnHitEffect(Vector3 point, Vector3 normal)

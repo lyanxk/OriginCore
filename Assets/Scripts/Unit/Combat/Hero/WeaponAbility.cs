@@ -40,6 +40,14 @@ namespace Unit.Combat.Hero
         {
         }
 
+        public virtual bool ProcessPriorityInput(InputIntent intent, out bool blocksModeAbilities, out bool blocksMovement, out bool blocksPrimaryAttack)
+        {
+            blocksModeAbilities = false;
+            blocksMovement = false;
+            blocksPrimaryAttack = false;
+            return false;
+        }
+
         public virtual void ResetState()
         {
         }

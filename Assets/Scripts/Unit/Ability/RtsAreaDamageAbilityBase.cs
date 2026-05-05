@@ -65,9 +65,6 @@ namespace Unit.Ability
             if (!Health.TryResolve(hitComponent, out Health targetHealth))
                 return null;
 
-            if (targetHealth == null)
-                return null;
-
             if (CachedTransform != null && targetHealth.transform.root == CachedTransform.root)
                 return null;
 
@@ -76,11 +73,8 @@ namespace Unit.Ability
 
         bool IsHostileTarget(Health targetHealth)
         {
-            if (targetHealth == null)
-                return false;
-
             TeamAffiliation ownerTeam = TeamAffiliation;
-            TeamAffiliation targetTeam = targetHealth.TeamAffiliation;
+            TeamAffiliation targetTeam = targetHealth != null ? targetHealth.TeamAffiliation : null;
             if (ownerTeam != null && targetTeam != null)
                 return ownerTeam.IsHostileTo(targetTeam);
 
@@ -107,11 +101,7 @@ namespace Unit.Ability
             if (source == null)
                 return null;
 
-            Selectable selectable = source.GetComponent<Selectable>();
-            if (selectable != null)
-                return selectable;
-
-            return source.GetComponentInParent<Selectable>();
+            return source.GetComponent<Selectable>() ?? source.GetComponentInParent<Selectable>();
         }
     }
 }

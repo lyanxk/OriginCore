@@ -1903,7 +1903,6 @@ MonoBehaviour:
   actFpsAbilities:
   - rid: 7344946864006889472
   - rid: 7344946864006889473
-  - rid: 7344946864006889474
   actFpsAbilitiesInitialized: 1
   references:
     version: 2
@@ -1976,29 +1975,6 @@ MonoBehaviour:
           Shift descends.
         doubleTapWindow: 0.3
         verticalSpeed: 6
-    - rid: 7344946864006889474
-      type: {class: ChargedShotAbility, ns: Unit.Ability, asm: Assembly-CSharp}
-      data:
-        abilityId: ability.act.chargedShot
-        displayName: Charged Shot
-        icon: {fileID: 0}
-        hotkeyText: Hold RMB
-        tooltip: Hold right mouse to charge. Release to fire. Uses the ACT lock-on target
-          when available.
-        maxChargeLevel: 3
-        secondsPerChargeLevel: 2
-        range: 28
-        baseDamage: 20
-        projectilePrefab: {fileID: 8275730910550496895, guid: f8569e0a6c357e04d8a93f63d9c3e461,
-          type: 3}
-        projectileHitMask:
-          serializedVersion: 2
-          m_Bits: 4294967295
-        projectileSpeed: 28
-        spawnForwardOffset: 0.25
-        projectileSpreadAngle: 6
-        hitEffectPrefab: {fileID: 6735494077588279373, guid: a23fa06e0ab2ab54ebbf6f0dee1cf059,
-          type: 3}
 --- !u!114 &883050551
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2124,6 +2100,7 @@ MonoBehaviour:
   spawnWeaponVisuals: 1
   weaponQueue:
   - rid: 6215832553266388992
+  - rid: 6215832553266388993
   activeWeaponSlot: 0
   references:
     version: 2
@@ -2137,6 +2114,13 @@ MonoBehaviour:
         projectilePrefab: {fileID: 8275730910550496895, guid: f8569e0a6c357e04d8a93f63d9c3e461,
           type: 3}
         hitEffectPrefab: {fileID: 6735494077588279373, guid: a23fa06e0ab2ab54ebbf6f0dee1cf059,
+          type: 3}
+        initialized: 1
+    - rid: 6215832553266388993
+      type: {class: SwordWeapon, ns: Unit.Combat.Hero, asm: Assembly-CSharp}
+      data:
+        baseDamage: 40
+        weaponPrefab: {fileID: 1964992123789682074, guid: ae26cf103690daf4ebe0099a18825bbe,
           type: 3}
         initialized: 1
 --- !u!114 &883050558

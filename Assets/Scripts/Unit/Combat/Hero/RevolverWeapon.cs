@@ -6,8 +6,6 @@ namespace Unit.Combat.Hero
     [Serializable]
     public sealed class RevolverWeapon : HeroWeapon
     {
-        const string ChargedShotAbilityId = "ability.act.chargedShot";
-
         [SerializeField] GameObject weaponPrefab;
         [SerializeField] GameObject projectilePrefab;
         [SerializeField] GameObject hitEffectPrefab;
@@ -19,18 +17,26 @@ namespace Unit.Combat.Hero
         public GameObject ProjectilePrefab => projectilePrefab;
         public GameObject HitEffectPrefab => hitEffectPrefab;
 
-        public override bool SupportsAbility(string abilityId)
+        public override void Normalize()
         {
-            return string.Equals(abilityId, ChargedShotAbilityId, StringComparison.OrdinalIgnoreCase);
+            base.Normalize();
+            EnsureInitialized();
         }
 
         void EnsureInitialized()
         {
-            if (initialized)
-                return;
+            if (!initialized)
+                SetDefaultBaseDamage(20f);
 
-            SetDefaultBaseDamage(20f);
             initialized = true;
+        }
+
+        protected override WeaponAbility[] CreateAbilities()
+        {
+            return new WeaponAbility[]
+            {
+                new ChargeShotWeaponAbility()
+            };
         }
 
         public RevolverWeapon()

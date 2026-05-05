@@ -40,6 +40,10 @@ namespace Unit.Combat.Hero
         Transform _target;
         GameObject _weaponVisualInstance;
         float _scanTimer;
+        Vector3 _weaponAimOrigin;
+        Vector3 _weaponAimDirection = Vector3.forward;
+        bool _hasWeaponAimOrigin;
+        bool _hasWeaponAimDirection;
 
         public bool HasThirdPersonView =>
             perspectiveOption == PerspectiveOption.ThirdPersonOnly ||
@@ -71,6 +75,7 @@ namespace Unit.Combat.Hero
 
         void OnDisable()
         {
+            ResetCurrentWeaponAbilityState();
             ClearWeaponVisual();
         }
 
@@ -106,15 +111,32 @@ namespace Unit.Combat.Hero
                 return;
 
             FaceTarget(_target.position);
-            combat.TryUsePrimaryOnTarget(_target);
+            TryUseCurrentWeaponPrimaryOnTarget(_target);
         }
 
-        public void ProcessWeaponInput(InputIntent intent)
+        public void ProcessWeaponSwitchInput(InputIntent intent)
         {
             if (intent.CommandQ)
                 SwitchWeapon(-1);
             else if (intent.CommandE)
                 SwitchWeapon(1);
+        }
+
+        public void ProcessActiveWeaponInput(InputIntent intent)
+        {
+            CurrentWeapon?.ProcessInput(this, combat, intent);
+        }
+
+        public void SetWeaponAimContext(Vector3 origin, Vector3 direction)
+        {
+            _weaponAimOrigin = origin;
+            _hasWeaponAimOrigin = true;
+
+            if (direction.sqrMagnitude <= 1e-6f)
+                return;
+
+            _weaponAimDirection = direction.normalized;
+            _hasWeaponAimDirection = true;
         }
 
         public bool CurrentWeaponSupportsAbility(string abilityId)
@@ -140,13 +162,63 @@ namespace Unit.Combat.Hero
                 return false;
 
             HeroWeapon weapon = CurrentWeapon;
-            if (weapon == null || weapon.RangeType == HeroWeaponRangeType.Melee)
+            if (weapon == null)
                 return combat.TryUsePrimaryInDirection(direction);
+
+            if (weapon.RangeType == HeroWeaponRangeType.Melee)
+                return combat.TryUsePrimaryInDirection(direction, weapon.BaseDamage);
 
             if (weapon is RevolverWeapon revolver)
                 return TryFireRevolver(revolver, direction, origin);
 
             return false;
+        }
+
+        public bool TryUseCurrentWeaponPrimaryOnTarget(Transform target)
+        {
+            if (combat == null)
+                return false;
+
+            HeroWeapon weapon = CurrentWeapon;
+            if (weapon == null)
+                return combat.TryUsePrimaryOnTarget(target);
+
+            if (weapon.RangeType == HeroWeaponRangeType.Melee)
+                return combat.TryUsePrimaryOnTarget(target, weapon.BaseDamage);
+
+            if (target == null)
+                return false;
+
+            Vector3 origin = GetAttackOrigin();
+            Vector3 direction = target.position - origin;
+            if (direction.sqrMagnitude <= 1e-6f)
+                direction = transform.forward;
+
+            if (weapon is RevolverWeapon revolver)
+                return TryFireRevolver(revolver, direction, origin);
+
+            return false;
+        }
+
+        public void GetCurrentWeaponShotPose(out Vector3 origin, out Vector3 direction)
+        {
+            Vector3 fallbackOrigin = _hasWeaponAimOrigin ? _weaponAimOrigin : GetAttackOrigin();
+            Vector3 fallbackDirection = _hasWeaponAimDirection ? _weaponAimDirection : transform.forward;
+            ResolveCurrentWeaponShotPose(fallbackOrigin, fallbackDirection, out origin, out direction);
+        }
+
+        public bool TryGetActLockedTargetAimPoint(out Vector3 targetPoint)
+        {
+            targetPoint = Vector3.zero;
+            Transform target = motor != null && motor.AbilityRouter != null
+                ? motor.AbilityRouter.ActLockedTarget
+                : null;
+
+            if (target == null)
+                return false;
+
+            targetPoint = ResolveTargetAimPoint(target);
+            return true;
         }
 
         public void SwitchWeapon(int direction)
@@ -168,12 +240,14 @@ namespace Unit.Combat.Hero
                 if (!IsValidWeaponSlot(slot))
                     continue;
 
+                ResetCurrentWeaponAbilityState();
                 activeWeaponSlot = slot;
                 ClearTarget();
                 RefreshWeaponVisual();
                 return;
             }
 
+            ResetCurrentWeaponAbilityState();
             activeWeaponSlot = 0;
             RefreshWeaponVisual();
         }
@@ -234,8 +308,9 @@ namespace Unit.Combat.Hero
             if (!combat.TryConsumePrimaryCooldown())
                 return false;
 
-            Vector3 shotDirection = ResolveShotDirection(direction);
-            Vector3 spawnPosition = origin + shotDirection * 0.25f;
+            ResolveCurrentWeaponShotPose(origin, direction, out Vector3 shotOrigin, out Vector3 shotDirection);
+
+            Vector3 spawnPosition = shotOrigin + shotDirection * 0.05f;
             GameObject projectileObject = Instantiate(
                 weapon.ProjectilePrefab,
                 spawnPosition,
@@ -250,6 +325,99 @@ namespace Unit.Combat.Hero
                 projectile.Initialize(combat, shotDirection, weapon.BaseDamage);
 
             return true;
+        }
+
+        void ResolveCurrentWeaponShotPose(
+            Vector3 fallbackOrigin,
+            Vector3 fallbackDirection,
+            out Vector3 origin,
+            out Vector3 direction)
+        {
+            string modeName = ControlModeManager.Instance != null
+                ? ControlModeManager.Instance.CurrentModeName
+                : string.Empty;
+
+            if (string.Equals(modeName, "FPS", StringComparison.OrdinalIgnoreCase))
+            {
+                origin = fallbackOrigin;
+                direction = ResolveShotDirection(fallbackDirection);
+                return;
+            }
+
+            if (string.Equals(modeName, "ACT", StringComparison.OrdinalIgnoreCase))
+            {
+                Transform fireTransform = ResolveCurrentWeaponFireTransform();
+                origin = fireTransform != null ? fireTransform.position : fallbackOrigin;
+                Transform lockedTarget = motor != null && motor.AbilityRouter != null
+                    ? motor.AbilityRouter.ActLockedTarget
+                    : null;
+
+                if (lockedTarget != null)
+                {
+                    Vector3 toTarget = ResolveTargetAimPoint(lockedTarget) - origin;
+                    if (toTarget.sqrMagnitude > 1e-6f)
+                    {
+                        direction = toTarget.normalized;
+                        return;
+                    }
+                }
+
+                direction = ResolveShotDirection(fallbackDirection);
+                return;
+            }
+
+            Transform defaultFireTransform = ResolveCurrentWeaponFireTransform();
+            origin = defaultFireTransform != null ? defaultFireTransform.position : fallbackOrigin;
+            direction = ResolveShotDirection(fallbackDirection);
+        }
+
+        Transform ResolveCurrentWeaponFireTransform()
+        {
+            if (_weaponVisualInstance != null)
+            {
+                Transform muzzle = FindNamedMuzzleTransform(_weaponVisualInstance.transform);
+                return muzzle != null ? muzzle : _weaponVisualInstance.transform;
+            }
+
+            return weaponSocket;
+        }
+
+        static Transform FindNamedMuzzleTransform(Transform root)
+        {
+            if (root == null)
+                return null;
+
+            Transform[] transforms = root.GetComponentsInChildren<Transform>(true);
+            for (int i = 0; i < transforms.Length; i++)
+            {
+                Transform candidate = transforms[i];
+                if (candidate == null)
+                    continue;
+
+                string candidateName = candidate.name;
+                if (string.IsNullOrWhiteSpace(candidateName))
+                    continue;
+
+                if (candidateName.IndexOf("muzzle", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    candidateName.IndexOf("firepoint", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    candidateName.IndexOf("barrel", StringComparison.OrdinalIgnoreCase) >= 0)
+                    return candidate;
+            }
+
+            return null;
+        }
+
+        static Vector3 ResolveTargetAimPoint(Transform target)
+        {
+            Collider[] colliders = target.GetComponentsInChildren<Collider>(true);
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                Collider candidate = colliders[i];
+                if (candidate.enabled)
+                    return candidate.bounds.center;
+            }
+
+            return target.position;
         }
 
         Vector3 ResolveShotDirection(Vector3 direction)
@@ -288,8 +456,16 @@ namespace Unit.Combat.Hero
         {
             weaponQueue ??= Array.Empty<HeroWeapon>();
 
+            for (int i = 0; i < weaponQueue.Length; i++)
+                weaponQueue[i]?.Normalize();
+
             if (!IsValidWeaponSlot(activeWeaponSlot))
                 activeWeaponSlot = 0;
+        }
+
+        void ResetCurrentWeaponAbilityState()
+        {
+            CurrentWeapon?.ResetAbilityState();
         }
 
         int GetWeaponSlotCount()

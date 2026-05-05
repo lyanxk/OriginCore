@@ -70,11 +70,11 @@ namespace Unit.Ability
             if (router != null)
             {
                 _transform = router.transform;
-                _motor = ResolveNearbyComponent<UnitBase>(router.transform);
-                _combat = ResolveNearbyComponent<UnitCombat>(router.transform);
-                _teamAffiliation = ResolveNearbyComponent<TeamAffiliation>(router.transform);
-                _selectable = ResolveNearbyComponent<Selectable>(router.transform);
-                _commandExecutor = ResolveNearbyComponent<CommandExecutor>(router.transform);
+                _motor = ResolveNearbyComponent<UnitBase>(router);
+                _combat = ResolveNearbyComponent<UnitCombat>(router);
+                _teamAffiliation = ResolveNearbyComponent<TeamAffiliation>(router);
+                _selectable = ResolveNearbyComponent<Selectable>(router);
+                _commandExecutor = ResolveNearbyComponent<CommandExecutor>(router);
             }
             else
             {
@@ -131,20 +131,12 @@ namespace Unit.Ability
 
         protected abstract bool IsAvailableInMode(string modeName);
 
-        static T ResolveNearbyComponent<T>(Transform origin) where T : Component
+        static T ResolveNearbyComponent<T>(Component origin) where T : Component
         {
             if (origin == null)
                 return null;
 
-            T resolved = origin.GetComponent<T>();
-            if (resolved != null)
-                return resolved;
-
-            resolved = origin.GetComponentInParent<T>();
-            if (resolved != null)
-                return resolved;
-
-            return origin.GetComponentInChildren<T>(true);
+            return origin.GetComponent<T>() ?? origin.GetComponentInParent<T>() ?? origin.GetComponentInChildren<T>(true);
         }
     }
 

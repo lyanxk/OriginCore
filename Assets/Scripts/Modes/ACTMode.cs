@@ -81,6 +81,14 @@
              _yaw = _yawTarget;
              _pitch = _pitchTarget;
 
+             _hero?.ProcessWeaponSwitchInput(intent);
+
+             Vector3 cameraForward = Quaternion.Euler(_pitch, _yaw, 0f) * Vector3.forward;
+             Vector3 cameraOrigin = GetCameraPosition();
+
+             //角色技能先处理，Dash/Fly 需要在本帧移动和跳跃判断前更新角色状态。
+             _unit.AbilityRouter?.Process(intent, cameraForward, cameraOrigin);
+
              //移动按视角yaw方向
              Quaternion yawRot = Quaternion.Euler(0f, _yaw, 0f);
              Vector3 moveWorld = yawRot * new Vector3(intent.Move.x, 0f, intent.Move.y);
@@ -91,16 +99,10 @@
              _unit.MoveImmediate(moveWorld, _unit.GetDirectMoveSpeed(wantsRun, wantsCrouch));
         
              //跳跃
-             if (intent.Space)
+             if (intent.Space && !_unit.IsFlightEnabled)
              {
                  _unit.Jump();
              }
-
-             _hero?.ProcessWeaponInput(intent);
-
-             //技能执行
-             Vector3 cameraForward = Quaternion.Euler(_pitch, _yaw, 0f) * Vector3.forward;
-             _unit.AbilityRouter?.Process(intent, cameraForward);
 
              //角色朝向：跟随移动方向
              Vector3 planar = new Vector3(moveWorld.x, 0f, moveWorld.z);
@@ -110,29 +112,38 @@
                  _unit.SetYaw(facingYaw);
              }
 
+             //当前武器自己读取输入，确保 Charge Shot 使用本帧移动后的枪口位置。
+             _hero?.SetWeaponAimContext(_unit.transform.position, cameraForward);
+             _hero?.ProcessActiveWeaponInput(intent);
+
              // 按住左键：沿单位面朝方向攻击
              if (intent.LeftHeld)
              {
                  if (_hero != null)
-                     _hero.TryUseCurrentWeaponPrimary(_unit.transform.forward);
+                     _hero.TryUseCurrentWeaponPrimary(cameraForward);
                  else
-                     _unit.Combat?.TryUsePrimaryInDirection(_unit.transform.forward);
+                     _unit.Combat?.TryUsePrimaryInDirection(cameraForward);
              }
          }
 
-         public CameraState GetCameraTarget()
+        public CameraState GetCameraTarget()
+        {
+             Quaternion rot = Quaternion.Euler(_pitch, _yaw, 0f);
+
+             return new CameraState
+             {
+                 Position = GetCameraPosition(),
+                 Rotation = rot,
+                 Fov = 85f
+             };
+         }
+
+         Vector3 GetCameraPosition()
          {
              Quaternion rot = Quaternion.Euler(_pitch, _yaw, 0f);
              Vector3 back = rot * Vector3.back; // 相机朝后
              Transform pivot = _tpsPivot != null ? _tpsPivot : _unit.transform;
-             Vector3 pos = pivot.position + back * _distance + Vector3.up * _height;
-
-             return new CameraState
-             {
-                 Position = pos,
-                 Rotation = rot,
-                 Fov = 85f
-             };
+             return pivot.position + back * _distance + Vector3.up * _height;
          }
      }
  }

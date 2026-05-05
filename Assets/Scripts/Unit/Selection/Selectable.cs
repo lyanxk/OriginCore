@@ -143,15 +143,7 @@ namespace Unit.Selection
             if (cached != null)
                 return cached;
 
-            T resolved = GetComponent<T>();
-            if (resolved != null)
-                return resolved;
-
-            resolved = GetComponentInParent<T>();
-            if (resolved != null)
-                return resolved;
-
-            return GetComponentInChildren<T>(true);
+            return GetComponent<T>() ?? GetComponentInParent<T>() ?? GetComponentInChildren<T>(true);
         }
 
         void UpdateSelectionRouteVisual()
@@ -215,24 +207,8 @@ namespace Unit.Selection
             _selectionRouteLine.enabled = false;
         }
 
-        MonoBehaviour ResolveInterfaceComponent<T>() where T : class
-        {
-            MonoBehaviour resolved = FindInterfaceComponent<T>(GetComponents<MonoBehaviour>());
-            if (resolved != null)
-                return resolved;
-
-            resolved = FindInterfaceComponent<T>(GetComponentsInParent<MonoBehaviour>(true));
-            if (resolved != null)
-                return resolved;
-
-            return FindInterfaceComponent<T>(GetComponentsInChildren<MonoBehaviour>(true));
-        }
-
         static MonoBehaviour FindInterfaceComponent<T>(MonoBehaviour[] behaviours) where T : class
         {
-            if (behaviours == null)
-                return null;
-
             for (int i = 0; i < behaviours.Length; i++)
             {
                 MonoBehaviour behaviour = behaviours[i];
@@ -241,6 +217,13 @@ namespace Unit.Selection
             }
 
             return null;
+        }
+
+        MonoBehaviour ResolveInterfaceComponent<T>() where T : class
+        {
+            return FindInterfaceComponent<T>(GetComponents<MonoBehaviour>())
+                   ?? FindInterfaceComponent<T>(GetComponentsInParent<MonoBehaviour>(true))
+                   ?? FindInterfaceComponent<T>(GetComponentsInChildren<MonoBehaviour>(true));
         }
 
         static Material GetRouteLineMaterial()

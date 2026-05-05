@@ -267,10 +267,10 @@ namespace Unit.Combat
 
         void TryDamage(Component hitComponent)
         {
-            if (damage <= 0f || hitComponent == null)
+            if (damage <= 0f)
                 return;
 
-            if (!Health.TryResolve(hitComponent, out Health health) || health == null)
+            if (!Health.TryResolve(hitComponent, out Health health))
                 return;
 
             if (_sourceRoot != null && health.transform.root == _sourceRoot)

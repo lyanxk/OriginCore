@@ -143,12 +143,22 @@ namespace Unit.Combat
 
         public bool TryUsePrimaryOnTarget(Transform target)
         {
-            return TryAttackTarget(target);
+            return TryAttackTarget(target, null);
+        }
+
+        public bool TryUsePrimaryOnTarget(Transform target, float damageOverride)
+        {
+            return TryAttackTarget(target, Mathf.Max(0f, damageOverride));
         }
 
         public bool TryUsePrimaryInDirection(Vector3 direction)
         {
-            return TryAttackDirection(direction);
+            return TryAttackDirection(direction, null);
+        }
+
+        public bool TryUsePrimaryInDirection(Vector3 direction, float damageOverride)
+        {
+            return TryAttackDirection(direction, Mathf.Max(0f, damageOverride));
         }
 
         public bool TryConsumePrimaryCooldown()
@@ -240,21 +250,31 @@ namespace Unit.Combat
 
         public bool TryAttackTarget(Transform target)
         {
+            return TryAttackTarget(target, null);
+        }
+
+        bool TryAttackTarget(Transform target, float? damageOverride)
+        {
             if (target == null) return false;
 
             Vector3 dir = target.position - GetAttackOrigin();
             if (dir.sqrMagnitude < 1e-6f)
                 dir = transform.forward;
 
-            return TryAttackInternal(dir.normalized, target);
+            return TryAttackInternal(dir.normalized, target, damageOverride);
         }
 
         public bool TryAttackDirection(Vector3 direction)
         {
+            return TryAttackDirection(direction, null);
+        }
+
+        bool TryAttackDirection(Vector3 direction, float? damageOverride)
+        {
             if (direction.sqrMagnitude < 1e-6f)
                 direction = transform.forward;
 
-            return TryAttackInternal(direction.normalized, null);
+            return TryAttackInternal(direction.normalized, null, damageOverride);
         }
 
         public bool TryApplyDamage(Health targetHealth, float amount)
@@ -267,7 +287,7 @@ namespace Unit.Combat
             return true;
         }
 
-        bool TryAttackInternal(Vector3 direction, Transform preferredTarget)
+        bool TryAttackInternal(Vector3 direction, Transform preferredTarget, float? damageOverride)
         {
             if (!IsReady)
                 return false;
@@ -276,7 +296,10 @@ namespace Unit.Combat
 
             bool didHit = hit != null;
             if (didHit)
-                TryApplyDamage(hit, damage * _cachedDamageMultiplier);
+            {
+                float baseDamage = damageOverride ?? damage;
+                TryApplyDamage(hit, baseDamage * _cachedDamageMultiplier);
+            }
 
             if (didHit || consumeCooldownOnMiss)
                 _nextAttackTime = Time.time + attackCooldown;
@@ -327,12 +350,9 @@ namespace Unit.Combat
 
         Health ResolveHealth(Component hitComponent)
         {
-            if (hitComponent == null) return null;
-
             if (!Health.TryResolve(hitComponent, out Health h))
                 return null;
 
-            if (h == null) return null;
             if (h.transform.root == transform.root) return null;
             if (!CanAttackHealth(h)) return null;
 
@@ -356,18 +376,8 @@ namespace Unit.Combat
 
         bool CanAttackHealth(Health targetHealth)
         {
-            if (targetHealth == null)
-                return false;
-
-            if (teamAffiliation == null)
-                return false;
-
-            TeamAffiliation targetTeam = targetHealth.TeamAffiliation;
-
-            if (targetTeam == null)
-                return false;
-
-            return teamAffiliation.IsHostileTo(targetTeam);
+            TeamAffiliation targetTeam = targetHealth != null ? targetHealth.TeamAffiliation : null;
+            return teamAffiliation != null && targetTeam != null && teamAffiliation.IsHostileTo(targetTeam);
         }
 
         void RecalculateDamageMultiplier()
@@ -490,11 +500,7 @@ namespace Unit.Combat
             if (current != null)
                 return current;
 
-            T resolved = GetComponent<T>();
-            if (resolved != null)
-                return resolved;
-
-            return GetComponentInParent<T>();
+            return GetComponent<T>() ?? GetComponentInParent<T>();
         }
 
         static float FlattenedSqr(Vector3 delta)

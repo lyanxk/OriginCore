@@ -69,12 +69,6 @@
               _pitch -= lookY;
               _pitch = Mathf.Clamp(_pitch, _pitchMin, _pitchMax);
               _isZooming = intent.RightHeld;
-        
-              //跳跃
-              if (intent.Space)
-              {
-                  _unit.Jump();
-              }
 
               _unit.SetYaw(_yaw);
 
@@ -83,13 +77,33 @@
               Transform firePivot = _fpsPivot != null ? _fpsPivot : _unit.transform;
               Vector3 fireOrigin = firePivot.position;
 
-              _hero?.ProcessWeaponInput(intent);
+              _hero?.ProcessWeaponSwitchInput(intent);
 
-              //技能执行
+              //角色技能先处理，Dash/Fly 需要在本帧跳跃和移动前更新角色状态。
               InputIntent abilityIntent = intent;
               abilityIntent.RightClick = false;
               abilityIntent.RightHeld = false;
               _unit.AbilityRouter?.Process(abilityIntent, fireDir, fireOrigin);
+
+              //跳跃
+              if (intent.Space && !_unit.IsFlightEnabled)
+              {
+                  _unit.Jump();
+              }
+
+              Quaternion yawRot = Quaternion.Euler(0f, _yaw, 0f);
+              Vector3 moveWorld = yawRot * new Vector3(intent.Move.x, 0f, intent.Move.y);
+              bool wantsCrouch = intent.Ctrl && !_unit.IsFlightEnabled;
+              bool wantsRun = intent.Shift && !wantsCrouch && !_unit.IsFlightEnabled;
+              _unit.SetCrouching(wantsCrouch);
+              _unit.SetRunning(wantsRun && moveWorld.sqrMagnitude > 0.0001f);
+              _unit.MoveImmediate(moveWorld, _unit.GetDirectMoveSpeed(wantsRun, wantsCrouch));
+
+              fireOrigin = firePivot.position;
+              _hero?.SetWeaponAimContext(fireOrigin, fireDir);
+
+              //当前武器自己读取输入，确保 FPS 射击使用本帧移动后的相机位置。
+              _hero?.ProcessActiveWeaponInput(intent);
 
               if (intent.LeftHeld)
               {
@@ -98,14 +112,6 @@
                   else
                       _unit.Combat?.TryUsePrimaryInDirection(fireDir);
               }
-        
-              Quaternion yawRot = Quaternion.Euler(0f, _yaw, 0f);
-              Vector3 moveWorld = yawRot * new Vector3(intent.Move.x, 0f, intent.Move.y);
-              bool wantsCrouch = intent.Ctrl && !_unit.IsFlightEnabled;
-              bool wantsRun = intent.Shift && !wantsCrouch && !_unit.IsFlightEnabled;
-              _unit.SetCrouching(wantsCrouch);
-              _unit.SetRunning(wantsRun && moveWorld.sqrMagnitude > 0.0001f);
-              _unit.MoveImmediate(moveWorld, _unit.GetDirectMoveSpeed(wantsRun, wantsCrouch));
           }
 
           public CameraState GetCameraTarget()

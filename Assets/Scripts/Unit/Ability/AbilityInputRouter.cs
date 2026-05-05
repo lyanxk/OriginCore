@@ -28,7 +28,6 @@ namespace Unit.Ability
 
         [Header("ACT Target Lock")]
         [SerializeField, Min(0.1f)] float actTargetLockRange = 28f;
-        [SerializeField, Range(1f, 180f)] float actTargetLockAngle = 70f;
 
         readonly List<UnitAbility> _activeAbilities = new List<UnitAbility>(RtsAbilitySlotCount + 8);
         readonly Dictionary<string, UnitAbility> _abilityMap =
@@ -47,7 +46,7 @@ namespace Unit.Ability
         public IReadOnlyList<UnitAbility> RtsAbilitySlots => rtsAbilities;
         public IReadOnlyList<UnitAbility> ActFpsAbilitySlots => actFpsAbilities;
         public float ActTargetLockRange => actTargetLockRange;
-        public float ActTargetLockAngle => actTargetLockAngle;
+        public Transform ActLockedTarget => IsActMode() ? _actLockedTarget : null;
 
         void Awake()
         {
@@ -71,7 +70,6 @@ namespace Unit.Ability
         void OnValidate()
         {
             actTargetLockRange = Mathf.Max(0.1f, actTargetLockRange);
-            actTargetLockAngle = Mathf.Clamp(actTargetLockAngle, 1f, 180f);
             CacheTargetingReferences();
             EnsureAbilitySlots();
             InitializeActFpsAbilitiesIfNeeded();
@@ -111,28 +109,13 @@ namespace Unit.Ability
 
         public void Process(InputIntent intent, Vector3 aimDirection)
         {
-            if (aimDirection.sqrMagnitude > 1e-6f)
-            {
-                _actFpsAimDirection = aimDirection.normalized;
-                _hasActFpsAimDirection = true;
-            }
-
-            RefreshActTargetLock();
+            UpdateActFpsAim(aimDirection, ResolveActTargetLockOrigin());
             Process(intent);
         }
 
         public void Process(InputIntent intent, Vector3 aimDirection, Vector3 aimOrigin)
         {
-            if (aimDirection.sqrMagnitude > 1e-6f)
-            {
-                _actFpsAimDirection = aimDirection.normalized;
-                _hasActFpsAimDirection = true;
-            }
-
-            _actFpsAimOrigin = aimOrigin;
-            _hasActFpsAimOrigin = true;
-
-            RefreshActTargetLock();
+            UpdateActFpsAim(aimDirection, aimOrigin);
             Process(intent);
         }
 
@@ -148,13 +131,18 @@ namespace Unit.Ability
             return _hasActFpsAimOrigin;
         }
 
-        public bool TryGetActLockedTarget(out Transform target)
+        void UpdateActFpsAim(Vector3 aimDirection, Vector3 aimOrigin)
         {
-            if (!IsActMode() || !IsValidActLockedTarget(_actLockedTarget))
-                ClearActTargetLock();
+            if (aimDirection.sqrMagnitude > 1e-6f)
+            {
+                _actFpsAimDirection = aimDirection.normalized;
+                _hasActFpsAimDirection = true;
+            }
 
-            target = _actLockedTarget;
-            return target != null;
+            _actFpsAimOrigin = aimOrigin;
+            _hasActFpsAimOrigin = true;
+
+            RefreshActTargetLock();
         }
 
         public bool TryActivate(string abilityId)
@@ -193,7 +181,7 @@ namespace Unit.Ability
 
         void RefreshActTargetLock()
         {
-            if (!IsActMode() || !_hasActFpsAimDirection)
+            if (!IsActMode())
             {
                 ClearActTargetLock();
                 return;
@@ -203,14 +191,12 @@ namespace Unit.Ability
 
             LayerMask targetMask = _combat != null ? _combat.targetMask : ~0;
             Vector3 origin = ResolveActTargetLockOrigin();
-            Vector3 aimDirection = _actFpsAimDirection;
-            if (aimDirection.sqrMagnitude <= 1e-6f)
+            TeamAffiliation ownerTeam = ResolveOwnerTeam();
+            if (ownerTeam == null)
             {
                 ClearActTargetLock();
                 return;
             }
-
-            aimDirection.Normalize();
 
             int count = Physics.OverlapSphereNonAlloc(
                 origin,
@@ -220,29 +206,21 @@ namespace Unit.Ability
                 QueryTriggerInteraction.Ignore);
 
             Health best = null;
-            float bestScore = float.MaxValue;
-            float halfAngle = Mathf.Max(0.5f, actTargetLockAngle * 0.5f);
+            float bestSqrDistance = float.MaxValue;
 
             for (int i = 0; i < count; i++)
             {
-                Health health = ResolveActLockHealth(_actTargetLockBuffer[i]);
+                Collider hitCollider = _actTargetLockBuffer[i];
+                Health health = ResolveActLockHealth(hitCollider, ownerTeam);
                 if (health == null)
                     continue;
 
-                Vector3 toTarget = health.transform.position - origin;
-                float distance = toTarget.magnitude;
-                if (distance <= 1e-6f)
+                Vector3 targetPoint = hitCollider.bounds.center;
+                float sqrDistance = (targetPoint - origin).sqrMagnitude;
+                if (sqrDistance >= bestSqrDistance)
                     continue;
 
-                float angle = Vector3.Angle(aimDirection, toTarget / distance);
-                if (angle > halfAngle)
-                    continue;
-
-                float score = angle / halfAngle + distance / actTargetLockRange * 0.25f;
-                if (score >= bestScore)
-                    continue;
-
-                bestScore = score;
+                bestSqrDistance = sqrDistance;
                 best = health;
             }
 
@@ -251,40 +229,29 @@ namespace Unit.Ability
 
         Vector3 ResolveActTargetLockOrigin()
         {
-            if (_combat != null && _combat.attackOrigin != null)
-                return _combat.attackOrigin.position;
+            Transform attackOrigin = _combat != null ? _combat.attackOrigin : null;
+            if (attackOrigin != null)
+                return attackOrigin.position;
 
             float height = _combat != null ? _combat.defaultOriginHeight : 1f;
             return transform.position + Vector3.up * height;
         }
 
-        Health ResolveActLockHealth(Component hitComponent)
+        TeamAffiliation ResolveOwnerTeam()
         {
-            if (hitComponent == null)
+            return _teamAffiliation != null ? _teamAffiliation : _combat?.TeamAffiliation;
+        }
+
+        Health ResolveActLockHealth(Component hitComponent, TeamAffiliation ownerTeam)
+        {
+            if (!Health.TryResolve(hitComponent, out Health health))
                 return null;
 
-            if (!Health.TryResolve(hitComponent, out Health health) || health == null)
-                return null;
-
-            if (health.transform.root == transform.root)
-                return null;
-
-            TeamAffiliation ownerTeam = _teamAffiliation != null
-                ? _teamAffiliation
-                : (_combat != null ? _combat.TeamAffiliation : null);
             TeamAffiliation targetTeam = health.TeamAffiliation;
-            if (ownerTeam == null || targetTeam == null)
+            if (health.transform.root == transform.root || targetTeam == null)
                 return null;
 
             return ownerTeam.IsHostileTo(targetTeam) ? health : null;
-        }
-
-        bool IsValidActLockedTarget(Transform target)
-        {
-            if (target == null)
-                return false;
-
-            return ResolveActLockHealth(target) != null;
         }
 
         void ClearActTargetLock()
@@ -294,19 +261,8 @@ namespace Unit.Ability
 
         void CacheTargetingReferences()
         {
-            if (_combat == null)
-                _combat = GetComponent<UnitCombat>();
-            if (_combat == null)
-                _combat = GetComponentInParent<UnitCombat>();
-            if (_combat == null)
-                _combat = GetComponentInChildren<UnitCombat>(true);
-
-            if (_teamAffiliation == null)
-                _teamAffiliation = GetComponent<TeamAffiliation>();
-            if (_teamAffiliation == null)
-                _teamAffiliation = GetComponentInParent<TeamAffiliation>();
-            if (_teamAffiliation == null)
-                _teamAffiliation = GetComponentInChildren<TeamAffiliation>(true);
+            _combat = _combat ?? GetComponent<UnitCombat>() ?? GetComponentInParent<UnitCombat>() ?? GetComponentInChildren<UnitCombat>(true);
+            _teamAffiliation = _teamAffiliation ?? GetComponent<TeamAffiliation>() ?? GetComponentInParent<TeamAffiliation>() ?? GetComponentInChildren<TeamAffiliation>(true);
         }
 
         static bool IsActMode()
@@ -351,13 +307,19 @@ namespace Unit.Ability
 
         void UpgradeLegacyDefaultActFpsAbilities()
         {
-            if (actFpsAbilities == null || actFpsAbilities.Length != 1)
+            if (actFpsAbilities == null)
+            {
+                actFpsAbilities = CreateDefaultActFpsAbilities();
+                return;
+            }
+
+            if (IsDefaultActFpsAbilitySet(actFpsAbilities))
                 return;
 
-            if (actFpsAbilities[0] is not DashAbility)
+            if (!ContainsLegacyWeaponAbility(actFpsAbilities) && !IsLegacySingleDashSet(actFpsAbilities))
                 return;
 
-            actFpsAbilities = CreateDefaultActFpsAbilities();
+            actFpsAbilities = CreateActFpsAbilitiesFromLegacy(actFpsAbilities);
         }
 
         static UnitAbility[] CreateDefaultActFpsAbilities()
@@ -365,17 +327,16 @@ namespace Unit.Ability
             return new UnitAbility[]
             {
                 new DashAbility(),
-                new FlightAbility(),
-                new ChargedShotAbility()
+                new FlightAbility()
             };
         }
 
-        void RegisterAbilityGroup(UnitAbility[] abilityGroup)
+        void RegisterAbilityGroup(IReadOnlyList<UnitAbility> abilityGroup)
         {
             if (abilityGroup == null)
                 return;
 
-            for (int i = 0; i < abilityGroup.Length; i++)
+            for (int i = 0; i < abilityGroup.Count; i++)
             {
                 UnitAbility ability = abilityGroup[i];
                 if (ability == null)
@@ -413,6 +374,54 @@ namespace Unit.Ability
                 resized[i] = source[i];
 
             return resized;
+        }
+
+        static bool IsDefaultActFpsAbilitySet(UnitAbility[] abilities)
+        {
+            if (abilities.Length != 2)
+                return false;
+
+            return abilities[0] is DashAbility && abilities[1] is FlightAbility;
+        }
+
+        static bool ContainsLegacyWeaponAbility(UnitAbility[] abilities)
+        {
+            for (int i = 0; i < abilities.Length; i++)
+            {
+                UnitAbility ability = abilities[i];
+                if (ability == null)
+                    continue;
+
+                if (ability is not DashAbility && ability is not FlightAbility)
+                    return true;
+            }
+
+            return false;
+        }
+
+        static bool IsLegacySingleDashSet(UnitAbility[] abilities)
+        {
+            return abilities.Length == 1 && abilities[0] is DashAbility;
+        }
+
+        static UnitAbility[] CreateActFpsAbilitiesFromLegacy(UnitAbility[] abilities)
+        {
+            DashAbility dash = null;
+            FlightAbility flight = null;
+
+            for (int i = 0; i < abilities.Length; i++)
+            {
+                if (dash == null && abilities[i] is DashAbility dashAbility)
+                    dash = dashAbility;
+                else if (flight == null && abilities[i] is FlightAbility flightAbility)
+                    flight = flightAbility;
+            }
+
+            return new UnitAbility[]
+            {
+                dash ?? new DashAbility(),
+                flight ?? new FlightAbility()
+            };
         }
     }
 }

@@ -51,11 +51,7 @@ namespace Gameplay
 
         void CacheComponents()
         {
-            if (teamAffiliation == null)
-                teamAffiliation = GetComponent<TeamAffiliation>();
-
-            if (teamAffiliation == null)
-                teamAffiliation = GetComponentInParent<TeamAffiliation>();
+            teamAffiliation ??= GetComponent<TeamAffiliation>() ?? GetComponentInParent<TeamAffiliation>();
         }
 
         public static bool TryResolve(Component hitComponent, out Health health)
@@ -67,11 +63,7 @@ namespace Gameplay
             if (hitComponent.TryGetComponent(out health))
                 return true;
 
-            health = hitComponent.GetComponentInParent<Health>();
-            if (health != null)
-                return true;
-
-            health = hitComponent.GetComponentInChildren<Health>(true);
+            health = hitComponent.GetComponentInParent<Health>() ?? hitComponent.GetComponentInChildren<Health>(true);
             return health != null;
         }
     }

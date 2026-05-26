@@ -11,12 +11,23 @@ namespace Unit.Selection
     [DisallowMultipleComponent]
     public class Selectable : MonoBehaviour
     {
-        const float RouteLineWidth = 0.12f;
-        static readonly Color RouteLineColor = new Color(0f, 1f, 0.05f, 0.9f);
+        const int SelectionRingSegments = 64;
+        const float SelectionRingWidth = 0.06f;
+        const float SelectionRingMinRadius = 0.65f;
+        const float SelectionRingPadding = 0.18f;
+        const float SelectionRingYOffset = 0.04f;
+        const float RouteLineWidth = 0.055f;
+        const int RouteDashTextureWidth = 32;
+        const int RouteDashSolidPixels = 18;
+        const float RouteLineYOffset = 0.12f;
 
+        static readonly Color SelectionRingColor = new Color(0.1f, 1f, 0.15f, 0.95f);
+        static readonly Color RouteLineColor = new Color(0.78f, 0.82f, 0.82f, 0.85f);
+
+        static Material s_selectionRingMaterial;
         static Material s_routeLineMaterial;
+        static Texture2D s_routeDashTexture;
 
-        [SerializeField, HideInInspector] Outline outline;
         [SerializeField, HideInInspector] TeamAffiliation teamAffiliation;
         [SerializeField, HideInInspector] CommandExecutor commandExecutor;
         [SerializeField, HideInInspector] UnitCombat combat;
@@ -28,6 +39,7 @@ namespace Unit.Selection
 
         readonly List<Vector3> _selectionRoutePoints = new List<Vector3>(8);
         bool _registered;
+        LineRenderer _selectionRingLine;
         LineRenderer _selectionRouteLine;
 
         public bool IsSelected { get; private set; }
@@ -43,24 +55,26 @@ namespace Unit.Selection
         void Awake()
         {
             CacheComponents();
-            ConfigureOutline();
         }
 
         void OnValidate()
         {
             CacheComponents();
-            ConfigureOutline();
         }
 
         public void SetSelected(bool selected)
         {
             IsSelected = selected;
 
-            if (outline != null)
-                outline.enabled = selected;
-
             if (!selected)
+            {
+                ClearSelectionRingVisual();
                 ClearSelectionRouteVisual();
+            }
+            else
+            {
+                UpdateSelectionRingVisual();
+            }
         }
 
         void OnEnable()
@@ -82,11 +96,13 @@ namespace Unit.Selection
 
         void LateUpdate()
         {
+            UpdateSelectionRingVisual();
             UpdateSelectionRouteVisual();
         }
 
         void OnDisable()
         {
+            ClearSelectionRingVisual();
             ClearSelectionRouteVisual();
 
             if (SelectionManager.Instance != null)
@@ -110,7 +126,6 @@ namespace Unit.Selection
 
         void CacheComponents()
         {
-            outline = ResolveNearbyComponent(outline);
             teamAffiliation = ResolveNearbyComponent(teamAffiliation);
             commandExecutor = ResolveNearbyComponent(commandExecutor);
             combat = ResolveNearbyComponent(combat);
@@ -127,23 +142,128 @@ namespace Unit.Selection
                 selectionRouteProviderComponent = ResolveInterfaceComponent<ISelectionRouteProvider>();
         }
 
-        void ConfigureOutline()
-        {
-            if (outline == null)
-                return;
-
-            outline.enabled = IsSelected;
-            outline.OutlineMode = Outline.Mode.OutlineAll;
-            outline.OutlineColor = Color.green;
-            outline.OutlineWidth = 4f;
-        }
-
         T ResolveNearbyComponent<T>(T cached) where T : Component
         {
             if (cached != null)
                 return cached;
 
             return GetComponent<T>() ?? GetComponentInParent<T>() ?? GetComponentInChildren<T>(true);
+        }
+
+        void UpdateSelectionRingVisual()
+        {
+            if (!IsSelected)
+            {
+                ClearSelectionRingVisual();
+                return;
+            }
+
+            EnsureSelectionRingLine();
+            if (_selectionRingLine == null)
+                return;
+
+            ResolveSelectionRing(out Vector3 center, out float radius);
+
+            _selectionRingLine.enabled = true;
+            _selectionRingLine.positionCount = SelectionRingSegments;
+            for (int i = 0; i < SelectionRingSegments; i++)
+            {
+                float angle = i / (float)SelectionRingSegments * Mathf.PI * 2f;
+                Vector3 offset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * radius;
+                _selectionRingLine.SetPosition(i, center + offset);
+            }
+        }
+
+        void EnsureSelectionRingLine()
+        {
+            if (_selectionRingLine != null)
+                return;
+
+            GameObject ringObject = new GameObject("SelectionRing");
+            ringObject.transform.SetParent(transform, false);
+
+            _selectionRingLine = ringObject.AddComponent<LineRenderer>();
+            _selectionRingLine.useWorldSpace = true;
+            _selectionRingLine.alignment = LineAlignment.View;
+            _selectionRingLine.textureMode = LineTextureMode.Stretch;
+            _selectionRingLine.loop = true;
+            _selectionRingLine.positionCount = SelectionRingSegments;
+            _selectionRingLine.startWidth = SelectionRingWidth;
+            _selectionRingLine.endWidth = SelectionRingWidth;
+            _selectionRingLine.startColor = SelectionRingColor;
+            _selectionRingLine.endColor = SelectionRingColor;
+            _selectionRingLine.numCapVertices = 2;
+            _selectionRingLine.numCornerVertices = 2;
+            _selectionRingLine.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            _selectionRingLine.receiveShadows = false;
+            _selectionRingLine.enabled = false;
+
+            Material ringMaterial = GetSelectionRingMaterial();
+            if (ringMaterial != null)
+                _selectionRingLine.sharedMaterial = ringMaterial;
+        }
+
+        void ClearSelectionRingVisual()
+        {
+            if (_selectionRingLine == null)
+                return;
+
+            _selectionRingLine.enabled = false;
+        }
+
+        void ResolveSelectionRing(out Vector3 center, out float radius)
+        {
+            if (TryGetSelectableBounds(out Bounds bounds))
+            {
+                center = new Vector3(bounds.center.x, bounds.min.y + SelectionRingYOffset, bounds.center.z);
+                radius = Mathf.Max(bounds.extents.x, bounds.extents.z) + SelectionRingPadding;
+                radius = Mathf.Max(radius, SelectionRingMinRadius);
+                return;
+            }
+
+            center = transform.position + Vector3.up * SelectionRingYOffset;
+            radius = SelectionRingMinRadius;
+        }
+
+        bool TryGetSelectableBounds(out Bounds bounds)
+        {
+            bounds = new Bounds(transform.position, Vector3.zero);
+            bool hasBounds = false;
+
+            Collider[] colliders = GetComponentsInChildren<Collider>(true);
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                Collider selectableCollider = colliders[i];
+                if (selectableCollider == null || !selectableCollider.enabled)
+                    continue;
+
+                if (!hasBounds)
+                    bounds = selectableCollider.bounds;
+                else
+                    bounds.Encapsulate(selectableCollider.bounds);
+
+                hasBounds = true;
+            }
+
+            if (hasBounds)
+                return true;
+
+            Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                Renderer selectableRenderer = renderers[i];
+                if (selectableRenderer == null || !selectableRenderer.enabled || selectableRenderer is LineRenderer)
+                    continue;
+
+                if (!hasBounds)
+                    bounds = selectableRenderer.bounds;
+                else
+                    bounds.Encapsulate(selectableRenderer.bounds);
+
+                hasBounds = true;
+            }
+
+            return hasBounds;
         }
 
         void UpdateSelectionRouteVisual()
@@ -168,7 +288,7 @@ namespace Unit.Selection
             _selectionRouteLine.enabled = true;
             _selectionRouteLine.positionCount = _selectionRoutePoints.Count;
             for (int i = 0; i < _selectionRoutePoints.Count; i++)
-                _selectionRouteLine.SetPosition(i, _selectionRoutePoints[i] + Vector3.up * 0.15f);
+                _selectionRouteLine.SetPosition(i, _selectionRoutePoints[i] + Vector3.up * RouteLineYOffset);
         }
 
         void EnsureSelectionRouteLine()
@@ -183,8 +303,8 @@ namespace Unit.Selection
             _selectionRouteLine = routeObject.AddComponent<LineRenderer>();
             _selectionRouteLine.useWorldSpace = true;
             _selectionRouteLine.alignment = LineAlignment.View;
-            _selectionRouteLine.textureMode = LineTextureMode.Stretch;
-            _selectionRouteLine.numCapVertices = 2;
+            _selectionRouteLine.textureMode = LineTextureMode.Tile;
+            _selectionRouteLine.numCapVertices = 0;
             _selectionRouteLine.startWidth = RouteLineWidth;
             _selectionRouteLine.endWidth = RouteLineWidth;
             _selectionRouteLine.startColor = RouteLineColor;
@@ -226,6 +346,27 @@ namespace Unit.Selection
                    ?? FindInterfaceComponent<T>(GetComponentsInChildren<MonoBehaviour>(true));
         }
 
+        static Material GetSelectionRingMaterial()
+        {
+            if (s_selectionRingMaterial != null)
+                return s_selectionRingMaterial;
+
+            Shader shader = Shader.Find("Sprites/Default");
+            if (shader == null)
+                shader = Shader.Find("Unlit/Color");
+
+            if (shader == null)
+                return null;
+
+            s_selectionRingMaterial = new Material(shader)
+            {
+                name = "SelectionRing",
+                hideFlags = HideFlags.HideAndDontSave
+            };
+
+            return s_selectionRingMaterial;
+        }
+
         static Material GetRouteLineMaterial()
         {
             if (s_routeLineMaterial != null)
@@ -240,10 +381,37 @@ namespace Unit.Selection
 
             s_routeLineMaterial = new Material(shader)
             {
-                name = "SelectionRouteLine"
+                name = "SelectionRouteDashedLine",
+                hideFlags = HideFlags.HideAndDontSave,
+                mainTexture = GetRouteDashTexture()
             };
 
             return s_routeLineMaterial;
+        }
+
+        static Texture2D GetRouteDashTexture()
+        {
+            if (s_routeDashTexture != null)
+                return s_routeDashTexture;
+
+            Color32[] pixels = new Color32[RouteDashTextureWidth];
+            Color32 solid = new Color32(255, 255, 255, 255);
+            Color32 clear = new Color32(255, 255, 255, 0);
+
+            for (int i = 0; i < pixels.Length; i++)
+                pixels[i] = i < RouteDashSolidPixels ? solid : clear;
+
+            s_routeDashTexture = new Texture2D(RouteDashTextureWidth, 1, TextureFormat.RGBA32, false)
+            {
+                name = "SelectionRouteDashPattern",
+                hideFlags = HideFlags.HideAndDontSave,
+                wrapMode = TextureWrapMode.Repeat,
+                filterMode = FilterMode.Point
+            };
+            s_routeDashTexture.SetPixels32(pixels);
+            s_routeDashTexture.Apply();
+
+            return s_routeDashTexture;
         }
 
         public static bool TryResolve(Component hitComponent, out Selectable selectable)

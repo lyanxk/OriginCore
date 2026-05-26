@@ -36,7 +36,15 @@ namespace Unit.Combat.Hero
             }
 
             if (_isCharging && !intent.RightHeld)
+            {
+                if (!Combat.TryConsumePrimaryCooldown())
+                {
+                    ResetState();
+                    return;
+                }
+
                 Fire(gun);
+            }
         }
 
         public override void ResetState()

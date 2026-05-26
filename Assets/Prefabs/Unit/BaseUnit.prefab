@@ -42,7 +42,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2059788603337828485}
   - component: {fileID: 7097667328746856919}
-  - component: {fileID: 2723365748491886532}
   - component: {fileID: 4424760524717535906}
   - component: {fileID: 7549681122034567890}
   - component: {fileID: 320958382295078791}
@@ -88,7 +87,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3cb86ea050e6229498caa17421837c68, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  outline: {fileID: 2723365748491886532}
   teamAffiliation: {fileID: 4076325844960353870}
   commandExecutor: {fileID: 4523317871231682683}
   combat: {fileID: 4064889438472452534}
@@ -97,24 +95,6 @@ MonoBehaviour:
   commandCardDataSourceComponent: {fileID: 1974304872913449264}
   groundCommandReceiverComponent: {fileID: 0}
   selectionRouteProviderComponent: {fileID: 4523317871231682683}
---- !u!114 &2723365748491886532
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4198138853953822667}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  outlineMode: 0
-  outlineColor: {r: 0, g: 1, b: 0, a: 1}
-  outlineWidth: 4
-  precomputeOutline: 0
-  bakeKeys: []
-  bakeValues: []
 --- !u!114 &4424760524717535906
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -244,8 +244,10 @@ namespace Building
                     Vector3 candidate = center + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * radius;
                     candidate.y = center.y;
 
-                    if (NavMesh.SamplePosition(candidate, out NavMeshHit navHit, NavSampleRadius, NavMesh.AllAreas))
-                        candidate = navHit.position;
+                    if (!NavMesh.SamplePosition(candidate, out NavMeshHit navHit, NavSampleRadius, NavMesh.AllAreas))
+                        continue;
+
+                    candidate = navHit.position;
 
                     if (!IsPositionAvailable(candidate, unitClearance))
                         continue;

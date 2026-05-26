@@ -33,7 +33,7 @@ namespace UI.HUD
         readonly StringBuilder _builder = new StringBuilder(256);
         static TMP_FontAsset s_runtimeChineseFontAsset;
 
-        const string RequiredChineseGlyphs = "鼠标按键冲刺双击空格启动关闭飞行枪住右蓄力剑左突上挑瞬移到敌人身后瞄准";
+        const string RequiredChineseGlyphs = "鼠标按键冲刺双击空格启动关闭飞行枪住右蓄力剑左突上挑瞬移到敌人身后瞄准切换至武器模式";
         const string BundledChineseFontResourcePath = "Fonts/NotoSansSC-VF";
 
         void Awake()
@@ -72,37 +72,50 @@ namespace UI.HUD
         string BuildHintText()
         {
             ControlModeManager manager = ControlModeManager.Instance;
-            if (manager == null || manager.unit == null)
+            if (manager == null)
                 return string.Empty;
 
             string modeName = manager.CurrentModeName;
-            if (!string.Equals(modeName, "ACT", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(modeName, "FPS", StringComparison.OrdinalIgnoreCase))
-                return string.Empty;
-
-            HeroBase hero = manager.unit.GetComponent<HeroBase>();
-            if (hero == null)
-                hero = manager.unit.GetComponentInChildren<HeroBase>(true);
-            if (hero == null)
-                hero = manager.unit.GetComponentInParent<HeroBase>();
-            if (hero == null)
+            if (!IsSupportedMode(modeName))
                 return string.Empty;
 
             _builder.Clear();
+            _builder.AppendLine(modeName.ToUpperInvariant());
+            AppendModeSwitchHints(modeName);
+
             if (string.Equals(modeName, "ACT", StringComparison.OrdinalIgnoreCase))
+            {
+                HeroBase hero = ResolveControlledHero(manager);
+                _builder.AppendLine();
                 AppendActHints(hero);
-            else
+            }
+            else if (string.Equals(modeName, "FPS", StringComparison.OrdinalIgnoreCase))
+            {
+                _builder.AppendLine();
                 AppendFpsHints();
+            }
 
             return _builder.ToString();
         }
 
+        void AppendModeSwitchHints(string currentModeName)
+        {
+            if (!string.Equals(currentModeName, "RTS", StringComparison.OrdinalIgnoreCase))
+                _builder.AppendLine("1  切换至 RTS");
+            if (!string.Equals(currentModeName, "ACT", StringComparison.OrdinalIgnoreCase))
+                _builder.AppendLine("2  切换至 ACT");
+            if (!string.Equals(currentModeName, "FPS", StringComparison.OrdinalIgnoreCase))
+                _builder.AppendLine("3  切换至 FPS");
+        }
+
         void AppendActHints(HeroBase hero)
         {
-            _builder.AppendLine("ACT");
             _builder.AppendLine("Q/E  切换武器");
             _builder.AppendLine("鼠标按键5  冲刺");
             _builder.AppendLine("双击空格  启动/关闭飞行");
+
+            if (hero == null)
+                return;
 
             HeroWeapon weapon = hero.CurrentWeapon;
             if (weapon is RevolverWeapon)
@@ -123,10 +136,32 @@ namespace UI.HUD
 
         void AppendFpsHints()
         {
-            _builder.AppendLine("FPS");
             _builder.AppendLine("Q/E  切换武器");
             _builder.AppendLine("右键  瞄准");
             _builder.AppendLine("鼠标按键5  冲刺");
+        }
+
+        static bool IsSupportedMode(string modeName)
+        {
+            return string.Equals(modeName, "RTS", StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(modeName, "ACT", StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(modeName, "FPS", StringComparison.OrdinalIgnoreCase);
+        }
+
+        static HeroBase ResolveControlledHero(ControlModeManager manager)
+        {
+            if (manager == null || manager.unit == null)
+                return null;
+
+            HeroBase hero = manager.unit.GetComponent<HeroBase>();
+            if (hero != null)
+                return hero;
+
+            hero = manager.unit.GetComponentInChildren<HeroBase>(true);
+            if (hero != null)
+                return hero;
+
+            return manager.unit.GetComponentInParent<HeroBase>();
         }
 
         void EnsureView()

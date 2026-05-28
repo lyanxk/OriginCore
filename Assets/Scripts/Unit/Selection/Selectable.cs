@@ -20,6 +20,9 @@ namespace Unit.Selection
         const int RouteDashTextureWidth = 32;
         const int RouteDashSolidPixels = 18;
         const float RouteLineYOffset = 0.12f;
+        const int RouteLineRenderQueue = 5000;
+        const int RouteLineSortingOrder = 64;
+        const string OverlayLineShaderName = "OriginCore/Overlay Line";
 
         static readonly Color SelectionRingColor = new Color(0.1f, 1f, 0.15f, 0.95f);
         static readonly Color RouteLineColor = new Color(0.78f, 0.82f, 0.82f, 0.85f);
@@ -311,6 +314,7 @@ namespace Unit.Selection
             _selectionRouteLine.endColor = RouteLineColor;
             _selectionRouteLine.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             _selectionRouteLine.receiveShadows = false;
+            _selectionRouteLine.sortingOrder = RouteLineSortingOrder;
             _selectionRouteLine.enabled = false;
 
             Material routeMaterial = GetRouteLineMaterial();
@@ -372,7 +376,9 @@ namespace Unit.Selection
             if (s_routeLineMaterial != null)
                 return s_routeLineMaterial;
 
-            Shader shader = Shader.Find("Sprites/Default");
+            Shader shader = Shader.Find(OverlayLineShaderName);
+            if (shader == null)
+                shader = Shader.Find("Sprites/Default");
             if (shader == null)
                 shader = Shader.Find("Unlit/Color");
 
@@ -385,8 +391,32 @@ namespace Unit.Selection
                 hideFlags = HideFlags.HideAndDontSave,
                 mainTexture = GetRouteDashTexture()
             };
+            ConfigureOverlayLineMaterial(s_routeLineMaterial);
 
             return s_routeLineMaterial;
+        }
+
+        static void ConfigureOverlayLineMaterial(Material material)
+        {
+            material.renderQueue = RouteLineRenderQueue;
+
+            if (material.HasProperty("_Color"))
+                material.SetColor("_Color", Color.white);
+
+            if (material.HasProperty("_ZWrite"))
+                material.SetInt("_ZWrite", 0);
+
+            if (material.HasProperty("_ZTest"))
+                material.SetInt("_ZTest", (int)UnityEngine.Rendering.CompareFunction.Always);
+
+            if (material.HasProperty("_SrcBlend"))
+                material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+
+            if (material.HasProperty("_DstBlend"))
+                material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+
+            if (material.HasProperty("_Cull"))
+                material.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
         }
 
         static Texture2D GetRouteDashTexture()

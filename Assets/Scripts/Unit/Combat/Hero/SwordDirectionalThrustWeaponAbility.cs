@@ -1,4 +1,5 @@
 using System;
+using Content;
 using Core;
 using Gameplay;
 using Input;
@@ -26,7 +27,7 @@ namespace Unit.Combat.Hero
         bool _hasDamaged;
 
         public override string AbilityId => ThrustAbilityId;
-        public override string DisplayName => "方向突刺";
+        public override string DisplayName => GameText.GetName("weaponAbility.swordDirectionalThrust", AbilityId);
 
         public override bool ProcessPriorityInput(
             InputIntent intent,

@@ -1,4 +1,5 @@
 using System;
+using Content;
 using UnityEngine;
 
 namespace Unit.Combat.Hero
@@ -11,7 +12,7 @@ namespace Unit.Combat.Hero
         [SerializeField] GameObject hitEffectPrefab;
         [SerializeField, HideInInspector] bool initialized;
 
-        public override string DisplayName => "Revolver";
+        public override string DisplayName => GameText.GetName("weapon.revolver", "weapon.revolver");
         public override HeroWeaponRangeType RangeType => HeroWeaponRangeType.Ranged;
         public override GameObject ViewPrefab => weaponPrefab;
         public GameObject ProjectilePrefab => projectilePrefab;

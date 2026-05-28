@@ -1,4 +1,5 @@
 using System;
+using Content;
 using Input;
 using Unit.Movement;
 using UnityEngine;
@@ -26,7 +27,7 @@ namespace Unit.Combat.Hero
         const float VisualYawOffset = -90f;
 
         public override string AbilityId => UppercutAbilityId;
-        public override string DisplayName => "Uppercut";
+        public override string DisplayName => GameText.GetName("weaponAbility.uppercut", AbilityId);
 
         public override void ProcessInput(InputIntent intent)
         {

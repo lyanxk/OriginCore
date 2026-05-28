@@ -522,6 +522,7 @@ GameObject:
   - component: {fileID: 273601669}
   - component: {fileID: 273601671}
   - component: {fileID: 273601670}
+  - component: {fileID: 273601672}
   m_Layer: 5
   m_Name: Title
   m_TagString: Untagged
@@ -581,7 +582,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u6682\u505C"
+  m_Text: 
 --- !u!222 &273601671
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -590,6 +591,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 273601668}
   m_CullTransparentMesh: 1
+--- !u!114 &273601672
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 273601668}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: faa6776ca43f490ea3835e89d8f66b40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  textId: ui.pause.title
+  applyOnEnable: 1
 --- !u!1001 &288544576
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2043,6 +2058,7 @@ GameObject:
   - component: {fileID: 726789451}
   - component: {fileID: 726789453}
   - component: {fileID: 726789452}
+  - component: {fileID: 726789454}
   m_Layer: 5
   m_Name: TestSceneTitle
   m_TagString: Untagged
@@ -2102,7 +2118,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: "\u6D4B\u8BD5\u573A\u666F"
+  m_Text: 
 --- !u!222 &726789453
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2111,6 +2127,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 726789450}
   m_CullTransparentMesh: 1
+--- !u!114 &726789454
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 726789450}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: faa6776ca43f490ea3835e89d8f66b40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  textId: ui.scene.testTitle
+  applyOnEnable: 1
 --- !u!1 &744958082
 GameObject:
   m_ObjectHideFlags: 0
@@ -2414,19 +2444,13 @@ MonoBehaviour:
     - rid: 5414467457835597824
       type: {class: RtsBlinkAbility, ns: Unit.Ability, asm: Assembly-CSharp}
       data:
-        abilityId: ability.rts.blink
-        displayName: Blink
         icon: {fileID: 0}
-        tooltip: Activate, then left-click ground to blink.
         cooldown: 2
         maxDistance: 5
     - rid: 5414467457835597825
       type: {class: RtsSupportAuraAbility, ns: Unit.Ability, asm: Assembly-CSharp}
       data:
-        abilityId: ability.rts.supportAura
-        displayName: Support Aura
         icon: {fileID: 0}
-        tooltip: Nearby friendly units gain bonus damage and move speed.
         unitMask:
           serializedVersion: 2
           m_Bits: 64
@@ -2438,10 +2462,7 @@ MonoBehaviour:
     - rid: 5414467457835597826
       type: {class: RtsVoidImplosionAbility, ns: Unit.Ability, asm: Assembly-CSharp}
       data:
-        abilityId: ability.rts.voidImplosion
-        displayName: Void Implosion
         icon: {fileID: 0}
-        tooltip: Activate, then left-click a point to implode nearby enemies.
         cooldown: 0
         damage: 50
         radius: 1
@@ -2451,33 +2472,21 @@ MonoBehaviour:
     - rid: 5414467457835597827
       type: {class: RtsCelestialSentenceAbility, ns: Unit.Ability, asm: Assembly-CSharp}
       data:
-        abilityId: ability.rts.celestialSentence
-        displayName: Celestial Sentence
         icon: {fileID: 0}
-        tooltip: Release immediately to damage nearby enemies.
         cooldown: 0
         damage: 50
         radius: 1
     - rid: 7344946864006889472
       type: {class: DashAbility, ns: Unit.Ability, asm: Assembly-CSharp}
       data:
-        abilityId: ability.act.dash
-        displayName: Dash
         icon: {fileID: 0}
-        hotkeyText: Mouse5
-        tooltip: Dash forward quickly.
         cooldown: 0
         dashSpeed: 10
         dashDuration: 0.2
     - rid: 7344946864006889473
       type: {class: FlightAbility, ns: Unit.Ability, asm: Assembly-CSharp}
       data:
-        abilityId: ability.act.flight
-        displayName: Flight
         icon: {fileID: 0}
-        hotkeyText: Double Space
-        tooltip: Double-tap Space to toggle flight. While flying, Space rises and
-          Shift descends.
         doubleTapWindow: 0.3
         verticalSpeed: 6
 --- !u!114 &883050551
@@ -2564,7 +2573,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd2ef13f2c1efb94c843244f500f9ffd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  displayName: 
   portrait: {fileID: 0}
   health: {fileID: 883050553}
   abilityRouter: {fileID: 883050550}
@@ -2576,12 +2584,6 @@ MonoBehaviour:
   moveIcon: {fileID: 0}
   attackIcon: {fileID: 0}
   stopIcon: {fileID: 0}
-  moveHotkey: M
-  attackHotkey: A
-  stopHotkey: S
-  moveTooltip: Move to target position.
-  attackTooltip: Attack-move to target position.
-  stopTooltip: Stop current command queue immediately.
 --- !u!114 &883050557
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3179,6 +3181,7 @@ GameObject:
   - component: {fileID: 1260411138}
   - component: {fileID: 1260411140}
   - component: {fileID: 1260411139}
+  - component: {fileID: 1260411141}
   m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
@@ -3238,7 +3241,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u7EE7\u7EED"
+  m_Text: 
 --- !u!222 &1260411140
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3247,6 +3250,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1260411137}
   m_CullTransparentMesh: 1
+--- !u!114 &1260411141
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1260411137}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: faa6776ca43f490ea3835e89d8f66b40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  textId: ui.pause.continue
+  applyOnEnable: 1
 --- !u!1 &1386892647
 GameObject:
   m_ObjectHideFlags: 0
@@ -3417,44 +3434,20 @@ MonoBehaviour:
   - UnitPrefab: {fileID: 4198138853953822667, guid: 76494353aeec76946905ca31358ad48a,
       type: 3}
     Icon: {fileID: 0}
-    DisplayName: 
-    HotkeyText: 
-    Tooltip: 
   - UnitPrefab: {fileID: 0}
     Icon: {fileID: 0}
-    DisplayName: 
-    HotkeyText: 
-    Tooltip: 
   - UnitPrefab: {fileID: 0}
     Icon: {fileID: 0}
-    DisplayName: 
-    HotkeyText: 
-    Tooltip: 
   - UnitPrefab: {fileID: 0}
     Icon: {fileID: 0}
-    DisplayName: 
-    HotkeyText: 
-    Tooltip: 
   - UnitPrefab: {fileID: 0}
     Icon: {fileID: 0}
-    DisplayName: 
-    HotkeyText: 
-    Tooltip: 
   - UnitPrefab: {fileID: 0}
     Icon: {fileID: 0}
-    DisplayName: 
-    HotkeyText: 
-    Tooltip: 
   - UnitPrefab: {fileID: 0}
     Icon: {fileID: 0}
-    DisplayName: 
-    HotkeyText: 
-    Tooltip: 
   - UnitPrefab: {fileID: 0}
     Icon: {fileID: 0}
-    DisplayName: 
-    HotkeyText: 
-    Tooltip: 
   _hasRallyPoint: 1
   _usesDefaultRallyPoint: 1
   _rallyPoint: {x: -10, y: 0.19288416, z: 3}
@@ -3470,7 +3463,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dca560b2e022dc246831a66a48b291ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  displayName: 
   portrait: {fileID: 0}
   health: {fileID: 1386892648}
   abilityRouter: {fileID: 0}
@@ -3728,6 +3720,7 @@ GameObject:
   - component: {fileID: 1594069048}
   - component: {fileID: 1594069050}
   - component: {fileID: 1594069049}
+  - component: {fileID: 1594069051}
   m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
@@ -3787,7 +3780,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u9000\u51FA\u6E38\u620F"
+  m_Text: 
 --- !u!222 &1594069050
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3796,6 +3789,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1594069047}
   m_CullTransparentMesh: 1
+--- !u!114 &1594069051
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1594069047}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: faa6776ca43f490ea3835e89d8f66b40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  textId: ui.pause.quit
+  applyOnEnable: 1
 --- !u!4 &1747464457
 Transform:
   m_ObjectHideFlags: 0
@@ -3823,6 +3830,7 @@ GameObject:
   - component: {fileID: 1865472279}
   - component: {fileID: 1865472281}
   - component: {fileID: 1865472280}
+  - component: {fileID: 1865472282}
   m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
@@ -3882,7 +3890,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u91CD\u7F6E\u573A\u666F"
+  m_Text: 
 --- !u!222 &1865472281
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3891,6 +3899,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1865472278}
   m_CullTransparentMesh: 1
+--- !u!114 &1865472282
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1865472278}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: faa6776ca43f490ea3835e89d8f66b40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  textId: ui.pause.resetScene
+  applyOnEnable: 1
 --- !u!224 &1983686002 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 2518697219337088717, guid: cf53be8a57e20ec4fba9fe3ba6299406,

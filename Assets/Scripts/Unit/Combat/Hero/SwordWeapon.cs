@@ -1,4 +1,5 @@
 using System;
+using Content;
 using UnityEngine;
 
 namespace Unit.Combat.Hero
@@ -10,7 +11,7 @@ namespace Unit.Combat.Hero
         [SerializeField] GameObject uppercutPrefab;
         [SerializeField, HideInInspector] bool initialized;
 
-        public override string DisplayName => "Sword";
+        public override string DisplayName => GameText.GetName("weapon.sword", "weapon.sword");
         public override HeroWeaponRangeType RangeType => HeroWeaponRangeType.Melee;
         public override GameObject ViewPrefab => weaponPrefab;
         public GameObject UppercutPrefab => uppercutPrefab;

@@ -1,0 +1,250 @@
+{
+  "sections": [
+    {
+      "id": "commands",
+      "entries": [
+        {
+          "id": "command.move",
+          "name": "Move",
+          "hotkey": "M",
+          "tooltip": "Move to target position."
+        },
+        {
+          "id": "command.attack",
+          "name": "Attack",
+          "hotkey": "A",
+          "tooltip": "Attack-move to target position."
+        },
+        {
+          "id": "command.stop",
+          "name": "Stop",
+          "hotkey": "S",
+          "tooltip": "Stop current command queue immediately."
+        },
+        {
+          "id": "command.production.0",
+          "hotkey": "Q"
+        },
+        {
+          "id": "command.production.1",
+          "hotkey": "W"
+        },
+        {
+          "id": "command.production.2",
+          "hotkey": "E"
+        },
+        {
+          "id": "command.production.3",
+          "hotkey": "R"
+        },
+        {
+          "id": "command.production.4",
+          "hotkey": "A"
+        },
+        {
+          "id": "command.production.5",
+          "hotkey": "S"
+        },
+        {
+          "id": "command.production.6",
+          "hotkey": "D"
+        },
+        {
+          "id": "command.production.7",
+          "hotkey": "F"
+        },
+        {
+          "id": "command.production.defaultTooltip",
+          "text": "Produce {0}."
+        }
+      ]
+    },
+    {
+      "id": "rtsAbilityTypeLabels",
+      "entries": [
+        {
+          "id": "rtsAbility.passive",
+          "text": "Passive"
+        },
+        {
+          "id": "rtsAbility.active",
+          "text": "Active"
+        },
+        {
+          "id": "rtsAbility.activeSelf",
+          "text": "Active - Self"
+        },
+        {
+          "id": "rtsAbility.activeUnit",
+          "text": "Active - Unit Target"
+        },
+        {
+          "id": "rtsAbility.activePoint",
+          "text": "Active - Cast Point"
+        }
+      ]
+    },
+    {
+      "id": "abilities",
+      "entries": [
+        {
+          "id": "ability.rts.blink",
+          "name": "Blink",
+          "tooltip": "Activate, then left-click ground to blink."
+        },
+        {
+          "id": "ability.rts.supportAura",
+          "name": "Support Aura",
+          "tooltip": "Nearby friendly units gain bonus damage and move speed."
+        },
+        {
+          "id": "ability.rts.voidImplosion",
+          "name": "Void Implosion",
+          "tooltip": "Activate, then left-click a point to implode nearby enemies."
+        },
+        {
+          "id": "ability.rts.celestialSentence",
+          "name": "Celestial Sentence",
+          "tooltip": "Release immediately to damage nearby enemies."
+        },
+        {
+          "id": "ability.act.dash",
+          "name": "Dash",
+          "hotkey": "Mouse5",
+          "tooltip": "Dash forward quickly."
+        },
+        {
+          "id": "ability.act.flight",
+          "name": "Flight",
+          "hotkey": "Double Space",
+          "tooltip": "Double-tap Space to toggle flight. While flying, Space rises and Shift descends."
+        }
+      ]
+    },
+    {
+      "id": "weapons",
+      "entries": [
+        {
+          "id": "weapon.revolver",
+          "name": "Revolver"
+        },
+        {
+          "id": "weapon.sword",
+          "name": "Sword"
+        }
+      ]
+    },
+    {
+      "id": "weaponAbilities",
+      "entries": [
+        {
+          "id": "weaponAbility.chargeShot",
+          "name": "Charge Shot"
+        },
+        {
+          "id": "weaponAbility.uppercut",
+          "name": "Uppercut"
+        },
+        {
+          "id": "weaponAbility.swordDirectionalThrust",
+          "name": "方向突刺"
+        },
+        {
+          "id": "weaponAbility.swordBackTeleport",
+          "name": "背后瞬移"
+        }
+      ]
+    },
+    {
+      "id": "hudHints",
+      "entries": [
+        {
+          "id": "hud.modeSwitch.rts",
+          "text": "1  切换至 RTS"
+        },
+        {
+          "id": "hud.modeSwitch.act",
+          "text": "2  切换至 ACT"
+        },
+        {
+          "id": "hud.modeSwitch.fps",
+          "text": "3  切换至 FPS"
+        },
+        {
+          "id": "hud.weapon.switch",
+          "text": "Q/E  切换武器"
+        },
+        {
+          "id": "hud.ability.dash",
+          "text": "鼠标按键5  冲刺"
+        },
+        {
+          "id": "hud.ability.flightToggle",
+          "text": "双击空格  启动/关闭飞行"
+        },
+        {
+          "id": "hud.weapon.revolver",
+          "text": "枪"
+        },
+        {
+          "id": "hud.weapon.revolver.charge",
+          "text": "按住右键  蓄力"
+        },
+        {
+          "id": "hud.weapon.sword",
+          "text": "剑"
+        },
+        {
+          "id": "hud.weapon.sword.thrust",
+          "text": "W/A/S/D + 左键  突刺"
+        },
+        {
+          "id": "hud.weapon.sword.uppercut",
+          "text": "R  上挑"
+        },
+        {
+          "id": "hud.weapon.sword.teleportBehind",
+          "text": "V  瞬移到敌人身后"
+        },
+        {
+          "id": "hud.fps.aim",
+          "text": "右键  瞄准"
+        }
+      ]
+    },
+    {
+      "id": "menus",
+      "entries": [
+        {
+          "id": "ui.start.enterTestScene",
+          "text": "进入测试场景"
+        },
+        {
+          "id": "ui.start.quit",
+          "text": "退出游戏"
+        },
+        {
+          "id": "ui.pause.title",
+          "text": "暂停"
+        },
+        {
+          "id": "ui.pause.continue",
+          "text": "继续"
+        },
+        {
+          "id": "ui.pause.resetScene",
+          "text": "重置场景"
+        },
+        {
+          "id": "ui.pause.quit",
+          "text": "退出游戏"
+        },
+        {
+          "id": "ui.scene.testTitle",
+          "text": "测试场景"
+        }
+      ]
+    }
+  ],
+  "lineGroups": []
+}

@@ -281,7 +281,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd2ef13f2c1efb94c843244f500f9ffd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  displayName: 
   portrait: {fileID: 0}
   health: {fileID: 5624234258582364395}
   abilityRouter: {fileID: 0}
@@ -293,12 +292,6 @@ MonoBehaviour:
   moveIcon: {fileID: 0}
   attackIcon: {fileID: 0}
   stopIcon: {fileID: 0}
-  moveHotkey: M
-  attackHotkey: A
-  stopHotkey: S
-  moveTooltip: Move to target position.
-  attackTooltip: Attack-move to target position.
-  stopTooltip: Stop current command queue immediately.
 --- !u!114 &4076325844960353870
 MonoBehaviour:
   m_ObjectHideFlags: 0

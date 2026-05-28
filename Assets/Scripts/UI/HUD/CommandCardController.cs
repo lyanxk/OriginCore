@@ -1,11 +1,15 @@
 ﻿using System.Collections.Generic;
+using Content;
 using Input;
 using Modes;
 using Unit.Ability;
 using Unit.Selection;
 using Unit.UI;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UIImage = UnityEngine.UI.Image;
+using UIVerticalLayoutGroup = UnityEngine.UI.VerticalLayoutGroup;
 
 namespace UI.HUD
 {
@@ -17,6 +21,9 @@ namespace UI.HUD
         [Min(1)]
         [SerializeField] int slotCount = 12;
         [SerializeField] TooltipController tooltipController;
+        [SerializeField] GameObject pendingCommandPanel;
+        [SerializeField] TMP_Text pendingCommandNameText;
+        [SerializeField] TMP_Text pendingCommandDescriptionText;
 
         [Header("Input")]
         [SerializeField] InputIntentSource inputSource;
@@ -51,6 +58,8 @@ namespace UI.HUD
 
             if (tooltipController != null)
                 tooltipController.Hide();
+
+            HidePendingCommandDisplay();
         }
 
         void Update()
@@ -309,6 +318,14 @@ namespace UI.HUD
             if (tooltipController != null)
                 tooltipController.Hide();
 
+            if (TryGetPendingCommandDisplay(out string pendingCommandName))
+            {
+                ShowPendingCommandDisplay(pendingCommandName, string.Empty);
+                return;
+            }
+
+            HidePendingCommandDisplay();
+
             for (int i = 0; i < _slotViews.Count; i++)
             {
                 CommandSlotView slot = _slotViews[i];
@@ -326,6 +343,175 @@ namespace UI.HUD
                     HandleSlotHoverEnter,
                     HandleSlotHoverExit);
             }
+        }
+
+        bool TryGetPendingCommandDisplay(out string commandText)
+        {
+            commandText = string.Empty;
+            if (_selection == null || _selection.SelectedCount <= 0)
+                return false;
+
+            if (RtsAbilityTargetingState.HasPending)
+            {
+                commandText = ResolvePendingCommandTooltip(
+                    RtsAbilityTargetingState.PendingAbilityId,
+                    RtsAbilityTargetingState.PendingAbilityTooltip,
+                    RtsAbilityTargetingState.PendingAbilityDisplayName);
+                return !string.IsNullOrWhiteSpace(commandText);
+            }
+
+            switch (RtsQueuedOrderState.PendingOrder)
+            {
+                case RtsQueuedOrderType.Move:
+                    commandText = ResolvePendingCommandTooltip(
+                        CommandEntryIds.Move,
+                        GameText.GetTooltip(CommandEntryIds.Move),
+                        GameText.GetName(CommandEntryIds.Move, CommandEntryIds.Move));
+                    return true;
+
+                case RtsQueuedOrderType.Attack:
+                    commandText = ResolvePendingCommandTooltip(
+                        CommandEntryIds.Attack,
+                        GameText.GetTooltip(CommandEntryIds.Attack),
+                        GameText.GetName(CommandEntryIds.Attack, CommandEntryIds.Attack));
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
+        string ResolvePendingCommandTooltip(string commandId, string fallbackTooltip, string fallbackName)
+        {
+            for (int i = 0; i < _visibleEntries.Count; i++)
+            {
+                CommandEntry entry = _visibleEntries[i];
+                if (entry.Id != commandId)
+                    continue;
+
+                if (!string.IsNullOrWhiteSpace(entry.Tooltip))
+                    return entry.Tooltip;
+
+                if (!string.IsNullOrWhiteSpace(entry.Name))
+                    return entry.Name;
+            }
+
+            if (!string.IsNullOrWhiteSpace(fallbackTooltip))
+                return fallbackTooltip;
+
+            return fallbackName;
+        }
+
+        void ShowPendingCommandDisplay(string commandName, string description)
+        {
+            EnsurePendingCommandDisplay();
+            SetSlotsVisible(false);
+
+            if (pendingCommandPanel != null)
+                pendingCommandPanel.SetActive(true);
+
+            if (pendingCommandNameText != null)
+                pendingCommandNameText.text = commandName ?? string.Empty;
+
+            if (pendingCommandDescriptionText != null)
+                pendingCommandDescriptionText.text = description ?? string.Empty;
+        }
+
+        void HidePendingCommandDisplay()
+        {
+            SetSlotsVisible(true);
+
+            if (pendingCommandPanel != null)
+                pendingCommandPanel.SetActive(false);
+        }
+
+        void SetSlotsVisible(bool visible)
+        {
+            if (slotRoot != null)
+            {
+                slotRoot.gameObject.SetActive(visible);
+                return;
+            }
+
+            for (int i = 0; i < _slotViews.Count; i++)
+            {
+                CommandSlotView slot = _slotViews[i];
+                if (slot != null)
+                    slot.gameObject.SetActive(visible);
+            }
+        }
+
+        void EnsurePendingCommandDisplay()
+        {
+            if (pendingCommandPanel != null)
+                return;
+
+            Transform displayParent = slotRoot != null && slotRoot.parent != null
+                ? slotRoot.parent
+                : transform;
+
+            pendingCommandPanel = new GameObject(
+                "PendingCommandPanel",
+                typeof(RectTransform),
+                typeof(CanvasRenderer),
+                typeof(UIImage),
+                typeof(UIVerticalLayoutGroup));
+            pendingCommandPanel.transform.SetParent(displayParent, false);
+
+            RectTransform panelRect = pendingCommandPanel.GetComponent<RectTransform>();
+            RectTransform sourceRect = slotRoot as RectTransform;
+            if (sourceRect != null)
+            {
+                panelRect.anchorMin = sourceRect.anchorMin;
+                panelRect.anchorMax = sourceRect.anchorMax;
+                panelRect.pivot = sourceRect.pivot;
+                panelRect.anchoredPosition = sourceRect.anchoredPosition;
+                panelRect.sizeDelta = sourceRect.sizeDelta;
+            }
+            else
+            {
+                panelRect.anchorMin = Vector2.zero;
+                panelRect.anchorMax = Vector2.one;
+                panelRect.offsetMin = Vector2.zero;
+                panelRect.offsetMax = Vector2.zero;
+            }
+
+            UIImage panelImage = pendingCommandPanel.GetComponent<UIImage>();
+            panelImage.color = new Color(0f, 0f, 0f, 0.35f);
+            panelImage.raycastTarget = false;
+
+            UIVerticalLayoutGroup layout = pendingCommandPanel.GetComponent<UIVerticalLayoutGroup>();
+            layout.padding = new RectOffset(12, 12, 8, 8);
+            layout.spacing = 4f;
+            layout.childAlignment = TextAnchor.MiddleCenter;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
+
+            pendingCommandNameText = CreatePendingCommandText("CommandName", 28f, FontStyles.Bold);
+            pendingCommandDescriptionText = CreatePendingCommandText("CommandDescription", 18f, FontStyles.Normal);
+        }
+
+        TMP_Text CreatePendingCommandText(string objectName, float fontSize, FontStyles fontStyle)
+        {
+            GameObject textObject = new GameObject(objectName, typeof(RectTransform), typeof(TextMeshProUGUI));
+            textObject.transform.SetParent(pendingCommandPanel.transform, false);
+
+            RectTransform textRect = textObject.GetComponent<RectTransform>();
+            textRect.anchorMin = new Vector2(0f, 0.5f);
+            textRect.anchorMax = new Vector2(1f, 0.5f);
+            textRect.sizeDelta = new Vector2(0f, fontSize + 6f);
+
+            TextMeshProUGUI text = textObject.GetComponent<TextMeshProUGUI>();
+            text.text = string.Empty;
+            text.fontSize = fontSize;
+            text.fontStyle = fontStyle;
+            text.alignment = TextAlignmentOptions.Center;
+            text.color = Color.white;
+            text.raycastTarget = false;
+
+            return text;
         }
 
         void HandleSlotClicked(int slotIndex)

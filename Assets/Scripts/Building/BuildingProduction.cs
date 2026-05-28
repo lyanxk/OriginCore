@@ -8,19 +8,20 @@ using Unit.Selection;
 using Unit.UI;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Serialization;
 
 namespace Building
 {
     [Serializable]
     public struct BuildingProductionSlot
     {
-        public GameObject UnitPrefab;
-        public Sprite Icon;
-        public string DisplayName;
-        public string HotkeyText;
+        [FormerlySerializedAs("UnitPrefab")]
+        [SerializeField] GameObject unitPrefab;
+        [FormerlySerializedAs("Icon")]
+        [SerializeField] Sprite icon;
 
-        [TextArea]
-        public string Tooltip;
+        public GameObject UnitPrefab => unitPrefab;
+        public Sprite Icon => icon;
     }
 
     [DisallowMultipleComponent]

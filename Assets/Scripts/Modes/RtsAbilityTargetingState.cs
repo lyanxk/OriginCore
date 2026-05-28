@@ -15,6 +15,15 @@ namespace Modes
                                          && (s_targetingMode == RtsAbilityTargetingMode.Unit
                                              || s_targetingMode == RtsAbilityTargetingMode.Point);
         public static RtsAbilityTargetingMode TargetingMode => HasPending ? s_targetingMode : RtsAbilityTargetingMode.None;
+        public static string PendingAbilityDisplayName => HasPending && s_ability != null
+            ? s_ability.DisplayName
+            : string.Empty;
+        public static string PendingAbilityId => HasPending && s_ability != null
+            ? s_ability.AbilityId
+            : string.Empty;
+        public static string PendingAbilityTooltip => HasPending && s_ability != null
+            ? s_ability.Tooltip
+            : string.Empty;
         public static float PointPreviewRadius => HasPending && s_targetingMode == RtsAbilityTargetingMode.Point && s_ability != null
             ? Mathf.Max(0f, s_ability.TargetingPreviewRadius)
             : 0f;

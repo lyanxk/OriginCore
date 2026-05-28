@@ -1,3 +1,5 @@
+using Content;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
@@ -33,6 +35,7 @@ namespace UI
 
         void Awake()
         {
+            ApplyTexts();
             WireButtons();
             SetMenuVisible(false, false);
         }
@@ -111,6 +114,27 @@ namespace UI
                 quitButton.onClick.RemoveListener(QuitGame);
                 quitButton.onClick.AddListener(QuitGame);
             }
+        }
+
+        void ApplyTexts()
+        {
+            SetButtonLabel(continueButton, GameText.GetText("ui.pause.continue", "ui.pause.continue"));
+            SetButtonLabel(resetSceneButton, GameText.GetText("ui.pause.resetScene", "ui.pause.resetScene"));
+            SetButtonLabel(quitButton, GameText.GetText("ui.pause.quit", "ui.pause.quit"));
+        }
+
+        static void SetButtonLabel(Button button, string label)
+        {
+            if (button == null)
+                return;
+
+            TMP_Text tmpText = button.GetComponentInChildren<TMP_Text>(true);
+            if (tmpText != null)
+                tmpText.text = label;
+
+            Text legacyText = button.GetComponentInChildren<Text>(true);
+            if (legacyText != null)
+                legacyText.text = label;
         }
 
         void SetMenuVisible(bool visible, bool applyPause = true)

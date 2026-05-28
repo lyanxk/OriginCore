@@ -1,4 +1,5 @@
 using System;
+using Content;
 using UnityEngine;
 
 namespace Unit.Ability
@@ -6,12 +7,10 @@ namespace Unit.Ability
     [Serializable]
     public class RtsCelestialSentenceAbility : RtsAreaDamageAbilityBase
     {
+        const string AbilityIdValue = "ability.rts.celestialSentence";
+
         [Header("Ability")]
-        [SerializeField] string abilityId = "ability.rts.celestialSentence";
-        [SerializeField] string displayName = "Celestial Sentence";
         [SerializeField] Sprite icon;
-        [TextArea]
-        [SerializeField] string tooltip = "Release immediately to damage nearby enemies.";
         [Min(0f)]
         [SerializeField] float cooldown;
 
@@ -23,10 +22,10 @@ namespace Unit.Ability
 
         float _nextReadyTime;
 
-        public override string AbilityId => abilityId;
-        public override string DisplayName => string.IsNullOrWhiteSpace(displayName) ? "Celestial Sentence" : displayName;
+        public override string AbilityId => AbilityIdValue;
+        public override string DisplayName => GameText.GetName(AbilityId, AbilityId);
         public override Sprite Icon => icon;
-        public override string Tooltip => tooltip;
+        public override string Tooltip => GameText.GetTooltip(AbilityId);
         public override bool IsEnabled => Time.time >= _nextReadyTime;
         public override RtsAbilityTargetingMode TargetingMode => RtsAbilityTargetingMode.Self;
 

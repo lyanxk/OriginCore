@@ -1,4 +1,5 @@
 using System;
+using Content;
 using UnityEngine;
 
 namespace Unit.Ability
@@ -6,12 +7,10 @@ namespace Unit.Ability
     [Serializable]
     public class RtsVoidImplosionAbility : RtsAreaDamageAbilityBase
     {
+        const string AbilityIdValue = "ability.rts.voidImplosion";
+
         [Header("Ability")]
-        [SerializeField] string abilityId = "ability.rts.voidImplosion";
-        [SerializeField] string displayName = "Void Implosion";
         [SerializeField] Sprite icon;
-        [TextArea]
-        [SerializeField] string tooltip = "Activate, then left-click a point to implode nearby enemies.";
         [Min(0f)]
         [SerializeField] float cooldown;
 
@@ -28,10 +27,10 @@ namespace Unit.Ability
 
         float _nextReadyTime;
 
-        public override string AbilityId => abilityId;
-        public override string DisplayName => string.IsNullOrWhiteSpace(displayName) ? "Void Implosion" : displayName;
+        public override string AbilityId => AbilityIdValue;
+        public override string DisplayName => GameText.GetName(AbilityId, AbilityId);
         public override Sprite Icon => icon;
-        public override string Tooltip => tooltip;
+        public override string Tooltip => GameText.GetTooltip(AbilityId);
         public override bool IsEnabled => Time.time >= _nextReadyTime;
         public override float TargetingPreviewRadius => radius;
         public override RtsAbilityTargetingMode TargetingMode => RtsAbilityTargetingMode.Point;

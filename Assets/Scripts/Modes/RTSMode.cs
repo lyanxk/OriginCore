@@ -159,10 +159,17 @@ namespace Modes
 
             if ((intent.AttackPressed || intent.CommandA) && hasSelection)
             {
-                _isAttackOrderMode = !_isAttackOrderMode;
-                RtsQueuedOrderState.Clear();
-                if (_isAttackOrderMode)
+                bool cancelAttackOrder = _isAttackOrderMode || RtsQueuedOrderState.PendingOrder == RtsQueuedOrderType.Attack;
+                if (cancelAttackOrder)
                 {
+                    _isAttackOrderMode = false;
+                    RtsQueuedOrderState.Clear();
+                }
+                else
+                {
+                    RtsAbilityTargetingState.Clear();
+                    RtsQueuedOrderState.SetPendingOrder(RtsQueuedOrderType.Attack);
+                    _isAttackOrderMode = true;
                     _isMoveOrderMode = false;
                     CancelSelectionDrag();
                 }
@@ -170,10 +177,17 @@ namespace Modes
 
             if (intent.CommandM && hasSelection)
             {
-                _isMoveOrderMode = !_isMoveOrderMode;
-                RtsQueuedOrderState.Clear();
-                if (_isMoveOrderMode)
+                bool cancelMoveOrder = _isMoveOrderMode || RtsQueuedOrderState.PendingOrder == RtsQueuedOrderType.Move;
+                if (cancelMoveOrder)
                 {
+                    _isMoveOrderMode = false;
+                    RtsQueuedOrderState.Clear();
+                }
+                else
+                {
+                    RtsAbilityTargetingState.Clear();
+                    RtsQueuedOrderState.SetPendingOrder(RtsQueuedOrderType.Move);
+                    _isMoveOrderMode = true;
                     _isAttackOrderMode = false;
                     CancelSelectionDrag();
                 }

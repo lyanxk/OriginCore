@@ -1,4 +1,5 @@
 using System;
+using Content;
 using Input;
 using UnityEngine;
 
@@ -7,13 +8,10 @@ namespace Unit.Ability
     [Serializable]
     public class DashAbility : ActFpsUnitAbility
     {
+        const string AbilityIdValue = "ability.act.dash";
+
         [Header("Ability")]
-        [SerializeField] string abilityId = "ability.act.dash";
-        [SerializeField] string displayName = "Dash";
         [SerializeField] Sprite icon;
-        [SerializeField] string hotkeyText = "Mouse5";
-        [TextArea]
-        [SerializeField] string tooltip = "Dash forward quickly.";
         [Min(0f)]
         [SerializeField] float cooldown;
 
@@ -25,11 +23,11 @@ namespace Unit.Ability
         Vector2 _activationMove;
         bool _hasActivationMove;
 
-        public override string AbilityId => abilityId;
-        public override string DisplayName => string.IsNullOrWhiteSpace(displayName) ? "Dash" : displayName;
+        public override string AbilityId => AbilityIdValue;
+        public override string DisplayName => GameText.GetName(AbilityId, AbilityId);
         public override Sprite Icon => icon;
-        public override string HotkeyText => hotkeyText;
-        public override string Tooltip => tooltip;
+        public override string HotkeyText => GameText.GetHotkey(AbilityId);
+        public override string Tooltip => GameText.GetTooltip(AbilityId);
         public override bool IsEnabled => Time.time >= _nextReadyTime;
 
         public override float Cooldown01

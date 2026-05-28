@@ -1,4 +1,5 @@
 ﻿using Gameplay;
+using Content;
 using System.Collections.Generic;
 using Unit.Ability;
 using UnityEngine;
@@ -9,7 +10,6 @@ namespace Unit.UI
     public abstract class CommandCardDataSourceBase : MonoBehaviour, ICommandCardDataSource
     {
         [Header("Display")]
-        [SerializeField] string displayName;
         [SerializeField] Sprite portrait;
         [SerializeField] Health health;
         [SerializeField] AbilityInputRouter abilityRouter;
@@ -23,7 +23,7 @@ namespace Unit.UI
 
         float _energy;
 
-        public string DisplayName => string.IsNullOrWhiteSpace(displayName) ? gameObject.name : displayName;
+        public string DisplayName => gameObject.name;
         public Sprite Portrait => portrait;
         public Health HealthComponent => health;
 
@@ -164,21 +164,21 @@ namespace Unit.UI
                 return string.Empty;
 
             if (ability.ActivationType == RtsAbilityActivationType.Passive)
-                return "Passive";
+                return GameText.GetText("rtsAbility.passive", "rtsAbility.passive");
 
             switch (ability.TargetingMode)
             {
                 case RtsAbilityTargetingMode.Self:
-                    return "Active - Self";
+                    return GameText.GetText("rtsAbility.activeSelf", "rtsAbility.activeSelf");
 
                 case RtsAbilityTargetingMode.Unit:
-                    return "Active - Unit Target";
+                    return GameText.GetText("rtsAbility.activeUnit", "rtsAbility.activeUnit");
 
                 case RtsAbilityTargetingMode.Point:
-                    return "Active - Cast Point";
+                    return GameText.GetText("rtsAbility.activePoint", "rtsAbility.activePoint");
 
                 default:
-                    return "Active";
+                    return GameText.GetText("rtsAbility.active", "rtsAbility.active");
             }
         }
     }

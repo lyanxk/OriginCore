@@ -1,4 +1,5 @@
 using System;
+using Content;
 using Core;
 using Gameplay;
 using Input;
@@ -18,7 +19,7 @@ namespace Unit.Combat.Hero
         const float FallReductionGravityMultiplier = 0.15f;
 
         public override string AbilityId => BackTeleportAbilityId;
-        public override string DisplayName => "背后瞬移";
+        public override string DisplayName => GameText.GetName("weaponAbility.swordBackTeleport", AbilityId);
 
         public override bool ProcessPriorityInput(
             InputIntent intent,

@@ -1,4 +1,5 @@
 using System;
+using Content;
 using Input;
 using UnityEngine;
 
@@ -7,13 +8,10 @@ namespace Unit.Ability
     [Serializable]
     public class FlightAbility : ActUnitAbility
     {
+        const string AbilityIdValue = "ability.act.flight";
+
         [Header("Ability")]
-        [SerializeField] string abilityId = "ability.act.flight";
-        [SerializeField] string displayName = "Flight";
         [SerializeField] Sprite icon;
-        [SerializeField] string hotkeyText = "Double Space";
-        [TextArea]
-        [SerializeField] string tooltip = "Double-tap Space to toggle flight. While flying, Space rises and Shift descends.";
 
         [Header("Flight")]
         [Min(0.05f)]
@@ -23,11 +21,11 @@ namespace Unit.Ability
 
         float _lastSpacePressedTime = float.NegativeInfinity;
 
-        public override string AbilityId => abilityId;
-        public override string DisplayName => string.IsNullOrWhiteSpace(displayName) ? "Flight" : displayName;
+        public override string AbilityId => AbilityIdValue;
+        public override string DisplayName => GameText.GetName(AbilityId, AbilityId);
         public override Sprite Icon => icon;
-        public override string HotkeyText => hotkeyText;
-        public override string Tooltip => tooltip;
+        public override string HotkeyText => GameText.GetHotkey(AbilityId);
+        public override string Tooltip => GameText.GetTooltip(AbilityId);
 
         public override void ProcessInput(InputIntent intent)
         {

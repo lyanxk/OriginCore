@@ -1,4 +1,5 @@
 using System;
+using Content;
 using UnityEngine;
 
 namespace Unit.Ability
@@ -6,12 +7,10 @@ namespace Unit.Ability
     [Serializable]
     public class RtsBlinkAbility : RtsUnitAbility
     {
+        const string AbilityIdValue = "ability.rts.blink";
+
         [Header("Ability")]
-        [SerializeField] string abilityId = "ability.rts.blink";
-        [SerializeField] string displayName = "Blink";
         [SerializeField] Sprite icon;
-        [TextArea]
-        [SerializeField] string tooltip = "Activate, then left-click ground to blink.";
         [Min(0f)]
         [SerializeField] float cooldown = 2f;
 
@@ -20,10 +19,10 @@ namespace Unit.Ability
 
         float _nextReadyTime;
 
-        public override string AbilityId => abilityId;
-        public override string DisplayName => string.IsNullOrWhiteSpace(displayName) ? "Blink" : displayName;
+        public override string AbilityId => AbilityIdValue;
+        public override string DisplayName => GameText.GetName(AbilityId, AbilityId);
         public override Sprite Icon => icon;
-        public override string Tooltip => tooltip;
+        public override string Tooltip => GameText.GetTooltip(AbilityId);
         public override bool IsEnabled => Time.time >= _nextReadyTime;
         public override RtsAbilityTargetingMode TargetingMode => RtsAbilityTargetingMode.Point;
 

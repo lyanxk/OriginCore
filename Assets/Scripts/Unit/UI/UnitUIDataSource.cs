@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Content;
 using Unit.Ability;
 using Unit.Combat;
 using Unit.Command;
@@ -20,17 +21,6 @@ namespace Unit.UI
         [SerializeField] Sprite moveIcon;
         [SerializeField] Sprite attackIcon;
         [SerializeField] Sprite stopIcon;
-
-        [SerializeField] string moveHotkey = "M";
-        [SerializeField] string attackHotkey = "A";
-        [SerializeField] string stopHotkey = "S";
-
-        [TextArea]
-        [SerializeField] string moveTooltip = "Move to target position.";
-        [TextArea]
-        [SerializeField] string attackTooltip = "Attack-move to target position.";
-        [TextArea]
-        [SerializeField] string stopTooltip = "Stop current command queue immediately.";
 
         public override bool CanMove => commandExecutor != null && motor != null;
         public override bool CanAttack => commandExecutor != null && combat != null;
@@ -54,12 +44,12 @@ namespace Unit.UI
             {
                 Id = CommandEntryIds.Move,
                 Icon = moveIcon,
-                Name = "Move",
-                HotkeyText = moveHotkey,
+                Name = GameText.GetName(CommandEntryIds.Move, CommandEntryIds.Move),
+                HotkeyText = GameText.GetHotkey(CommandEntryIds.Move),
                 Enabled = CanMove,
                 SlotIndex = 0,
                 Cooldown01 = 0f,
-                Tooltip = moveTooltip,
+                Tooltip = GameText.GetTooltip(CommandEntryIds.Move),
                 Type = CommandEntryType.Command
             });
 
@@ -67,12 +57,12 @@ namespace Unit.UI
             {
                 Id = CommandEntryIds.Attack,
                 Icon = attackIcon,
-                Name = "Attack",
-                HotkeyText = attackHotkey,
+                Name = GameText.GetName(CommandEntryIds.Attack, CommandEntryIds.Attack),
+                HotkeyText = GameText.GetHotkey(CommandEntryIds.Attack),
                 Enabled = CanAttack,
                 SlotIndex = 1,
                 Cooldown01 = 0f,
-                Tooltip = attackTooltip,
+                Tooltip = GameText.GetTooltip(CommandEntryIds.Attack),
                 Type = CommandEntryType.Command
             });
 
@@ -80,12 +70,12 @@ namespace Unit.UI
             {
                 Id = CommandEntryIds.Stop,
                 Icon = stopIcon,
-                Name = "Stop",
-                HotkeyText = stopHotkey,
+                Name = GameText.GetName(CommandEntryIds.Stop, CommandEntryIds.Stop),
+                HotkeyText = GameText.GetHotkey(CommandEntryIds.Stop),
                 Enabled = CanStop,
                 SlotIndex = 2,
                 Cooldown01 = 0f,
-                Tooltip = stopTooltip,
+                Tooltip = GameText.GetTooltip(CommandEntryIds.Stop),
                 Type = CommandEntryType.Command
             });
         }

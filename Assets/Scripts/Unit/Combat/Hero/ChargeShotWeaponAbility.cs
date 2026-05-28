@@ -1,4 +1,5 @@
 using System;
+using Content;
 using Input;
 using UnityEngine;
 
@@ -19,7 +20,7 @@ namespace Unit.Combat.Hero
         float _chargeStartTime;
 
         public override string AbilityId => ChargeShotAbilityId;
-        public override string DisplayName => "Charge Shot";
+        public override string DisplayName => GameText.GetName("weaponAbility.chargeShot", AbilityId);
 
         public override void ProcessInput(InputIntent intent)
         {

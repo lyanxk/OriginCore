@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 using Building;
+using Content;
 using UnityEngine;
 namespace Unit.UI
 {
     [DisallowMultipleComponent]
     public class BuildingUIDataSource : CommandCardDataSourceBase
     {
-        static readonly string[] ProductionHotkeys = { "Q", "W", "E", "R", "A", "S", "D", "F" };
-
         [Header("Building Components")]
         [SerializeField] BuildingProduction production;
 
@@ -32,31 +31,35 @@ namespace Unit.UI
                 if (!production.TryGetSlot(i, out BuildingProductionSlot slot))
                     continue;
 
-                string resolvedName = string.IsNullOrWhiteSpace(slot.DisplayName)
-                    ? slot.UnitPrefab.name
-                    : slot.DisplayName;
+                string commandId = CommandEntryIds.GetProductionId(i);
+                string fallbackName = slot.UnitPrefab != null ? slot.UnitPrefab.name : commandId;
+                string resolvedName = GameText.GetName(commandId, fallbackName);
 
                 entries.Add(new CommandEntry
                 {
-                    Id = CommandEntryIds.GetProductionId(i),
+                    Id = commandId,
                     Icon = slot.Icon,
                     Name = resolvedName,
-                    HotkeyText = ProductionHotkeys[i],
+                    HotkeyText = GameText.GetHotkey(commandId),
                     Enabled = true,
                     SlotIndex = i,
                     Cooldown01 = 0f,
-                    Tooltip = BuildProductionTooltip(slot, resolvedName),
+                    Tooltip = BuildProductionTooltip(commandId, resolvedName),
                     Type = CommandEntryType.Production
                 });
             }
         }
 
-        static string BuildProductionTooltip(BuildingProductionSlot slot, string displayName)
+        static string BuildProductionTooltip(string commandId, string displayName)
         {
-            if (!string.IsNullOrWhiteSpace(slot.Tooltip))
-                return slot.Tooltip;
+            string tooltip = GameText.GetTooltip(commandId);
+            if (!string.IsNullOrWhiteSpace(tooltip))
+                return tooltip;
 
-            return $"Produce {displayName}.";
+            string template = GameText.GetText("command.production.defaultTooltip");
+            return string.IsNullOrWhiteSpace(template)
+                ? string.Empty
+                : string.Format(template, displayName);
         }
     }
 }

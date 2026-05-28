@@ -1,6 +1,7 @@
 ﻿using Gameplay;
 using System;
 using System.Collections.Generic;
+using Content;
 using Modes;
 using Unit.Movement;
 using Unit.Selection;
@@ -11,12 +12,10 @@ namespace Unit.Ability
     [Serializable]
     public class RtsSupportAuraAbility : RtsUnitAbility
     {
+        const string AbilityIdValue = "ability.rts.supportAura";
+
         [Header("Ability")]
-        [SerializeField] string abilityId = "ability.rts.supportAura";
-        [SerializeField] string displayName = "Support Aura";
         [SerializeField] Sprite icon;
-        [TextArea]
-        [SerializeField] string tooltip = "Nearby friendly units gain bonus damage and move speed.";
 
         [Header("Aura")]
         [SerializeField] LayerMask unitMask = ~0;
@@ -32,10 +31,10 @@ namespace Unit.Ability
 
         float _nextScanTime;
 
-        public override string AbilityId => abilityId;
-        public override string DisplayName => string.IsNullOrWhiteSpace(displayName) ? "Support Aura" : displayName;
+        public override string AbilityId => AbilityIdValue;
+        public override string DisplayName => GameText.GetName(AbilityId, AbilityId);
         public override Sprite Icon => icon;
-        public override string Tooltip => tooltip;
+        public override string Tooltip => GameText.GetTooltip(AbilityId);
         public override RtsAbilityActivationType ActivationType => RtsAbilityActivationType.Passive;
         public override bool IsEnabled => true;
 

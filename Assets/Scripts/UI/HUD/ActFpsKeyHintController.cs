@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using Content;
 using Core;
 using TMPro;
 using Unit.Combat.Hero;
@@ -33,7 +34,6 @@ namespace UI.HUD
         readonly StringBuilder _builder = new StringBuilder(256);
         static TMP_FontAsset s_runtimeChineseFontAsset;
 
-        const string RequiredChineseGlyphs = "鼠标按键冲刺双击空格启动关闭飞行枪住右蓄力剑左突上挑瞬移到敌人身后瞄准切换至武器模式";
         const string BundledChineseFontResourcePath = "Fonts/NotoSansSC-VF";
 
         void Awake()
@@ -101,18 +101,18 @@ namespace UI.HUD
         void AppendModeSwitchHints(string currentModeName)
         {
             if (!string.Equals(currentModeName, "RTS", StringComparison.OrdinalIgnoreCase))
-                _builder.AppendLine("1  切换至 RTS");
+                _builder.AppendLine(GameText.GetText("hud.modeSwitch.rts", "hud.modeSwitch.rts"));
             if (!string.Equals(currentModeName, "ACT", StringComparison.OrdinalIgnoreCase))
-                _builder.AppendLine("2  切换至 ACT");
+                _builder.AppendLine(GameText.GetText("hud.modeSwitch.act", "hud.modeSwitch.act"));
             if (!string.Equals(currentModeName, "FPS", StringComparison.OrdinalIgnoreCase))
-                _builder.AppendLine("3  切换至 FPS");
+                _builder.AppendLine(GameText.GetText("hud.modeSwitch.fps", "hud.modeSwitch.fps"));
         }
 
         void AppendActHints(HeroBase hero)
         {
-            _builder.AppendLine("Q/E  切换武器");
-            _builder.AppendLine("鼠标按键5  冲刺");
-            _builder.AppendLine("双击空格  启动/关闭飞行");
+            _builder.AppendLine(GameText.GetText("hud.weapon.switch", "hud.weapon.switch"));
+            _builder.AppendLine(GameText.GetText("hud.ability.dash", "hud.ability.dash"));
+            _builder.AppendLine(GameText.GetText("hud.ability.flightToggle", "hud.ability.flightToggle"));
 
             if (hero == null)
                 return;
@@ -121,24 +121,24 @@ namespace UI.HUD
             if (weapon is RevolverWeapon)
             {
                 _builder.AppendLine();
-                _builder.AppendLine("枪");
-                _builder.AppendLine("按住右键  蓄力");
+                _builder.AppendLine(GameText.GetText("hud.weapon.revolver", "hud.weapon.revolver"));
+                _builder.AppendLine(GameText.GetText("hud.weapon.revolver.charge", "hud.weapon.revolver.charge"));
             }
             else if (weapon is SwordWeapon)
             {
                 _builder.AppendLine();
-                _builder.AppendLine("剑");
-                _builder.AppendLine("W/A/S/D + 左键  突刺");
-                _builder.AppendLine("R  上挑");
-                _builder.AppendLine("V  瞬移到敌人身后");
+                _builder.AppendLine(GameText.GetText("hud.weapon.sword", "hud.weapon.sword"));
+                _builder.AppendLine(GameText.GetText("hud.weapon.sword.thrust", "hud.weapon.sword.thrust"));
+                _builder.AppendLine(GameText.GetText("hud.weapon.sword.uppercut", "hud.weapon.sword.uppercut"));
+                _builder.AppendLine(GameText.GetText("hud.weapon.sword.teleportBehind", "hud.weapon.sword.teleportBehind"));
             }
         }
 
         void AppendFpsHints()
         {
-            _builder.AppendLine("Q/E  切换武器");
-            _builder.AppendLine("右键  瞄准");
-            _builder.AppendLine("鼠标按键5  冲刺");
+            _builder.AppendLine(GameText.GetText("hud.weapon.switch", "hud.weapon.switch"));
+            _builder.AppendLine(GameText.GetText("hud.fps.aim", "hud.fps.aim"));
+            _builder.AppendLine(GameText.GetText("hud.ability.dash", "hud.ability.dash"));
         }
 
         static bool IsSupportedMode(string modeName)
@@ -310,7 +310,10 @@ namespace UI.HUD
                 return null;
 
             fontAsset.name = "Runtime Chinese TMP Font";
-            fontAsset.TryAddCharacters(RequiredChineseGlyphs, out _);
+            string requiredCharacters = GameText.GetCjkCharacters();
+            if (!string.IsNullOrEmpty(requiredCharacters))
+                fontAsset.TryAddCharacters(requiredCharacters, out _);
+
             return fontAsset;
         }
 

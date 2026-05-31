@@ -38,6 +38,7 @@ namespace Unit.Animation
         static readonly int IsMovingHash = Animator.StringToHash("IsMoving");
         static readonly int IsRunningHash = Animator.StringToHash("IsRunning");
         static readonly int IsCrouchingHash = Animator.StringToHash("IsCrouching");
+        static readonly int IsSlidingHash = Animator.StringToHash("IsSliding");
         static readonly int IsFlyingHash = Animator.StringToHash("IsFlying");
         static readonly int IsHoldingGunHash = Animator.StringToHash("IsHoldingGun");
 
@@ -49,6 +50,7 @@ namespace Unit.Animation
         bool _hasIsMovingParameter;
         bool _hasIsRunningParameter;
         bool _hasIsCrouchingParameter;
+        bool _hasIsSlidingParameter;
         bool _hasIsFlyingParameter;
         bool _hasIsHoldingGunParameter;
 
@@ -101,15 +103,16 @@ namespace Unit.Animation
             float planarSpeed = ResolvePlanarSpeed();
             bool isMoving = planarSpeed > movingSpeedThreshold;
             bool isFlying = motor != null && motor.IsFlightEnabled;
+            bool isSliding = motor != null && motor.IsSliding;
             bool isCrouching = motor != null && motor.IsCrouching;
-            bool isRunning = !isFlying && !isCrouching && isMoving && motor != null && motor.IsRunning;
+            bool isRunning = !isFlying && !isSliding && !isCrouching && isMoving && motor != null && motor.IsRunning;
             bool isHoldingGun = hero != null &&
                                 hero.CurrentWeapon != null &&
                                 hero.CurrentWeapon.RangeType == HeroWeaponRangeType.Ranged;
 
             PlayState(ResolveLocomotionStateName(isMoving, isRunning, isCrouching, isFlying, isHoldingGun), crossFadeDuration);
             KeepCurrentStateLooping();
-            SyncParameters(planarSpeed, isMoving, isRunning, isCrouching, isFlying, isHoldingGun);
+            SyncParameters(planarSpeed, isMoving, isRunning, isCrouching, isSliding, isFlying, isHoldingGun);
             ApplyVisualYawOffset();
         }
 
@@ -155,6 +158,7 @@ namespace Unit.Animation
             _hasIsMovingParameter = false;
             _hasIsRunningParameter = false;
             _hasIsCrouchingParameter = false;
+            _hasIsSlidingParameter = false;
             _hasIsFlyingParameter = false;
             _hasIsHoldingGunParameter = false;
 
@@ -173,6 +177,8 @@ namespace Unit.Animation
                     _hasIsRunningParameter = true;
                 else if (parameter.nameHash == IsCrouchingHash && parameter.type == AnimatorControllerParameterType.Bool)
                     _hasIsCrouchingParameter = true;
+                else if (parameter.nameHash == IsSlidingHash && parameter.type == AnimatorControllerParameterType.Bool)
+                    _hasIsSlidingParameter = true;
                 else if (parameter.nameHash == IsFlyingHash && parameter.type == AnimatorControllerParameterType.Bool)
                     _hasIsFlyingParameter = true;
                 else if (parameter.nameHash == IsHoldingGunHash && parameter.type == AnimatorControllerParameterType.Bool)
@@ -291,7 +297,7 @@ namespace Unit.Animation
             visualRoot.localRotation = _visualRootBaseLocalRotation * Quaternion.Euler(0f, modelYawOffset, 0f);
         }
 
-        void SyncParameters(float planarSpeed, bool isMoving, bool isRunning, bool isCrouching, bool isFlying, bool isHoldingGun)
+        void SyncParameters(float planarSpeed, bool isMoving, bool isRunning, bool isCrouching, bool isSliding, bool isFlying, bool isHoldingGun)
         {
             if (_hasSpeedParameter)
                 animator.SetFloat(SpeedHash, planarSpeed);
@@ -304,6 +310,9 @@ namespace Unit.Animation
 
             if (_hasIsCrouchingParameter)
                 animator.SetBool(IsCrouchingHash, isCrouching);
+
+            if (_hasIsSlidingParameter)
+                animator.SetBool(IsSlidingHash, isSliding);
 
             if (_hasIsFlyingParameter)
                 animator.SetBool(IsFlyingHash, isFlying);

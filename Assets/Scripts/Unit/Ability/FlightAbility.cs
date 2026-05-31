@@ -16,8 +16,6 @@ namespace Unit.Ability
         [Header("Flight")]
         [Min(0.05f)]
         [SerializeField] float doubleTapWindow = 0.3f;
-        [Min(0.1f)]
-        [SerializeField] float verticalSpeed = 6f;
 
         float _lastSpacePressedTime = float.NegativeInfinity;
 
@@ -57,10 +55,10 @@ namespace Unit.Ability
             float verticalInput = 0f;
             if (intent.SpaceHeld)
                 verticalInput += 1f;
-            if (intent.Shift)
+            if (intent.Ctrl)
                 verticalInput -= 1f;
 
-            Motor.SetFlightVerticalInput(verticalInput, verticalSpeed);
+            Motor.SetFlightVerticalInput(verticalInput, intent.Shift);
         }
 
         public override void Tick(float deltaTime)
@@ -79,7 +77,7 @@ namespace Unit.Ability
             if (Motor == null)
                 return;
 
-            Motor.SetFlightVerticalInput(0f, 0f);
+            Motor.SetFlightVerticalInput(0f, false);
             if (Motor.IsFlightEnabled)
                 Motor.SetFlightEnabled(false);
         }

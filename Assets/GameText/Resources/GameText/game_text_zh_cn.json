@@ -117,7 +117,7 @@
           "id": "ability.act.flight",
           "name": "Flight",
           "hotkey": "Double Space",
-          "tooltip": "Double-tap Space to toggle flight. While flying, Space rises and Shift descends."
+          "tooltip": "Double-tap Space to toggle flight. While flying, Space rises, Ctrl descends, and Shift boosts flight speed."
         }
       ]
     },

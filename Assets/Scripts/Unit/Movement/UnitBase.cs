@@ -4,16 +4,50 @@ using Unit.Ability;
 using Unit.Combat;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Serialization;
 
 namespace Unit.Movement
 {
     [RequireComponent(typeof(CharacterController))]
     public class UnitBase : MonoBehaviour
     {
-        public float walkSpeed = 5.0f;
-        public float runSpeed = 7.5f;
-        public float crouchMoveSpeed = 2.5f;
-        public float clickMoveSpeed = 4.5f;
+        public enum MoveStance
+        {
+            Walk,
+            Run,
+            Crouch,
+            Slide,
+            Flight,
+            FlightBoost
+        }
+
+        [Header("Ground Movement")]
+        [FormerlySerializedAs("walkSpeed")]
+        public float walkMaxSpeed = 5.0f;
+        [FormerlySerializedAs("runSpeed")]
+        public float runMaxSpeed = 7.5f;
+        [FormerlySerializedAs("crouchMoveSpeed")]
+        public float crouchMaxSpeed = 2.5f;
+        [FormerlySerializedAs("clickMoveSpeed")]
+        public float clickMoveMaxSpeed = 4.5f;
+        [Min(0f)] public float groundAcceleration = 22f;
+        [Min(0f)] public float groundDeceleration = 18f;
+        [Min(0f)] public float overspeedDeceleration = 34f;
+
+        [Header("Slide Movement")]
+        [Min(0f)] public float slideMaxSpeed = 10.25f;
+        [Min(0f)] public float slideAcceleration = 12f;
+        [Min(0f)] public float slideMinimumStartSpeed = 5.5f;
+        [Min(0f)] public float slideMinimumSpeedBoost = 1f;
+        [Min(0f)] public float slideMaximumSpeedBoost = 2.75f;
+        [Min(0.01f)] public float slideDuration = 0.45f;
+        [Min(0f)] public float slideCooldown = 0.15f;
+        [Min(0f)] public float slideInputDeadZone = 0.1f;
+
+        [Header("Flight Movement")]
+        [Min(0f)] public float flightMoveSpeed = 7f;
+        [Min(0f)] public float flightBoostMoveSpeed = 10.75f;
+
         public float gravity = -12f;
         public float arriveDistance = 0.15f;
         public float jumpHeight = 1.4f;
@@ -63,12 +97,18 @@ namespace Unit.Movement
         bool _hasPlanarOverride;
         Vector3 _planarOverrideVel;
         float _planarOverrideTimer;
+        Vector3 _directPlanarVelocity;
         Vector3 _lastPlanarVelocity;
+        int _directMoveFrame = -1;
         bool _flightEnabled;
         float _flightVerticalInput;
         float _flightVerticalSpeed;
         bool _isCrouching;
         bool _isRunning;
+        bool _isSliding;
+        float _slideTimer;
+        float _nextSlideTime;
+        Vector3 _slideDirection;
         float _fallSpeedReductionTimer;
         float _fallSpeedReductionMaxFallSpeed = 2f;
         float _fallSpeedReductionGravityMultiplier = 0.15f;
@@ -84,27 +124,36 @@ namespace Unit.Movement
         public Vector3 CurrentDestination => _destination;
         public float OccupancyRadius => Mathf.Max(0.1f, occupancyRadius);
         public bool IsFlightEnabled => _flightEnabled;
-        public bool IsCrouching => _isCrouching;
-        public bool IsRunning => _isRunning;
+        public bool IsCrouching => _isCrouching || _isSliding;
+        public bool IsRunning => _isRunning && !_isSliding;
+        public bool IsSliding => _isSliding;
         public Vector3 PlanarVelocity => _lastPlanarVelocity;
         public float PlanarSpeed => _lastPlanarVelocity.magnitude;
 
-        public float GetDirectMoveSpeed(bool run)
-        {
-            return run ? Mathf.Max(walkSpeed, runSpeed) : walkSpeed;
-        }
-
-        public float GetDirectMoveSpeed(bool run, bool crouch)
-        {
-            return crouch ? Mathf.Min(walkSpeed, crouchMoveSpeed) : GetDirectMoveSpeed(run);
-        }
-
         void OnValidate()
         {
-            walkSpeed = Mathf.Max(0f, walkSpeed);
-            runSpeed = Mathf.Max(walkSpeed, runSpeed);
-            crouchMoveSpeed = Mathf.Clamp(crouchMoveSpeed, 0f, walkSpeed);
-            clickMoveSpeed = Mathf.Max(0f, clickMoveSpeed);
+            NormalizeMovementSettings();
+        }
+
+        void NormalizeMovementSettings()
+        {
+            walkMaxSpeed = Mathf.Max(0f, walkMaxSpeed);
+            runMaxSpeed = Mathf.Max(walkMaxSpeed, runMaxSpeed);
+            crouchMaxSpeed = Mathf.Clamp(crouchMaxSpeed, 0f, walkMaxSpeed);
+            clickMoveMaxSpeed = Mathf.Max(0f, clickMoveMaxSpeed);
+            groundAcceleration = Mathf.Max(0f, groundAcceleration);
+            groundDeceleration = Mathf.Max(0f, groundDeceleration);
+            overspeedDeceleration = Mathf.Max(groundAcceleration, overspeedDeceleration);
+            slideMaxSpeed = Mathf.Max(Mathf.Max(runMaxSpeed, walkMaxSpeed + 0.1f), slideMaxSpeed);
+            slideAcceleration = Mathf.Max(0f, slideAcceleration);
+            slideMinimumStartSpeed = Mathf.Clamp(slideMinimumStartSpeed, walkMaxSpeed + 0.1f, slideMaxSpeed);
+            slideMinimumSpeedBoost = Mathf.Max(0f, slideMinimumSpeedBoost);
+            slideMaximumSpeedBoost = Mathf.Max(slideMinimumSpeedBoost, slideMaximumSpeedBoost);
+            slideDuration = Mathf.Max(0.01f, slideDuration);
+            slideCooldown = Mathf.Max(0f, slideCooldown);
+            slideInputDeadZone = Mathf.Max(0f, slideInputDeadZone);
+            flightMoveSpeed = Mathf.Max(0f, flightMoveSpeed);
+            flightBoostMoveSpeed = Mathf.Max(flightMoveSpeed, runMaxSpeed + slideMaximumSpeedBoost + 0.1f);
             jumpGroundProbeDistance = Mathf.Max(0.01f, jumpGroundProbeDistance);
             groundProbeRadiusScale = Mathf.Clamp(groundProbeRadiusScale, 0.1f, 1f);
         }
@@ -114,8 +163,10 @@ namespace Unit.Movement
             if (duration <= 0f)
                 return;
 
+            CancelSlide();
             _hasPlanarOverride = true;
             _planarOverrideVel = planarVel;
+            _directPlanarVelocity = planarVel;
             _planarOverrideTimer = Mathf.Max(_planarOverrideTimer, duration);
         }
 
@@ -164,6 +215,7 @@ namespace Unit.Movement
 
             _lastPlanarVelocity = worldDelta / Time.deltaTime;
             _lastPlanarVelocity.y = 0f;
+            _directPlanarVelocity = _lastPlanarVelocity;
         }
 
         public void SetMoveSpeedMultiplier(object source, float multiplier)
@@ -194,8 +246,10 @@ namespace Unit.Movement
             _hasPlanarOverride = false;
             _planarOverrideVel = Vector3.zero;
             _planarOverrideTimer = 0f;
+            _directPlanarVelocity = Vector3.zero;
             _lastPlanarVelocity = Vector3.zero;
             _verticalVel = Vector3.zero;
+            CancelSlide();
 
             if (_cc == null)
             {
@@ -223,6 +277,8 @@ namespace Unit.Movement
             {
                 _isCrouching = false;
                 _isRunning = false;
+                CancelSlide();
+                _directPlanarVelocity = Vector3.zero;
             }
             _flightVerticalInput = 0f;
             _flightVerticalSpeed = 0f;
@@ -231,17 +287,26 @@ namespace Unit.Movement
 
         public void SetCrouching(bool crouching)
         {
-            _isCrouching = crouching && !_flightEnabled;
+            if (_flightEnabled)
+            {
+                _isCrouching = false;
+                return;
+            }
+
+            if (_isSliding && !crouching)
+                return;
+
+            _isCrouching = crouching;
             if (_isCrouching)
                 _isRunning = false;
         }
 
         public void SetRunning(bool running)
         {
-            _isRunning = running && !_isCrouching && !_flightEnabled;
+            _isRunning = running && !_isCrouching && !_isSliding && !_flightEnabled;
         }
 
-        public void SetFlightVerticalInput(float input, float verticalSpeed)
+        public void SetFlightVerticalInput(float input, bool boosted)
         {
             if (!_flightEnabled)
             {
@@ -251,11 +316,12 @@ namespace Unit.Movement
             }
 
             _flightVerticalInput = Mathf.Clamp(input, -1f, 1f);
-            _flightVerticalSpeed = Mathf.Max(0f, verticalSpeed);
+            _flightVerticalSpeed = ResolveFlightMoveSpeed(boosted);
         }
 
         void Awake()
         {
+            NormalizeMovementSettings();
             _cc = GetComponent<CharacterController>();
             AbilityRouter = GetComponent<AbilityInputRouter>();
             Combat = GetComponent<UnitCombat>();
@@ -290,6 +356,8 @@ namespace Unit.Movement
 
         public void SetDestination(Vector3 worldPos)
         {
+            CancelSlide();
+
             if (!NavMeshRoadNetwork.TryResolveDestination(worldPos, sampleRadius, out _destination))
                 _destination = worldPos;
 
@@ -298,13 +366,11 @@ namespace Unit.Movement
             _repathTimer = repathInterval;
         }
 
-        public void MoveImmediate(Vector3 worldDir, float speed)
+        public void MoveImmediate(Vector3 worldDir, MoveStance stance)
         {
-            Vector3 dir = worldDir;
-            if (dir.sqrMagnitude > 1e-6f)
-                dir.Normalize();
-
-            ApplyMovement(dir * speed * _cachedMoveSpeedMultiplier, Time.deltaTime);
+            float dt = Time.deltaTime;
+            _directMoveFrame = Time.frameCount;
+            ApplyMovement(BuildDirectPlanarVelocity(worldDir, stance, dt), dt);
         }
 
         void Update()
@@ -313,9 +379,11 @@ namespace Unit.Movement
             _illegalRecoverTimer = Mathf.Max(0f, _illegalRecoverTimer - dt);
             _navMeshHardSnapTimer = Mathf.Max(0f, _navMeshHardSnapTimer - dt);
             _fallSpeedReductionTimer = Mathf.Max(0f, _fallSpeedReductionTimer - dt);
+            TickSlide(dt);
             TickCollisionDisable(dt);
 
-            ApplyMovement(GetPlannedVelocity(dt), dt);
+            if (_directMoveFrame != Time.frameCount)
+                ApplyMovement(GetPlannedVelocity(dt), dt);
         }
 
         public void Jump()
@@ -323,10 +391,124 @@ namespace Unit.Movement
             if (_flightEnabled)
                 return;
 
+            if (_isSliding)
+                return;
+
             if (!CheckGround(jumpGroundProbeDistance))
                 return;
 
             _verticalVel.y = Mathf.Sqrt(2f * jumpHeight * -gravity);
+        }
+
+        public bool TryStartSlide(Vector3 worldDir)
+        {
+            if (_flightEnabled || _isSliding || !_isRunning || Time.time < _nextSlideTime)
+                return false;
+
+            Vector3 direction = worldDir;
+            direction.y = 0f;
+            if (direction.sqrMagnitude <= slideInputDeadZone * slideInputDeadZone)
+                return false;
+
+            float currentSpeed = Mathf.Max(_directPlanarVelocity.magnitude, PlanarSpeed);
+            if (currentSpeed < slideMinimumStartSpeed)
+                return false;
+
+            direction.Normalize();
+            float speed01 = Mathf.InverseLerp(slideMinimumStartSpeed, Mathf.Max(slideMinimumStartSpeed, runMaxSpeed), currentSpeed);
+            float speedBoost = Mathf.Lerp(slideMinimumSpeedBoost, slideMaximumSpeedBoost, speed01);
+            float startSpeed = Mathf.Min(slideMaxSpeed, currentSpeed + speedBoost);
+
+            _slideDirection = direction;
+            _slideTimer = slideDuration;
+            _nextSlideTime = Time.time + slideDuration + slideCooldown;
+            _isSliding = true;
+            _isCrouching = true;
+            _isRunning = false;
+            _directPlanarVelocity = direction * startSpeed;
+            CancelPathing();
+            return true;
+        }
+
+        Vector3 BuildDirectPlanarVelocity(Vector3 worldDir, MoveStance stance, float dt)
+        {
+            Vector3 direction = worldDir;
+            direction.y = 0f;
+
+            if (direction.sqrMagnitude > 1e-6f)
+                direction.Normalize();
+            else
+                direction = Vector3.zero;
+
+            if (_flightEnabled)
+            {
+                bool boosted = stance == MoveStance.FlightBoost;
+                _directPlanarVelocity = direction * ResolveFlightMoveSpeed(boosted);
+                return _directPlanarVelocity;
+            }
+
+            MoveStance activeStance = _isSliding ? MoveStance.Slide : stance;
+            if (activeStance == MoveStance.Slide)
+                direction = _slideDirection.sqrMagnitude > 1e-6f ? _slideDirection : direction;
+
+            float maxSpeed = ResolveGroundMaxSpeed(activeStance);
+            float acceleration = ResolveGroundAcceleration(activeStance);
+            return AcceleratePlanarVelocity(direction, maxSpeed, acceleration, dt);
+        }
+
+        Vector3 AcceleratePlanarVelocity(Vector3 direction, float maxSpeed, float acceleration, float dt)
+        {
+            if (dt <= 0f)
+                return _directPlanarVelocity;
+
+            if (direction.sqrMagnitude <= 1e-6f)
+            {
+                float braking = _directPlanarVelocity.magnitude > maxSpeed + 0.01f
+                    ? overspeedDeceleration
+                    : groundDeceleration;
+                _directPlanarVelocity = Vector3.MoveTowards(
+                    _directPlanarVelocity,
+                    Vector3.zero,
+                    braking * dt);
+                return _directPlanarVelocity;
+            }
+
+            Vector3 targetVelocity = direction * maxSpeed;
+            float currentSpeed = _directPlanarVelocity.magnitude;
+            float activeAcceleration = currentSpeed > maxSpeed + 0.01f
+                ? overspeedDeceleration
+                : acceleration;
+
+            _directPlanarVelocity = Vector3.MoveTowards(
+                _directPlanarVelocity,
+                targetVelocity,
+                activeAcceleration * dt);
+            return _directPlanarVelocity;
+        }
+
+        float ResolveGroundMaxSpeed(MoveStance stance)
+        {
+            switch (stance)
+            {
+                case MoveStance.Run:
+                    return runMaxSpeed * _cachedMoveSpeedMultiplier;
+                case MoveStance.Crouch:
+                    return crouchMaxSpeed * _cachedMoveSpeedMultiplier;
+                case MoveStance.Slide:
+                    return slideMaxSpeed;
+                default:
+                    return walkMaxSpeed * _cachedMoveSpeedMultiplier;
+            }
+        }
+
+        float ResolveGroundAcceleration(MoveStance stance)
+        {
+            return stance == MoveStance.Slide ? slideAcceleration : groundAcceleration;
+        }
+
+        float ResolveFlightMoveSpeed(bool boosted)
+        {
+            return boosted ? flightBoostMoveSpeed : flightMoveSpeed;
         }
 
         void ApplyMovement(Vector3 plannedVelocity, float dt)
@@ -361,7 +543,7 @@ namespace Unit.Movement
                 _repathTimer = repathInterval;
             }
 
-            return GetPathMoveDir() * clickMoveSpeed * _cachedMoveSpeedMultiplier;
+            return GetPathMoveDir() * clickMoveMaxSpeed * _cachedMoveSpeedMultiplier;
         }
 
         void StepMovement(Vector3 planarVelocity, Vector3 facingVelocity, float dt)
@@ -370,6 +552,8 @@ namespace Unit.Movement
             {
                 _planarOverrideTimer -= dt;
                 planarVelocity = _planarOverrideVel;
+                facingVelocity = _planarOverrideVel;
+                _directPlanarVelocity = _planarOverrideVel;
 
                 if (_planarOverrideTimer <= 0f)
                 {
@@ -620,7 +804,7 @@ namespace Unit.Movement
                 RepositionWithoutPathReset(legalPoint);
             else
                 OverridePlanarVelocity(
-                    delta.normalized * Mathf.Max(Mathf.Max(0f, localCorrectionSpeed), clickMoveSpeed),
+                    delta.normalized * Mathf.Max(Mathf.Max(0f, localCorrectionSpeed), clickMoveMaxSpeed),
                     0.18f);
 
             _illegalRecoverTimer = illegalRecoverCooldown;
@@ -665,6 +849,31 @@ namespace Unit.Movement
             _collisionDisabledTimer = Mathf.Max(0f, _collisionDisabledTimer - dt);
             if (_collisionDisabledTimer <= 0f)
                 SetCharacterControllerEnabled(true);
+        }
+
+        void TickSlide(float dt)
+        {
+            if (!_isSliding)
+                return;
+
+            if (_flightEnabled)
+            {
+                CancelSlide();
+                return;
+            }
+
+            _slideTimer -= dt;
+            if (_slideTimer > 0f)
+                return;
+
+            CancelSlide();
+        }
+
+        void CancelSlide()
+        {
+            _isSliding = false;
+            _slideTimer = 0f;
+            _slideDirection = Vector3.zero;
         }
 
         void SetCharacterControllerEnabled(bool enabled)

@@ -8,9 +8,9 @@ namespace Unit.Ability
     public class RtsVoidImplosionAbility : RtsAreaDamageAbilityBase
     {
         const string AbilityIdValue = "ability.rts.voidImplosion";
+        const string IconResourcePath = "AbilityIcons/Rts/rts_void_implosion";
 
         [Header("Ability")]
-        [SerializeField] Sprite icon;
         [Min(0f)]
         [SerializeField] float cooldown;
 
@@ -25,11 +25,12 @@ namespace Unit.Ability
         [Min(0f)]
         [SerializeField] float effectGroundOffset = 0.05f;
 
+        [NonSerialized] Sprite _icon;
         float _nextReadyTime;
 
         public override string AbilityId => AbilityIdValue;
         public override string DisplayName => GameText.GetName(AbilityId, AbilityId);
-        public override Sprite Icon => icon;
+        public override Sprite Icon => LoadIcon(ref _icon, IconResourcePath);
         public override string Tooltip => GameText.GetTooltip(AbilityId);
         public override bool IsEnabled => Time.time >= _nextReadyTime;
         public override float TargetingPreviewRadius => radius;

@@ -13,9 +13,7 @@ namespace Unit.Ability
     public class RtsSupportAuraAbility : RtsUnitAbility
     {
         const string AbilityIdValue = "ability.rts.supportAura";
-
-        [Header("Ability")]
-        [SerializeField] Sprite icon;
+        const string IconResourcePath = "AbilityIcons/Rts/rts_support_aura";
 
         [Header("Aura")]
         [SerializeField] LayerMask unitMask = ~0;
@@ -29,11 +27,12 @@ namespace Unit.Ability
         readonly List<UnitBase> _bufferedUnits = new List<UnitBase>(16);
         readonly List<UnitBase> _buffedUnits = new List<UnitBase>(16);
 
+        [NonSerialized] Sprite _icon;
         float _nextScanTime;
 
         public override string AbilityId => AbilityIdValue;
         public override string DisplayName => GameText.GetName(AbilityId, AbilityId);
-        public override Sprite Icon => icon;
+        public override Sprite Icon => LoadIcon(ref _icon, IconResourcePath);
         public override string Tooltip => GameText.GetTooltip(AbilityId);
         public override RtsAbilityActivationType ActivationType => RtsAbilityActivationType.Passive;
         public override bool IsEnabled => true;

@@ -9,6 +9,8 @@ namespace UI.HUD
 {
     public class CommandSlotView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
+        static readonly Color CooldownOverlayColor = new Color(0f, 0f, 0f, 0.6f);
+
         [SerializeField] Button button;
         [SerializeField] Graphic backgroundGraphic;
         [SerializeField] Image iconImage;
@@ -22,7 +24,7 @@ namespace UI.HUD
         CommandEntry _entry;
 
         Action<int> _onClick;
-        Action<CommandEntry> _onHoverEnter;
+        Action<int, CommandEntry> _onHoverEnter;
         Action _onHoverExit;
 
         void Awake()
@@ -48,7 +50,7 @@ namespace UI.HUD
             bool hasEntry,
             CommandEntry entry,
             Action<int> onClick,
-            Action<CommandEntry> onHoverEnter,
+            Action<int, CommandEntry> onHoverEnter,
             Action onHoverExit)
         {
             _slotIndex = slotIndex;
@@ -65,7 +67,7 @@ namespace UI.HUD
         public void OnPointerEnter(PointerEventData eventData)
         {
             if (!_hasEntry) return;
-            _onHoverEnter?.Invoke(_entry);
+            _onHoverEnter?.Invoke(_slotIndex, _entry);
         }
 
         public void OnPointerExit(PointerEventData eventData)
@@ -97,7 +99,7 @@ namespace UI.HUD
                     nameText.text = string.Empty;
 
                 if (hotkeyText != null)
-                    hotkeyText.text = string.Empty;
+                    SetHotkeyTextVisible(false);
 
                 if (disabledMask != null)
                     disabledMask.SetActive(false);
@@ -126,21 +128,43 @@ namespace UI.HUD
             if (nameText != null)
                 nameText.text = _entry.Name ?? string.Empty;
 
-            if (hotkeyText != null)
-                hotkeyText.text = _entry.HotkeyText ?? string.Empty;
+            SetHotkeyTextVisible(false);
+
+            float cooldown01 = Mathf.Clamp01(_entry.Cooldown01);
+            bool isCoolingDown = cooldown01 > 0.001f;
 
             if (disabledMask != null)
-                disabledMask.SetActive(!_entry.Enabled);
+                disabledMask.SetActive(!_entry.Enabled && !isCoolingDown);
 
             if (cooldownFill != null)
             {
-                bool showCooldown = _entry.Cooldown01 > 0.001f;
-                cooldownFill.gameObject.SetActive(showCooldown);
-                cooldownFill.fillAmount = Mathf.Clamp01(_entry.Cooldown01);
+                cooldownFill.gameObject.SetActive(isCoolingDown);
+                if (isCoolingDown)
+                {
+                    cooldownFill.color = CooldownOverlayColor;
+                    cooldownFill.type = Image.Type.Filled;
+                    cooldownFill.fillMethod = Image.FillMethod.Radial360;
+                    cooldownFill.fillOrigin = (int)Image.Origin360.Top;
+                    cooldownFill.fillClockwise = false;
+                    cooldownFill.fillAmount = cooldown01;
+                }
+                else
+                {
+                    cooldownFill.fillAmount = 0f;
+                }
             }
 
             if (button != null)
                 button.interactable = _entry.Enabled && _entry.Type != CommandEntryType.Passive;
+        }
+
+        void SetHotkeyTextVisible(bool visible)
+        {
+            if (hotkeyText == null)
+                return;
+
+            hotkeyText.text = string.Empty;
+            hotkeyText.gameObject.SetActive(visible);
         }
     }
 }

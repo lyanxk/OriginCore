@@ -8,20 +8,21 @@ namespace Unit.Ability
     public class RtsBlinkAbility : RtsUnitAbility
     {
         const string AbilityIdValue = "ability.rts.blink";
+        const string IconResourcePath = "AbilityIcons/Rts/rts_blink";
 
         [Header("Ability")]
-        [SerializeField] Sprite icon;
         [Min(0f)]
         [SerializeField] float cooldown = 2f;
 
         [Header("Blink")]
         [SerializeField] float maxDistance = 5f;
 
+        [NonSerialized] Sprite _icon;
         float _nextReadyTime;
 
         public override string AbilityId => AbilityIdValue;
         public override string DisplayName => GameText.GetName(AbilityId, AbilityId);
-        public override Sprite Icon => icon;
+        public override Sprite Icon => LoadIcon(ref _icon, IconResourcePath);
         public override string Tooltip => GameText.GetTooltip(AbilityId);
         public override bool IsEnabled => Time.time >= _nextReadyTime;
         public override RtsAbilityTargetingMode TargetingMode => RtsAbilityTargetingMode.Point;

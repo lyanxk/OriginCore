@@ -131,6 +131,14 @@ namespace Unit.Ability
 
         protected abstract bool IsAvailableInMode(string modeName);
 
+        protected static Sprite LoadIcon(ref Sprite iconCache, string resourcePath)
+        {
+            if (iconCache == null && !string.IsNullOrWhiteSpace(resourcePath))
+                iconCache = Resources.Load<Sprite>(resourcePath);
+
+            return iconCache;
+        }
+
         static T ResolveNearbyComponent<T>(Component origin) where T : Component
         {
             if (origin == null)

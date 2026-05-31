@@ -33,6 +33,7 @@ namespace UI.HUD
         readonly List<CommandEntry?> _slottedEntries = new List<CommandEntry?>(16);
 
         SelectionManager _selection;
+        int _hoveredSlotIndex = -1;
 
         public int SlotCount => slotCount;
         public IReadOnlyList<CommandEntry> VisibleEntries => _visibleEntries;
@@ -42,6 +43,7 @@ namespace UI.HUD
             if (inputSource == null)
                 inputSource = FindObjectOfType<InputIntentSource>();
 
+            EnsureTooltipController();
             EnsureSlots();
             EnsureSlotEntryBuffer();
         }
@@ -59,6 +61,7 @@ namespace UI.HUD
             if (tooltipController != null)
                 tooltipController.Hide();
 
+            _hoveredSlotIndex = -1;
             HidePendingCommandDisplay();
         }
 
@@ -240,11 +243,7 @@ namespace UI.HUD
                 CommandEntry entry = _visibleEntries[i];
 
                 if (entry.Type == CommandEntryType.Ability || entry.Type == CommandEntryType.Passive)
-                {
-                    if (!entry.Enabled)
-                        _visibleEntries.RemoveAt(i);
                     continue;
-                }
 
                 if (IsBaseCommand(entry.Id))
                 {
@@ -312,14 +311,40 @@ namespace UI.HUD
             }
         }
 
+        void EnsureTooltipController()
+        {
+            if (tooltipController != null)
+                return;
+
+            tooltipController = GetComponentInChildren<TooltipController>(true);
+            if (tooltipController != null)
+                return;
+
+            Canvas canvas = GetComponentInParent<Canvas>();
+            Transform tooltipParent = canvas != null ? canvas.transform : transform;
+
+            GameObject tooltipObject = new GameObject("CommandTooltip", typeof(RectTransform));
+            tooltipObject.transform.SetParent(tooltipParent, false);
+            tooltipObject.transform.SetAsLastSibling();
+
+            RectTransform tooltipRect = tooltipObject.GetComponent<RectTransform>();
+            tooltipRect.anchorMin = new Vector2(0f, 1f);
+            tooltipRect.anchorMax = new Vector2(0f, 1f);
+            tooltipRect.pivot = new Vector2(0f, 1f);
+            tooltipRect.anchoredPosition = Vector2.zero;
+            tooltipRect.sizeDelta = new Vector2(320f, 0f);
+
+            tooltipController = tooltipObject.AddComponent<TooltipController>();
+        }
+
         void BindSlots()
         {
+            EnsureTooltipController();
             EnsureSlots();
-            if (tooltipController != null)
-                tooltipController.Hide();
 
             if (TryGetPendingCommandDisplay(out string pendingCommandName))
             {
+                HideTooltip();
                 ShowPendingCommandDisplay(pendingCommandName, string.Empty);
                 return;
             }
@@ -343,6 +368,8 @@ namespace UI.HUD
                     HandleSlotHoverEnter,
                     HandleSlotHoverExit);
             }
+
+            RefreshHoveredTooltip();
         }
 
         bool TryGetPendingCommandDisplay(out string commandText)
@@ -519,16 +546,45 @@ namespace UI.HUD
             TryExecuteBySlot(slotIndex);
         }
 
-        void HandleSlotHoverEnter(CommandEntry entry)
+        void HandleSlotHoverEnter(int slotIndex, CommandEntry entry)
         {
+            _hoveredSlotIndex = slotIndex;
+            ShowTooltip(entry);
+        }
+
+        void HandleSlotHoverExit()
+        {
+            HideTooltip();
+        }
+
+        void RefreshHoveredTooltip()
+        {
+            if (_hoveredSlotIndex < 0)
+                return;
+
+            if (!TryGetEntryAtSlot(_hoveredSlotIndex, out CommandEntry entry))
+            {
+                HideTooltip();
+                return;
+            }
+
+            ShowTooltip(entry);
+        }
+
+        void ShowTooltip(CommandEntry entry)
+        {
+            EnsureTooltipController();
+
             if (tooltipController == null)
                 return;
 
             tooltipController.Show(entry, GetPointerScreenPosition());
         }
 
-        void HandleSlotHoverExit()
+        void HideTooltip()
         {
+            _hoveredSlotIndex = -1;
+
             if (tooltipController != null)
                 tooltipController.Hide();
         }

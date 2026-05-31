@@ -17,6 +17,8 @@ namespace Modes
         const int PointPreviewSegments = 48;
         const float PointPreviewLineWidth = 0.08f;
         const float PointPreviewYOffset = 0.06f;
+        const float EdgePanSpeedMultiplier = 1.5f;
+        const float StrictEdgePanSizePixels = 6f;
         static readonly Color PointPreviewColor = new Color(1f, 0.45f, 0.1f, 0.95f);
 
         static Material s_pointPreviewMaterial;
@@ -111,8 +113,8 @@ namespace Modes
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
 
-            EdgeSizeX = Screen.width * 0.12f;
-            EdgeSizeY = Screen.height * 0.12f;
+            EdgeSizeX = StrictEdgePanSizePixels;
+            EdgeSizeY = StrictEdgePanSizePixels;
 
             _camFocus = _unit.transform.position;
             _unit.CancelPathing();
@@ -463,28 +465,20 @@ namespace Modes
             float y = 0f;
 
             if (pointerScreenPos.x <= EdgeSizeX)
-            {
-                float t = 1f - (pointerScreenPos.x / EdgeSizeX);
-                x = -t;
-            }
+                x = -1f;
             else if (pointerScreenPos.x >= Screen.width - EdgeSizeX)
-            {
-                float t = (pointerScreenPos.x - (Screen.width - EdgeSizeX)) / EdgeSizeX;
-                x = t;
-            }
+                x = 1f;
 
             if (pointerScreenPos.y <= EdgeSizeY)
-            {
-                float t = 1f - (pointerScreenPos.y / EdgeSizeY);
-                y = -t;
-            }
+                y = -1f;
             else if (pointerScreenPos.y >= Screen.height - EdgeSizeY)
-            {
-                float t = (pointerScreenPos.y - (Screen.height - EdgeSizeY)) / EdgeSizeY;
-                y = t;
-            }
+                y = 1f;
 
-            return new Vector2(x, y) * EdgePanSpeed;
+            Vector2 direction = new Vector2(x, y);
+            if (direction.sqrMagnitude <= 0.0001f)
+                return Vector2.zero;
+
+            return direction.normalized * (EdgePanSpeed * EdgePanSpeedMultiplier);
         }
 
         void HandleSelection(InputIntent intent)

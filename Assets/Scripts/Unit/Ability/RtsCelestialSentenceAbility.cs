@@ -8,9 +8,9 @@ namespace Unit.Ability
     public class RtsCelestialSentenceAbility : RtsAreaDamageAbilityBase
     {
         const string AbilityIdValue = "ability.rts.celestialSentence";
+        const string IconResourcePath = "AbilityIcons/Rts/rts_celestial_sentence";
 
         [Header("Ability")]
-        [SerializeField] Sprite icon;
         [Min(0f)]
         [SerializeField] float cooldown;
 
@@ -20,11 +20,12 @@ namespace Unit.Ability
         [Min(0.1f)]
         [SerializeField] float radius = 1f;
 
+        [NonSerialized] Sprite _icon;
         float _nextReadyTime;
 
         public override string AbilityId => AbilityIdValue;
         public override string DisplayName => GameText.GetName(AbilityId, AbilityId);
-        public override Sprite Icon => icon;
+        public override Sprite Icon => LoadIcon(ref _icon, IconResourcePath);
         public override string Tooltip => GameText.GetTooltip(AbilityId);
         public override bool IsEnabled => Time.time >= _nextReadyTime;
         public override RtsAbilityTargetingMode TargetingMode => RtsAbilityTargetingMode.Self;

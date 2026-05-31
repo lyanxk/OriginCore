@@ -1,30 +1,38 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using Content;
 using Unit.Ability;
 using Unit.Combat;
 using Unit.Command;
 using Unit.Movement;
 using UnityEngine;
+
 namespace Unit.UI
 {
     [DisallowMultipleComponent]
     public class UnitUIDataSource : CommandCardDataSourceBase
     {
         static readonly int[] AbilitySlotOrder = { 8, 9, 10, 11, 4, 5, 6, 7 };
+        const string MoveIconResourcePath = "CommandIcons/command_move";
+        const string AttackIconResourcePath = "CommandIcons/command_attack";
+        const string StopIconResourcePath = "CommandIcons/command_stop";
 
         [Header("Unit Components")]
         [SerializeField] UnitBase motor;
         [SerializeField] CommandExecutor commandExecutor;
         [SerializeField] UnitCombat combat;
 
-        [Header("Base Command UI")]
-        [SerializeField] Sprite moveIcon;
-        [SerializeField] Sprite attackIcon;
-        [SerializeField] Sprite stopIcon;
+        [NonSerialized] Sprite _moveIcon;
+        [NonSerialized] Sprite _attackIcon;
+        [NonSerialized] Sprite _stopIcon;
 
         public override bool CanMove => commandExecutor != null && motor != null;
         public override bool CanAttack => commandExecutor != null && combat != null;
         public override bool CanStop => commandExecutor != null;
+
+        Sprite MoveIcon => LoadIcon(ref _moveIcon, MoveIconResourcePath);
+        Sprite AttackIcon => LoadIcon(ref _attackIcon, AttackIconResourcePath);
+        Sprite StopIcon => LoadIcon(ref _stopIcon, StopIconResourcePath);
 
         protected override void CacheSpecificComponents()
         {
@@ -43,7 +51,7 @@ namespace Unit.UI
             entries.Add(new CommandEntry
             {
                 Id = CommandEntryIds.Move,
-                Icon = moveIcon,
+                Icon = MoveIcon,
                 Name = GameText.GetName(CommandEntryIds.Move, CommandEntryIds.Move),
                 HotkeyText = GameText.GetHotkey(CommandEntryIds.Move),
                 Enabled = CanMove,
@@ -56,7 +64,7 @@ namespace Unit.UI
             entries.Add(new CommandEntry
             {
                 Id = CommandEntryIds.Attack,
-                Icon = attackIcon,
+                Icon = AttackIcon,
                 Name = GameText.GetName(CommandEntryIds.Attack, CommandEntryIds.Attack),
                 HotkeyText = GameText.GetHotkey(CommandEntryIds.Attack),
                 Enabled = CanAttack,
@@ -69,7 +77,7 @@ namespace Unit.UI
             entries.Add(new CommandEntry
             {
                 Id = CommandEntryIds.Stop,
-                Icon = stopIcon,
+                Icon = StopIcon,
                 Name = GameText.GetName(CommandEntryIds.Stop, CommandEntryIds.Stop),
                 HotkeyText = GameText.GetHotkey(CommandEntryIds.Stop),
                 Enabled = CanStop,
@@ -98,6 +106,14 @@ namespace Unit.UI
 
                 entries.Add(CreateAbilityEntry(ability, AbilitySlotOrder[i]));
             }
+        }
+
+        static Sprite LoadIcon(ref Sprite iconCache, string resourcePath)
+        {
+            if (iconCache == null && !string.IsNullOrWhiteSpace(resourcePath))
+                iconCache = Resources.Load<Sprite>(resourcePath);
+
+            return iconCache;
         }
     }
 }

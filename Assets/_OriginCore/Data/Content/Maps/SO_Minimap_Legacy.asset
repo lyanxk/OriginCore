@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c90fa61dddb238a438ddd4f6f84c08a1, type: 3}
+  m_Name: SO_Minimap_Legacy
+  m_EditorClassIdentifier: 
+  _authoredTexture: {fileID: 0}
+  _resolution: 512
+  _backgroundColor: {r: 0.045, g: 0.06, b: 0.035, a: 1}
+  _gridColor: {r: 0.14, g: 0.18, b: 0.1, a: 1}
+  _borderColor: {r: 0.58, g: 0.72, b: 0.42, a: 1}
+  _gridDivisions: 8
+  _lineThickness: 2
+  _regions:
+  - _normalizedRect:
+      serializedVersion: 2
+      x: 0.03
+      y: 0.03
+      width: 0.94
+      height: 0.94
+    _color: {r: 0.2, g: 0.28, b: 0.16, a: 1}
+    _ellipse: 0

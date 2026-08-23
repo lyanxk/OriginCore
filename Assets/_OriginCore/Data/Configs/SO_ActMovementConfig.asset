@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d67fc0fba389ac4dad6bde1eadfb858, type: 3}
+  m_Name: SO_ActMovementConfig
+  m_EditorClassIdentifier: 
+  _runSpeed: 6
+  _acceleration: 24
+  _airControl: 0.35
+  _rotationSpeed: 720
+  _gravity: -24
+  _jumpHeight: 1.5
+  _airJumpHeight: 1.2
+  _jumpBufferTime: 0.15
+  _coyoteTime: 0.12
+  _groundProbeDistance: 0.12
+  _groundedVerticalSpeed: -2
+  _crouchHeight: 1.1
+  _boostRadius: 1.5
+  _boostForce: 9
+  _boostCooldown: 0.25
+  _lookSensitivity: 0.12
+  _minimumPitch: -35
+  _maximumPitch: 65

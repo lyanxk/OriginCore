@@ -1,0 +1,1443 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c00492d83f701514fba90857bbbe38aa, type: 3}
+  m_Name: SO_WeaponActionSet_Y_TimeslotKey
+  m_EditorClassIdentifier:
+  _contentId: actionset.y.timeslot-key
+  _displayName: Timeslot Key
+  _groundCombo:
+    _actionIds:
+    - action.y.timeslot.ground-1
+    - action.y.timeslot.ground-2
+    - action.y.timeslot.ground-3
+    - action.y.timeslot.ground-4
+    _resetDelay: 1
+    _restartDelay: 0
+    _suspendGravity: 0
+  _airCombo:
+    _actionIds:
+    - action.y.timeslot.air-1
+    - action.y.timeslot.air-2
+    - action.y.timeslot.air-3
+    _resetDelay: 1
+    _restartDelay: 0.5
+    _suspendGravity: 1
+  _actions:
+  - _actionId: action.y.timeslot.ground-1
+    _displayName: Ground Slash I
+    _input:
+      _requiredButtons: 1
+      _direction: 0
+      _press: 0
+      _stances: 1
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 1
+      _collisionPolicy: 1
+      _distance: 1.1
+      _speed: 7
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 1
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 3
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 5.6, y: 5.6, z: 2.8}
+      _radius: 2.8
+      _arcDegrees: 150
+      _damageMultiplier: 1
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses: []
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 1
+  - _actionId: action.y.timeslot.ground-2
+    _displayName: Ground Slash II
+    _input:
+      _requiredButtons: 1
+      _direction: 0
+      _press: 0
+      _stances: 1
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 1
+      _collisionPolicy: 1
+      _distance: 1.1
+      _speed: 7
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 1
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 3
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 5.6, y: 5.6, z: 2.8}
+      _radius: 2.8
+      _arcDegrees: 150
+      _damageMultiplier: 1
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses: []
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 1
+  - _actionId: action.y.timeslot.ground-3
+    _displayName: Cross Through
+    _input:
+      _requiredButtons: 1
+      _direction: 0
+      _press: 0
+      _stances: 1
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.28
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 7
+      _collisionPolicy: 1
+      _distance: 3
+      _speed: 20
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 1
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 3
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 5.6, y: 5.6, z: 2.8}
+      _radius: 2.8
+      _arcDegrees: 150
+      _damageMultiplier: 1
+      _repeatCount: 2
+      _repeatInterval: 0.14
+      _damageType: 0
+      _damageFlags: 0
+      _statuses: []
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 1
+  - _actionId: action.y.timeslot.ground-4
+    _displayName: Heavy Slash
+    _input:
+      _requiredButtons: 1
+      _direction: 0
+      _press: 0
+      _stances: 1
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 3
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 5.6, y: 5.6, z: 2.8}
+      _radius: 2.8
+      _arcDegrees: 150
+      _damageMultiplier: 3
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses: []
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 1
+  - _actionId: action.y.timeslot.air-1
+    _displayName: Air Slash I
+    _input:
+      _requiredButtons: 1
+      _direction: 0
+      _press: 0
+      _stances: 2
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 3
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 5.6, y: 5.6, z: 2.8}
+      _radius: 2.8
+      _arcDegrees: 150
+      _damageMultiplier: 1
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses: []
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 1
+  - _actionId: action.y.timeslot.air-2
+    _displayName: Air Slash II
+    _input:
+      _requiredButtons: 1
+      _direction: 0
+      _press: 0
+      _stances: 2
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 3
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 5.6, y: 5.6, z: 2.8}
+      _radius: 2.8
+      _arcDegrees: 150
+      _damageMultiplier: 1
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses: []
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 1
+  - _actionId: action.y.timeslot.air-3
+    _displayName: Air Spin
+    _input:
+      _requiredButtons: 1
+      _direction: 0
+      _press: 0
+      _stances: 2
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.6799999999999999
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 3
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 5.6, y: 5.6, z: 2.8}
+      _radius: 2.8
+      _arcDegrees: 150
+      _damageMultiplier: 2
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses: []
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 1
+  - _actionId: action.y.timeslot.dash
+    _displayName: Path Dash
+    _input:
+      _requiredButtons: 1
+      _direction: 2
+      _press: 0
+      _stances: 1
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 1
+      _collisionPolicy: 1
+      _distance: 3.5
+      _speed: 14
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 1
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 3
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 5.6, y: 5.6, z: 2.8}
+      _radius: 2.8
+      _arcDegrees: 150
+      _damageMultiplier: 1
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses: []
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 0
+  - _actionId: action.y.timeslot.lock-dash
+    _displayName: Locked Push Dash
+    _input:
+      _requiredButtons: 1
+      _direction: 2
+      _press: 0
+      _stances: 1
+      _requiresTargetLock: 1
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 1
+      _collisionPolicy: 1
+      _distance: 4.5
+      _speed: 16
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 1
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 3
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 5.6, y: 5.6, z: 2.8}
+      _radius: 2.8
+      _arcDegrees: 150
+      _damageMultiplier: 1
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses:
+      - _type: 2
+        _magnitude: 3
+        _duration: 0.25
+        _stackPolicy: 0
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 0
+  - _actionId: action.y.timeslot.wave
+    _displayName: Sword Wave
+    _input:
+      _requiredButtons: 5
+      _direction: 0
+      _press: 0
+      _stances: 3
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 3
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 14, y: 14, z: 7}
+      _radius: 7
+      _arcDegrees: 45
+      _damageMultiplier: 1
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses:
+      - _type: 1
+        _magnitude: 0
+        _duration: 0
+        _stackPolicy: 0
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 0
+  - _actionId: action.y.timeslot.rift
+    _displayName: Temporal Rift
+    _input:
+      _requiredButtons: 5
+      _direction: 0
+      _press: 0
+      _stances: 3
+      _requiresTargetLock: 1
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 0
+      _localOffset: {x: 0, y: 0, z: 0}
+      _centerOnTarget: 1
+      _size: {x: 10, y: 10, z: 5}
+      _radius: 5
+      _arcDegrees: 150
+      _damageMultiplier: 0.2
+      _overrideLockedTargetDamage: 1
+      _lockedTargetDamageMultiplier: 1.5
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses:
+      - _type: 3
+        _magnitude: 5
+        _duration: 0.5
+        _stackPolicy: 0
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 0
+  - _actionId: action.y.timeslot.teleport-slash
+    _displayName: Front Rift Slash
+    _input:
+      _requiredButtons: 5
+      _direction: 2
+      _press: 0
+      _stances: 3
+      _requiresTargetLock: 1
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 25
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 25
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 25
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 2
+      _collisionPolicy: 2
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 1
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 0
+      _localOffset: {x: 0, y: 0, z: 0}
+      _centerOnTarget: 1
+      _size: {x: 5, y: 5, z: 2.5}
+      _radius: 2.5
+      _arcDegrees: 360
+      _damageMultiplier: 2
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses: []
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 0
+  - _actionId: action.y.timeslot.launch-short
+    _displayName: Rising Slash
+    _input:
+      _requiredButtons: 1
+      _direction: 3
+      _press: 1
+      _stances: 1
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 3
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 5, y: 5, z: 2.5}
+      _radius: 2.5
+      _arcDegrees: 120
+      _damageMultiplier: 1
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses:
+      - _type: 4
+        _magnitude: 4
+        _duration: 0.4
+        _stackPolicy: 0
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 0
+  - _actionId: action.y.timeslot.launch-long
+    _displayName: Rising Pair
+    _input:
+      _requiredButtons: 1
+      _direction: 3
+      _press: 2
+      _stances: 1
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 5
+      _collisionPolicy: 1
+      _distance: 0
+      _speed: 8
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 1
+      _targetFrontOffset: 1
+    _hits:
+    - _phase: 1
+      _shape: 3
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 5, y: 5, z: 2.5}
+      _radius: 2.5
+      _arcDegrees: 120
+      _damageMultiplier: 1
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses:
+      - _type: 5
+        _magnitude: 5
+        _duration: 0.6
+        _stackPolicy: 0
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 0
+  - _actionId: action.y.timeslot.air-dash
+    _displayName: Air Path Dash
+    _input:
+      _requiredButtons: 1
+      _direction: 2
+      _press: 0
+      _stances: 2
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 1
+      _collisionPolicy: 1
+      _distance: 6
+      _speed: 18
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 1
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 3
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 5.6, y: 5.6, z: 2.8}
+      _radius: 2.8
+      _arcDegrees: 150
+      _damageMultiplier: 1
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses: []
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 0
+  - _actionId: action.y.timeslot.air-lock-dash
+    _displayName: Air Locked Push Dash
+    _input:
+      _requiredButtons: 1
+      _direction: 2
+      _press: 0
+      _stances: 2
+      _requiresTargetLock: 1
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 1
+      _collisionPolicy: 1
+      _distance: 7
+      _speed: 20
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 1
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 3
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 5.6, y: 5.6, z: 2.8}
+      _radius: 2.8
+      _arcDegrees: 150
+      _damageMultiplier: 1
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses:
+      - _type: 2
+        _magnitude: 5
+        _duration: 0.35
+        _stackPolicy: 0
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 0
+  - _actionId: action.y.timeslot.air-slam
+    _displayName: Air Ground Slam
+    _input:
+      _requiredButtons: 1
+      _direction: 3
+      _press: 0
+      _stances: 2
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 6
+      _collisionPolicy: 2
+      _distance: 0
+      _speed: 16
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 1
+      _targetFrontOffset: 1
+    _hits:
+    - _phase: 1
+      _shape: 0
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 6, y: 6, z: 3}
+      _radius: 3
+      _arcDegrees: 150
+      _damageMultiplier: 1
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses:
+      - _type: 6
+        _magnitude: 10
+        _duration: 0.5
+        _stackPolicy: 0
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 0

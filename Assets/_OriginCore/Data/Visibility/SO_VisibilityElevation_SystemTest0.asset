@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1000000000000000000000000000003, type: 3}
+  m_Name: SO_VisibilityElevation_SystemTest0
+  m_EditorClassIdentifier:
+  _revision: system-test-0.runtime-sampled-1
+  _flatCompatibility: 0
+  _sampleSceneGeometry: 1
+  _sampledHeightBandStep: 3
+  _samplingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  _worldBounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 50, y: 15, z: 50}
+  _cellSize: 2
+  _width: 50
+  _height: 50
+  _groundHeight: []
+  _heightBand: []
+  _occluderHeight: []
+  _cliffMask: []

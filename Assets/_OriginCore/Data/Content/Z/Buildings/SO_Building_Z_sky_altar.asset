@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 823eb5f1989f2cf4fb4ceeb962d9f7df, type: 3}
+  m_Name: SO_Building_Z_sky_altar
+  m_EditorClassIdentifier: 
+  _contentId: z.building.sky_altar
+  _displayName: Sky Altar
+  _entityDefinition: {fileID: 11400000, guid: e9296494283060143914c4b9db914ee0, type: 2}
+  _prefab: {fileID: 2244832248309060371, guid: 68d0c198ec43c0d458907c7a438a6b4c, type: 3}
+  _constructionCost:
+    _commanderResource: 0
+    _crystal: 300
+    _influence: 0
+  _constructionSeconds: 60
+  _footprint: {x: 3, y: 3}
+  _placementBlockingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  _productionRecipes: []
+  _technologies:
+  - {fileID: 11400000, guid: d7f0d0a110def714181bf50fa9b06c3b, type: 2}
+  _supportsRallyPoint: 0
+  _supportsAttack: 0
+  _commanderResourcePerSecond: 0
+  _crystalPerSecond: 0
+  _requiredUnlockId: z.building.sky_altar
+  _unlockedContentIds:
+  - z.tech.promotion.available
+  - z.unit.bs4
+  - z.unit.bs5
+  - z.rule.crystal_to_zr
+  _unique: 0
+  _untargetable: 0
+  _automaticSpawnBuildingId: 

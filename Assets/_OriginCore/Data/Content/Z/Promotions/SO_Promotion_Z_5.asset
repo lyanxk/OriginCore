@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79dc69f94f890dd44a71c78a56b26809, type: 3}
+  m_Name: SO_Promotion_Z_5
+  m_EditorClassIdentifier: 
+  _contentId: z.promotion.5
+  _displayName: Promote Z.BS5
+  _sourceUnit: {fileID: 11400000, guid: 6865d8d21c3c71f41b8a126ff3140c30, type: 2}
+  _targetUnit: {fileID: 11400000, guid: b8f9fb7d52acf5c4caadd1237a01a52f, type: 2}
+  _resourceCost:
+    _commanderResource: 400
+    _crystal: 400
+    _influence: 0
+  _targetInfluence: 3
+  _requiredUnlockId: z.promotion.enabled
+  _icon: {fileID: 0}

@@ -1,0 +1,1364 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c00492d83f701514fba90857bbbe38aa, type: 3}
+  m_Name: SO_WeaponActionSet_Y_SequenceKey
+  m_EditorClassIdentifier:
+  _contentId: actionset.y.sequence-key
+  _displayName: Sequence Key
+  _groundCombo:
+    _actionIds:
+    - action.y.sequence.ground-1
+    - action.y.sequence.ground-2
+    - action.y.sequence.ground-3
+    - action.y.sequence.ground-4
+    _resetDelay: 1
+    _restartDelay: 0
+    _suspendGravity: 0
+  _airCombo:
+    _actionIds:
+    - action.y.sequence.air-1
+    - action.y.sequence.air-2
+    - action.y.sequence.air-3
+    - action.y.sequence.air-4
+    _resetDelay: 1
+    _restartDelay: 0
+    _suspendGravity: 1
+  _actions:
+  - _actionId: action.y.sequence.ground-1
+    _displayName: Scythe Slash I
+    _input:
+      _requiredButtons: 1
+      _direction: 0
+      _press: 0
+      _stances: 1
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 3
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 5.6, y: 5.6, z: 2.8}
+      _radius: 2.8
+      _arcDegrees: 150
+      _damageMultiplier: 1
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses: []
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 1
+  - _actionId: action.y.sequence.ground-2
+    _displayName: Scythe Slash II
+    _input:
+      _requiredButtons: 1
+      _direction: 0
+      _press: 0
+      _stances: 1
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 3
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 5.6, y: 5.6, z: 2.8}
+      _radius: 2.8
+      _arcDegrees: 150
+      _damageMultiplier: 1
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses: []
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 1
+  - _actionId: action.y.sequence.ground-3
+    _displayName: Double Spin
+    _input:
+      _requiredButtons: 1
+      _direction: 0
+      _press: 0
+      _stances: 1
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.36
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 3
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 5.6, y: 5.6, z: 2.8}
+      _radius: 2.8
+      _arcDegrees: 150
+      _damageMultiplier: 1
+      _repeatCount: 2
+      _repeatInterval: 0.18
+      _damageType: 0
+      _damageFlags: 0
+      _statuses: []
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 1
+  - _actionId: action.y.sequence.ground-4
+    _displayName: Phantom Scythes
+    _input:
+      _requiredButtons: 1
+      _direction: 0
+      _press: 0
+      _stances: 1
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.6000000000000001
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 3
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 5.6, y: 5.6, z: 2.8}
+      _radius: 2.8
+      _arcDegrees: 150
+      _damageMultiplier: 0.5
+      _repeatCount: 6
+      _repeatInterval: 0.1
+      _damageType: 0
+      _damageFlags: 0
+      _statuses: []
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 1
+  - _actionId: action.y.sequence.air-1
+    _displayName: Air Scythe I
+    _input:
+      _requiredButtons: 1
+      _direction: 0
+      _press: 0
+      _stances: 2
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 3
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 5.6, y: 5.6, z: 2.8}
+      _radius: 2.8
+      _arcDegrees: 150
+      _damageMultiplier: 1
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses: []
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 1
+  - _actionId: action.y.sequence.air-2
+    _displayName: Air Scythe II
+    _input:
+      _requiredButtons: 1
+      _direction: 0
+      _press: 0
+      _stances: 2
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 3
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 5.6, y: 5.6, z: 2.8}
+      _radius: 2.8
+      _arcDegrees: 150
+      _damageMultiplier: 1
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses: []
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 1
+  - _actionId: action.y.sequence.air-3
+    _displayName: Vertical Spin
+    _input:
+      _requiredButtons: 1
+      _direction: 0
+      _press: 0
+      _stances: 2
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.36
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 3
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 5.6, y: 5.6, z: 2.8}
+      _radius: 2.8
+      _arcDegrees: 150
+      _damageMultiplier: 1
+      _repeatCount: 3
+      _repeatInterval: 0.12
+      _damageType: 0
+      _damageFlags: 0
+      _statuses: []
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 1
+  - _actionId: action.y.sequence.air-4
+    _displayName: Air Scythe Slam
+    _input:
+      _requiredButtons: 1
+      _direction: 0
+      _press: 0
+      _stances: 2
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 0
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 6
+      _collisionPolicy: 2
+      _distance: 0
+      _speed: 16
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 1
+      _targetFrontOffset: 1
+    _hits:
+    - _phase: 1
+      _shape: 3
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 5.6, y: 5.6, z: 2.8}
+      _radius: 2.8
+      _arcDegrees: 150
+      _damageMultiplier: 1
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses:
+      - _type: 6
+        _magnitude: 8
+        _duration: 0.5
+        _stackPolicy: 0
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 1
+  - _actionId: action.y.sequence.throw
+    _displayName: Scythe Return
+    _input:
+      _requiredButtons: 4
+      _direction: 0
+      _press: 0
+      _stances: 3
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 4
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 14, y: 14, z: 7}
+      _radius: 7
+      _arcDegrees: 360
+      _damageMultiplier: 1
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses:
+      - _type: 3
+        _magnitude: 5
+        _duration: 0.5
+        _stackPolicy: 0
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: 2
+    _requiredMainWeaponId: 
+    _comboOnly: 0
+  - _actionId: action.y.sequence.lock-throw
+    _displayName: Locked Scythe Return
+    _input:
+      _requiredButtons: 4
+      _direction: 0
+      _press: 0
+      _stances: 3
+      _requiresTargetLock: 1
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 11
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 11
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 11
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 4
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 20, y: 20, z: 10}
+      _radius: 10
+      _arcDegrees: 360
+      _damageMultiplier: 1
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses:
+      - _type: 3
+        _magnitude: 7
+        _duration: 0.6
+        _stackPolicy: 0
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: 2
+    _requiredMainWeaponId: 
+    _comboOnly: 0
+  - _actionId: action.y.sequence.orbit
+    _displayName: Persistent Orbit Scythe
+    _input:
+      _requiredButtons: 5
+      _direction: 0
+      _press: 0
+      _stances: 3
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 12
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 3
+      _duration: 0
+      _priority: 12
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.2
+      _priority: 12
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 3
+      _shape: 0
+      _localOffset: {x: 0, y: 0, z: 6}
+      _anchorAtActionStart: 1
+      _size: {x: 10, y: 10, z: 5}
+      _radius: 5
+      _arcDegrees: 360
+      _damageMultiplier: 1
+      _repeatCount: 20
+      _repeatInterval: 0.5
+      _damageType: 0
+      _damageFlags: 0
+      _statuses:
+      - _type: 1
+        _magnitude: 0
+        _duration: 0
+        _stackPolicy: 0
+    _persistentWhenUnequipped: 1
+    _maximumPersistentSeconds: 10
+    _cancelButtons: 5
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 0
+  - _actionId: action.y.sequence.vertical-three
+    _displayName: Triple Vertical Spin
+    _input:
+      _requiredButtons: 1
+      _direction: 3
+      _press: 0
+      _stances: 1
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 15
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.42000000000000004
+      _priority: 15
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 15
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 5
+      _collisionPolicy: 1
+      _distance: 0
+      _speed: 8
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 1
+      _targetFrontOffset: 1
+    _hits:
+    - _phase: 1
+      _shape: 0
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 6, y: 6, z: 3}
+      _radius: 3
+      _arcDegrees: 360
+      _damageMultiplier: 1
+      _repeatCount: 3
+      _repeatInterval: 0.14
+      _damageType: 0
+      _damageFlags: 0
+      _statuses: []
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 0
+  - _actionId: action.y.sequence.ground-finisher
+    _displayName: Grand Ground Slam
+    _input:
+      _requiredButtons: 5
+      _direction: 3
+      _press: 0
+      _stances: 1
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 6
+      _collisionPolicy: 2
+      _distance: 0
+      _speed: 16
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 1
+      _targetFrontOffset: 1
+    _hits:
+    - _phase: 1
+      _shape: 0
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 14, y: 14, z: 7}
+      _radius: 7
+      _arcDegrees: 150
+      _damageMultiplier: 3
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses:
+      - _type: 6
+        _magnitude: 12
+        _duration: 0.6
+        _stackPolicy: 0
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 0
+  - _actionId: action.y.sequence.air-hook
+    _displayName: Air Hook Spin
+    _input:
+      _requiredButtons: 5
+      _direction: 6
+      _press: 0
+      _stances: 2
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 0
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 8, y: 8, z: 4}
+      _radius: 4
+      _arcDegrees: 150
+      _damageMultiplier: 1
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses:
+      - _type: 3
+        _magnitude: 4
+        _duration: 0.4
+        _stackPolicy: 0
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 0
+  - _actionId: action.y.sequence.air-cleave
+    _displayName: Air Heavy Cleave
+    _input:
+      _requiredButtons: 5
+      _direction: 2
+      _press: 0
+      _stances: 2
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 3
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 10, y: 10, z: 5}
+      _radius: 5
+      _arcDegrees: 150
+      _damageMultiplier: 3
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses:
+      - _type: 2
+        _magnitude: 8
+        _duration: 0.5
+        _stackPolicy: 0
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 0
+  - _actionId: action.y.sequence.air-slam
+    _displayName: Air Scythe Crush
+    _input:
+      _requiredButtons: 1
+      _direction: 3
+      _press: 0
+      _stances: 2
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 6
+      _collisionPolicy: 2
+      _distance: 0
+      _speed: 16
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 1
+      _targetFrontOffset: 1
+    _hits:
+    - _phase: 1
+      _shape: 0
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 10, y: 10, z: 5}
+      _radius: 5
+      _arcDegrees: 150
+      _damageMultiplier: 3
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses:
+      - _type: 6
+        _magnitude: 12
+        _duration: 0.6
+        _stackPolicy: 0
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 0

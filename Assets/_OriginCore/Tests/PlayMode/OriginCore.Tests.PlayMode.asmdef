@@ -1,0 +1,26 @@
+{
+  "name": "OriginCore.Tests.PlayMode",
+  "rootNamespace": "OriginCore.Tests.PlayMode",
+  "references": [
+    "Cinemachine",
+    "OriginCore.Runtime",
+    "Unity.AI.Navigation",
+    "Unity.InputSystem",
+    "Unity.InputSystem.TestFramework",
+    "UnityEngine.UI"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [
+    "UNITY_INCLUDE_TESTS"
+  ],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

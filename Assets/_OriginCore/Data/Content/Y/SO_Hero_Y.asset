@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb6866a5d7d3bc94eb63c9c924c88ef6, type: 3}
+  m_Name: SO_Hero_Y
+  m_EditorClassIdentifier: 
+  _contentId: hero.y
+  _displayName: Y
+  _unitDefinition: {fileID: 11400000, guid: 93de422b7ec18a749a6bbc3acdeb77f0, type: 2}
+  _prefab: {fileID: 6497886128756955774, guid: b879c9face5cade48b649fe286909010, type: 3}
+  _respawnSeconds: 240
+  _immediateRespawnCrystalCost: 800
+  _rtsAbilities:
+  - {fileID: 11400000, guid: 056ca48118ff3a044aa4b1619a7af343, type: 2}
+  - {fileID: 11400000, guid: c482f32fa75b2a146a6ca30a1ca80504, type: 2}
+  - {fileID: 11400000, guid: 36780aafd480e9346b86deb1c06349e0, type: 2}
+  - {fileID: 11400000, guid: edb09b12412a42847a54c3278e5c5ab8, type: 2}
+  _actAbilities:
+  - {fileID: 11400000, guid: 1ab00ad4e55cb3b49aafe5b07a81e2fa, type: 2}
+  _fpsAbilities:
+  - {fileID: 11400000, guid: 1ab00ad4e55cb3b49aafe5b07a81e2fa, type: 2}
+  _allowedWeapons:
+  - {fileID: 11400000, guid: a1111111111111111111111111111101, type: 2}
+  - {fileID: 11400000, guid: b2222222222222222222222222222202, type: 2}
+  - {fileID: 11400000, guid: c3333333333333333333333333333303, type: 2}
+  - {fileID: 11400000, guid: 2b1d064c7badb5f45b3af067b92203ab, type: 2}
+  - {fileID: 11400000, guid: 5968bab513ed4824b87e0b9d4c638d3f, type: 2}
+  - {fileID: 11400000, guid: 18ab57f23798fbd46a35a6a795f21cd9, type: 2}
+  _requiredActWeapons:
+  - {fileID: 11400000, guid: a1111111111111111111111111111101, type: 2}
+  - {fileID: 11400000, guid: b2222222222222222222222222222202, type: 2}
+  - {fileID: 11400000, guid: c3333333333333333333333333333303, type: 2}
+  _forms:
+  - {fileID: 11400000, guid: 0c59046999130184ab4cb65b34ffb8fb, type: 2}
+  - {fileID: 11400000, guid: d20e70ff82b901143af584831dd88252, type: 2}
+  - {fileID: 11400000, guid: 371369f3bbb09eb42a6eb5e06badf21e, type: 2}

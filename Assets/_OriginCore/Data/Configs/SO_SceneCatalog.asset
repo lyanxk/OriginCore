@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93f53b72488a7c743ab495ca9b950492, type: 3}
+  m_Name: SO_SceneCatalog
+  m_EditorClassIdentifier: 
+  _entries:
+  - _sceneKey: MainMenu
+    _scenePath: Assets/_OriginCore/Scenes/01_MainMenu.unity
+  - _sceneKey: system_test_0
+    _scenePath: Assets/_OriginCore/Scenes/90_SystemTest.unity
+  - _sceneKey: legacy_map
+    _scenePath: Assets/_OriginCore/Scenes/10_LegacyMap.unity
+  - _sceneKey: anime_grass_flow_test
+    _scenePath: Assets/_OriginCore/Scenes/11_AnimeGrassFlowTest.unity

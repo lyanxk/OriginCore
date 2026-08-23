@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81f4396fbe914c8458c0cc1d930896c8, type: 3}
+  m_Name: SO_Weapon_Gun
+  m_EditorClassIdentifier: 
+  _contentId: weapon.gun
+  _displayName: Gun
+  _allowedSlots: 1
+  _availableModes: 3
+  _fireType: 1
+  _purchaseCost:
+    _commanderResource: 0
+    _crystal: 0
+    _influence: 0
+  _refundRatio: 0.5
+  _damage: 20
+  _damageType: 0
+  _damageFlags: 0
+  _range: 50
+  _secondsPerShot: 0.25
+  _magazineSize: 12
+  _startingReserveAmmo: 48
+  _reloadSeconds: 1.5
+  _hipSpreadDegrees: 1.5
+  _adsSpreadDegrees: 0.2
+  _moveSpeedMultiplier: 0.95
+  _adsFieldOfView: 55
+  _projectilePrefab: {fileID: 0}
+  _worldPrefab: {fileID: 7804973455978176058, guid: 15aabfbcbf52a9a4dbb6fe76ba896673,
+    type: 3}
+  _firstPersonPrefab: {fileID: 7804973455978176058, guid: 15aabfbcbf52a9a4dbb6fe76ba896673,
+    type: 3}
+  _weaponSkills: []
+  _icon: {fileID: 0}

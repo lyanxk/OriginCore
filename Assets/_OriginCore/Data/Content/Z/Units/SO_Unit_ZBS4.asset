@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31d0113f091b7c94b955eb44c78d5010, type: 3}
+  m_Name: SO_Unit_ZBS4
+  m_EditorClassIdentifier: 
+  _archetypeId: z.bs4
+  _displayName: Z.BS4
+  _roles: 2
+  _defaultFaction: 0
+  _moveSpeed: 1
+  _acceleration: 16
+  _angularSpeed: 720
+  _stoppingDistance: 0.2
+  _visionRange: 24
+  _maxHealth: 300
+  _maxShield: 0
+  _maxEnergy: 0
+  _armor: 3
+  _healthRegen: 0
+  _shieldRegen: 1
+  _energyRegen: 0
+  _attackRange: 1.5
+  _attackDamage: 10
+  _attackCooldown: 2
+  _cooldownRate: 1
+  _damageDealtMultiplier: 1
+  _damageTakenMultiplier: 1
+  _lifetimeSeconds: 180

@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 018dd5aa2c87b1d498a6b83d49a3b883, type: 3}
+  m_Name: SO_Commander_Z
+  m_EditorClassIdentifier: 
+  _contentId: commander.z
+  _displayName: Z
+  _initialCommanderResource: 0
+  _initialCrystal: 250
+  _initialPopulationCap: 100
+  _commanderResourceLabel: Z.R
+  _populationLabel: Population
+  _roster:
+  - {fileID: 11400000, guid: 843cad016365ca943881a9e13f888b51, type: 2}
+  - {fileID: 11400000, guid: ce2a2bc53cf481d42a22be167188e355, type: 2}
+  - {fileID: 11400000, guid: 1395d64c3e2e76a46925f02fc81e225e, type: 2}
+  - {fileID: 11400000, guid: 57ed8bc8e107da646bc701a7b95c1790, type: 2}
+  - {fileID: 11400000, guid: 0f08cc935eb917c4fbafb09bacab290a, type: 2}
+  - {fileID: 11400000, guid: 6865d8d21c3c71f41b8a126ff3140c30, type: 2}
+  - {fileID: 11400000, guid: d37aa50a8f1f35e43ade89f1424d1427, type: 2}
+  - {fileID: 11400000, guid: bb7cfdd2a255ff744a9e470fef5d97c4, type: 2}
+  - {fileID: 11400000, guid: f07f9c44a7b3b8040ae89ad9192cb07f, type: 2}
+  - {fileID: 11400000, guid: d9f11c648cd720d47964d08da4d1ac05, type: 2}
+  - {fileID: 11400000, guid: 7d867fd02b540784e817d8e83b0c0ebd, type: 2}
+  - {fileID: 11400000, guid: b8f9fb7d52acf5c4caadd1237a01a52f, type: 2}
+  _buildings:
+  - {fileID: 11400000, guid: fe85dd3556c6f3142aad6450eddc2734, type: 2}
+  - {fileID: 11400000, guid: d887291ebd8aeb84bb3d3aabd0224126, type: 2}
+  - {fileID: 11400000, guid: c744b13ad55f37e4e8c5b347565636e8, type: 2}
+  - {fileID: 11400000, guid: 96c8a3ad0906ac34893f3a94d8dfcb88, type: 2}
+  - {fileID: 11400000, guid: add15055c49387945bd1ee9a99e14d4b, type: 2}
+  - {fileID: 11400000, guid: 66ae53c4f66b4f34e861e5cf0cfc503b, type: 2}
+  - {fileID: 11400000, guid: cd2275bc89d16c64bb6fd8c068553e7c, type: 2}
+  - {fileID: 11400000, guid: 5457a74560ea6ea4db801fd99e5010ad, type: 2}
+  _baseBuilding: {fileID: 11400000, guid: fe85dd3556c6f3142aad6450eddc2734, type: 2}
+  _technologies:
+  - {fileID: 11400000, guid: d7f0d0a110def714181bf50fa9b06c3b, type: 2}
+  - {fileID: 11400000, guid: 18c36c291c6eba044b699debd97bdd0d, type: 2}
+  _globalModifiers:
+  - _sourceId: commander.z.hero_cooldown
+    _statId: 10
+    _operation: 1
+    _value: 1.25
+    _priority: 0
+    _duration: 0
+    _stackingRule: 1
+  _globalModifierTargetRoles: 4
+  _visibilityPolicy: 1

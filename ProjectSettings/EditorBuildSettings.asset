@@ -6,9 +6,18 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/StartMenu.unity
-    guid: 4b47d68040c9492c897cfefc2df9ebaf
+    path: Assets/_OriginCore/Scenes/00_Bootstrap.unity
+    guid: 72efcb08b545ce143992cb8635dfe6a6
   - enabled: 1
-    path: Assets/Scenes/TestScene.unity
-    guid: 44e6a81c3f9f1244782025c43bca4dfb
+    path: Assets/_OriginCore/Scenes/01_MainMenu.unity
+    guid: 9c04489174557a244a358aac0ab20e38
+  - enabled: 1
+    path: Assets/_OriginCore/Scenes/90_SystemTest.unity
+    guid: bf2b07c0fefcc4b4cb0525f332b50a5b
+  - enabled: 1
+    path: Assets/_OriginCore/Scenes/10_LegacyMap.unity
+    guid: 4c85b08df7040a74a992e548357d9d5b
+  - enabled: 1
+    path: Assets/_OriginCore/Scenes/11_AnimeGrassFlowTest.unity
+    guid: 02f36abcf8887624c82d9cb4d0f4731c
   m_configObjects: {}

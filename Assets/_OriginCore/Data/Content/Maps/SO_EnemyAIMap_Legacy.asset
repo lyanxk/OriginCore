@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1000000000000000000000000000014, type: 3}
+  m_Name: SO_EnemyAIMap_Legacy
+  m_EditorClassIdentifier:
+  _definition: {fileID: 11400000, guid: e2000000000000000000000000000001, type: 2}
+  _producerPrefab: {fileID: 2244832248309060371, guid: 65741c53512af1e4080dc31154a1ef78, type: 3}
+  _producerRuntimeId: map.legacy.enemy.producer.main
+  _producerNormalizedPosition: {x: 0.78, y: 0.76}
+  _navMeshSearchDistance: 30
+  _fundingPolicy: 3
+  _initialCommanderResource: 0
+  _initialCrystal: 0
+  _populationCap: 20
+  _commanderResourcePerSecond: 0
+  _crystalPerSecond: 0
+  _createProducerWhenMissing: 1
+  _markExistingEnemyUnits: 1

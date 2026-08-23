@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 705431e0b97b5184782e564af6e8f59f, type: 3}
+  m_Name: SO_Recipe_Z_BS2
+  m_EditorClassIdentifier: 
+  _recipeId: z.production.bs2
+  _displayName: Produce Z.BS2
+  _archetype: {fileID: 11400000, guid: 1395d64c3e2e76a46925f02fc81e225e, type: 2}
+  _resultContentId: z.bs2
+  _batchCount: 4
+  _cost:
+    _commanderResource: 0
+    _crystal: 100
+    _influence: 4
+  _productionTime: 30
+  _requiredTechnologyId: z.unit.bs2
+  _spawnPolicy: 2

@@ -97,3 +97,12 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# Generated local design documents and QA exports
+/DesignDocs/
+/Assets/Screenshots/
+/Assets/Screenshots.meta
+
+# Local Unity MCP Roslyn compiler payload
+/Assets/Plugins/Roslyn/
+/Assets/Plugins/Roslyn.meta

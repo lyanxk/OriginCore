@@ -1,0 +1,567 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c00492d83f701514fba90857bbbe38aa, type: 3}
+  m_Name: SO_WeaponActionSet_Y_FinalWing
+  m_EditorClassIdentifier:
+  _contentId: actionset.y.final-wing
+  _displayName: Final Wing
+  _groundCombo:
+    _actionIds: []
+    _resetDelay: 0
+    _restartDelay: 0
+    _suspendGravity: 0
+  _airCombo:
+    _actionIds: []
+    _resetDelay: 0
+    _restartDelay: 0
+    _suspendGravity: 0
+  _actions:
+  - _actionId: action.y.final-wing.volley
+    _displayName: Six Wing Volley
+    _input:
+      _requiredButtons: 2
+      _direction: 0
+      _press: 3
+      _stances: 3
+      _requiresTargetLock: 1
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.6
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.2
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 4
+      _localOffset: {x: 0, y: 0, z: 1}
+      _centerOnTarget: 1
+      _onlyIntentTarget: 1
+      _size: {x: 24, y: 24, z: 12}
+      _radius: 12
+      _arcDegrees: 360
+      _damageMultiplier: 1
+      _repeatCount: 6
+      _repeatInterval: 0.1
+      _repeatUntilPhaseEnds: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses: []
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 0
+  - _actionId: action.y.final-wing.focus
+    _displayName: Wing Focus
+    _input:
+      _requiredButtons: 6
+      _direction: 0
+      _press: 0
+      _stances: 3
+      _requiresTargetLock: 1
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 30
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 3
+      _duration: 0
+      _priority: 30
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.2
+      _priority: 30
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 3
+      _shape: 0
+      _localOffset: {x: 0, y: 0, z: 0}
+      _centerOnTarget: 1
+      _onlyIntentTarget: 1
+      _size: {x: 6, y: 6, z: 3}
+      _radius: 3
+      _arcDegrees: 360
+      _damageMultiplier: 60
+      _repeatCount: 150
+      _repeatInterval: 0.2
+      _repeatUntilPhaseEnds: 1
+      _damageType: 0
+      _damageFlags: 0
+      _statuses: []
+    _persistentWhenUnequipped: 1
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 5
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 0
+  - _actionId: action.y.final-wing.rear-burst
+    _displayName: Rear Wing Burst
+    _input:
+      _requiredButtons: 6
+      _direction: 3
+      _press: 0
+      _stances: 3
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 0
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 18, y: 18, z: 9}
+      _radius: 9
+      _arcDegrees: 150
+      _damageMultiplier: 50
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses: []
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 0
+  - _actionId: action.y.final-wing.launch
+    _displayName: Wing Launch
+    _input:
+      _requiredButtons: 2
+      _direction: 3
+      _press: 0
+      _stances: 3
+      _requiresTargetLock: 1
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 1
+      _duration: 0.12
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.18
+      _priority: 10
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 1
+      _shape: 3
+      _localOffset: {x: 0, y: 0, z: 0}
+      _centerOnTarget: 1
+      _onlyIntentTarget: 1
+      _size: {x: 10, y: 10, z: 5}
+      _radius: 5
+      _arcDegrees: 150
+      _damageMultiplier: 30
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses:
+      - _type: 4
+        _magnitude: 8
+        _duration: 0.6
+        _stackPolicy: 0
+    _persistentWhenUnequipped: 0
+    _maximumPersistentSeconds: 0
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: 
+    _comboOnly: 0
+  - _actionId: action.y.final-wing.timeslot-finisher
+    _displayName: Frozen Hexagon
+    _input:
+      _requiredButtons: 7
+      _direction: 0
+      _press: 0
+      _stances: 3
+      _requiresTargetLock: 1
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 100
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 3
+      _duration: 1.8
+      _priority: 100
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.2
+      _priority: 100
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 3
+      _shape: 0
+      _localOffset: {x: 0, y: 0, z: 0}
+      _centerOnTarget: 1
+      _onlyIntentTarget: 1
+      _size: {x: 32, y: 32, z: 16}
+      _radius: 16
+      _arcDegrees: 360
+      _damageMultiplier: 0
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses:
+      - _type: 8
+        _magnitude: 0
+        _duration: 1.8
+        _stackPolicy: 0
+    - _phase: 2
+      _shape: 0
+      _localOffset: {x: 0, y: 0, z: 0}
+      _centerOnTarget: 1
+      _onlyIntentTarget: 1
+      _size: {x: 32, y: 32, z: 16}
+      _radius: 16
+      _arcDegrees: 360
+      _damageMultiplier: 100
+      _activeMainWeaponDamageMultiplier: 50
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses:
+      - _type: 8
+        _magnitude: 0
+        _duration: 5
+        _stackPolicy: 0
+    _persistentWhenUnequipped: 1
+    _maximumPersistentSeconds: 2.5
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: weapon.y.timeslot-key
+    _comboOnly: 0
+  - _actionId: action.y.final-wing.sequence-finisher
+    _displayName: Opposed Orbit Finisher
+    _input:
+      _requiredButtons: 7
+      _direction: 0
+      _press: 0
+      _stances: 3
+      _requiresTargetLock: 0
+      _requiresNoTargetLock: 0
+    _phases:
+    - _kind: 0
+      _duration: 0.08
+      _priority: 100
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 0
+    - _kind: 3
+      _duration: 2.5
+      _priority: 100
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 1
+      _gravityPolicy: 1
+    - _kind: 2
+      _duration: 0.2
+      _priority: 100
+      _blocksDirectMovement: 1
+      _canBeInterrupted: 1
+      _canCancelIntoNextAction: 0
+      _gravityPolicy: 0
+    _motion:
+      _kind: 0
+      _collisionPolicy: 0
+      _distance: 0
+      _speed: 0
+      _speedCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _faceTarget: 0
+      _targetFrontOffset: 1.5
+    _hits:
+    - _phase: 3
+      _shape: 0
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 40, y: 40, z: 20}
+      _radius: 20
+      _arcDegrees: 360
+      _damageMultiplier: 0
+      _repeatCount: 10
+      _repeatInterval: 0.25
+      _damageType: 0
+      _damageFlags: 0
+      _statuses:
+      - _type: 3
+        _magnitude: 10
+        _duration: 1
+        _stackPolicy: 0
+    - _phase: 2
+      _shape: 0
+      _localOffset: {x: 0, y: 0, z: 1}
+      _size: {x: 40, y: 40, z: 20}
+      _radius: 20
+      _arcDegrees: 360
+      _damageMultiplier: 100
+      _activeMainWeaponDamageMultiplier: 10
+      _repeatCount: 1
+      _repeatInterval: 0
+      _damageType: 0
+      _damageFlags: 0
+      _statuses: []
+    _persistentWhenUnequipped: 1
+    _maximumPersistentSeconds: 3
+    _cancelButtons: 0
+    _continueComboAtIndex: -1
+    _requiredMainWeaponId: weapon.y.sequence-key
+    _comboOnly: 0

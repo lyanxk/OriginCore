@@ -8,19 +8,19 @@ TagManager:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - Groud
+  - 
   - Water
   - UI
   - Unit
   - Obstacle
   - Bullet
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Ground
+  - Selectable
+  - Building
+  - VisionTarget
+  - Minimap
+  - FogOverlay
+  - BoostSurface
   - 
   - 
   - 

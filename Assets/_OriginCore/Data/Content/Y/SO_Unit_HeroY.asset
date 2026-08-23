@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31d0113f091b7c94b955eb44c78d5010, type: 3}
+  m_Name: SO_Unit_HeroY
+  m_EditorClassIdentifier: 
+  _archetypeId: unit.hero.y
+  _displayName: Y
+  _roles: 6
+  _defaultFaction: 0
+  _moveSpeed: 4
+  _acceleration: 16
+  _angularSpeed: 720
+  _stoppingDistance: 0.2
+  _visionRange: 24
+  _maxHealth: 400
+  _maxShield: 400
+  _maxEnergy: 3000
+  _armor: 3
+  _healthRegen: 2
+  _shieldRegen: 2
+  _energyRegen: 1
+  _attackRange: 1.5
+  _attackDamage: 60
+  _attackCooldown: 1
+  _cooldownRate: 1
+  _damageDealtMultiplier: 1
+  _damageTakenMultiplier: 1
+  _lifetimeSeconds: 0

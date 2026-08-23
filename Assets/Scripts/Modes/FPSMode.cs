@@ -37,17 +37,7 @@
           public float speedFovMaxBonus = 12f;
           public float speedFovSharpness = 12f;
 
-          public float slideSpeed = 10.5f;
-          public float slideDuration = 0.45f;
-          public float slideCooldown = 0.15f;
-          public float slideInputDeadZone = 0.1f;
-
-          bool _isSliding;
-          bool _wasCrouchHeld;
-          float _slideTimer;
-          float _nextSlideTime;
           float _speedFovBonus;
-          Vector3 _slideDirection;
 
           public FpsMode(UnitBase unit, Transform fpsPivot)
           {
@@ -67,9 +57,6 @@
 
               _yaw = _unit.GetYaw();
               _pitch = 0f;
-              ResetSlide();
-              _wasCrouchHeld = false;
-              _nextSlideTime = 0f;
               _speedFovBonus = 0f;
           }
 
@@ -77,8 +64,6 @@
           {
               _unit.SetCrouching(false);
               _unit.SetRunning(false);
-              ResetSlide();
-              _wasCrouchHeld = false;
               _isZooming = false;
               Cursor.lockState = CursorLockMode.None;
               Cursor.visible = true;
@@ -120,27 +105,38 @@
               Quaternion yawRot = Quaternion.Euler(0f, _yaw, 0f);
               Vector3 moveWorld = yawRot * new Vector3(intent.Move.x, 0f, intent.Move.y);
               bool wantsCrouch = intent.Ctrl && !_unit.IsFlightEnabled;
-              TryStartSlide(intent, moveWorld, wantsCrouch);
-              TickSlide(dt);
+              bool wantsRun = intent.Shift && !wantsCrouch && !_unit.IsFlightEnabled;
+              if (wantsCrouch && intent.Shift)
+                  _unit.TryStartSlide(moveWorld);
 
               //跳跃
-              if (intent.Space && !_unit.IsFlightEnabled && !_isSliding)
+              if (intent.Space && !_unit.IsFlightEnabled && !_unit.IsSliding)
               {
                   _unit.Jump();
               }
 
-              bool wantsRun = intent.Shift && !wantsCrouch && !_unit.IsFlightEnabled;
-              if (_isSliding)
+              if (_unit.IsFlightEnabled)
+              {
+                  _unit.SetCrouching(false);
+                  _unit.SetRunning(false);
+                  _unit.MoveImmediate(
+                      moveWorld,
+                      intent.Shift ? UnitBase.MoveStance.FlightBoost : UnitBase.MoveStance.Flight);
+              }
+              else if (_unit.IsSliding)
               {
                   _unit.SetCrouching(true);
                   _unit.SetRunning(false);
-                  _unit.MoveImmediate(_slideDirection, slideSpeed);
+                  _unit.MoveImmediate(moveWorld, UnitBase.MoveStance.Slide);
               }
               else
               {
                   _unit.SetCrouching(wantsCrouch);
                   _unit.SetRunning(wantsRun && moveWorld.sqrMagnitude > 0.0001f);
-                  _unit.MoveImmediate(moveWorld, _unit.GetDirectMoveSpeed(wantsRun, wantsCrouch));
+                  UnitBase.MoveStance moveStance = wantsCrouch
+                      ? UnitBase.MoveStance.Crouch
+                      : wantsRun ? UnitBase.MoveStance.Run : UnitBase.MoveStance.Walk;
+                  _unit.MoveImmediate(moveWorld, moveStance);
               }
 
               UpdateSpeedFov(dt);
@@ -177,52 +173,6 @@
                   Rotation = camRot,
                   Fov = targetFov
               };
-          }
-
-          void TryStartSlide(InputIntent intent, Vector3 moveWorld, bool wantsCrouch)
-          {
-              bool crouchPressed = wantsCrouch && !_wasCrouchHeld;
-              _wasCrouchHeld = wantsCrouch;
-
-              if (!crouchPressed || _isSliding || _unit.IsFlightEnabled)
-                  return;
-
-              if (!intent.Shift || Time.time < _nextSlideTime)
-                  return;
-
-              if (moveWorld.sqrMagnitude <= slideInputDeadZone * slideInputDeadZone)
-                  return;
-
-              _slideDirection = moveWorld.normalized;
-              _slideTimer = Mathf.Max(0.01f, slideDuration);
-              _nextSlideTime = Time.time + _slideTimer + Mathf.Max(0f, slideCooldown);
-              _isSliding = true;
-              _unit.CancelPathing();
-          }
-
-          void TickSlide(float dt)
-          {
-              if (!_isSliding)
-                  return;
-
-              if (_unit.IsFlightEnabled)
-              {
-                  ResetSlide();
-                  return;
-              }
-
-              _slideTimer -= dt;
-              if (_slideTimer > 0f)
-                  return;
-
-              ResetSlide();
-          }
-
-          void ResetSlide()
-          {
-              _isSliding = false;
-              _slideTimer = 0f;
-              _slideDirection = Vector3.zero;
           }
 
           void UpdateSpeedFov(float dt)

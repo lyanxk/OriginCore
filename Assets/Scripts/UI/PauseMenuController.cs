@@ -212,7 +212,7 @@ namespace UI
                 return true;
 #endif
 #if ENABLE_LEGACY_INPUT_MANAGER
-            return Input.GetKeyDown(KeyCode.Escape);
+            return UnityEngine.Input.GetKeyDown(KeyCode.Escape);
 #else
             return false;
 #endif

@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 823eb5f1989f2cf4fb4ceeb962d9f7df, type: 3}
+  m_Name: SO_Building_Z_gather_beacon
+  m_EditorClassIdentifier: 
+  _contentId: z.building.gather_beacon
+  _displayName: Gathering Beacon
+  _entityDefinition: {fileID: 11400000, guid: f5053a2695fb4574cb843d418258b628, type: 2}
+  _prefab: {fileID: 2244832248309060371, guid: b6e9336866d14c041a95cecd96092ba7, type: 3}
+  _constructionCost:
+    _commanderResource: 0
+    _crystal: 10
+    _influence: 0
+  _constructionSeconds: 10
+  _footprint: {x: 2.4, y: 2.4}
+  _placementBlockingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  _productionRecipes: []
+  _technologies: []
+  _supportsRallyPoint: 0
+  _supportsAttack: 0
+  _commanderResourcePerSecond: 0
+  _crystalPerSecond: 0
+  _requiredUnlockId: 
+  _unlockedContentIds: []
+  _unique: 0
+  _untargetable: 1
+  _automaticSpawnBuildingId: 

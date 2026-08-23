@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 705431e0b97b5184782e564af6e8f59f, type: 3}
+  m_Name: SO_Recipe_Z_Worker
+  m_EditorClassIdentifier: 
+  _recipeId: z.production.w
+  _displayName: Produce Z.Worker
+  _archetype: {fileID: 11400000, guid: 843cad016365ca943881a9e13f888b51, type: 2}
+  _resultContentId: z.w
+  _batchCount: 1
+  _cost:
+    _commanderResource: 0
+    _crystal: 30
+    _influence: 1
+  _productionTime: 10
+  _requiredTechnologyId: 
+  _spawnPolicy: 0
